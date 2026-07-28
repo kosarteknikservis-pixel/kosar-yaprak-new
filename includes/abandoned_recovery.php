@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/transactional_sms.php';
+require_once __DIR__ . '/app_url.php';
 
 /**
  * Yarım kalan sipariş — WhatsApp / SMS geri kazanım mesajları.
@@ -79,23 +80,32 @@ function abandoned_recovery_whatsapp_prefill(int $yarimId, string $ad, string $u
         . $product . ' için siparişimi tamamlamak istiyorum. (Ref: YK-' . $yarimId . ')';
 }
 
+function abandoned_recovery_short_wa_url(int $yarimId, ?PDO $pdo = null): string
+{
+    if ($yarimId <= 0) {
+        return app_url('wa', [], $pdo);
+    }
+
+    return app_url('wa', ['r' => $yarimId], $pdo);
+}
+
 function abandoned_recovery_sms_body(int $yarimId, string $ad, string $urun, ?PDO $pdo = null): string
 {
     $name = trim($ad) !== '' ? trim($ad) : 'Merhaba';
-    $product = trim($urun) !== '' ? trim($urun) : 'ürününüz';
-    if (mb_strlen($product) > 42) {
-        $product = mb_substr($product, 0, 39) . '...';
+    $product = trim($urun) !== '' ? trim($urun) : 'urununuz';
+    if (mb_strlen($product) > 36) {
+        $product = mb_substr($product, 0, 33) . '...';
     }
-    $wa = abandoned_recovery_whatsapp_href($yarimId, $ad, $urun, $pdo);
+    $link = abandoned_recovery_short_wa_url($yarimId, $pdo);
 
-    return 'Merhaba ' . $name . ', Kosar Vantilator\'den yaziyoruz. '
-        . $product . ' siparisiniz yarım kaldi. WhatsApp\'tan yazin: ' . $wa;
+    return 'Merhaba ' . $name . ', Kosar Vantilator. '
+        . $product . ' siparisiniz yarım kaldi. WhatsApp: ' . $link;
 }
 
 /**
- * Bu telefona son X gün içinde yarım kalan SMS gitti mi?
+ * Bu telefona daha önce yarım kalan SMS gitti mi? (kalıcı — tekrar gönderilmez)
  */
-function abandoned_recovery_phone_recently_sent(PDO $pdo, string $telDigits10): bool
+function abandoned_recovery_phone_already_sent(PDO $pdo, string $telDigits10): bool
 {
     if (strlen($telDigits10) !== 10) {
         return true;
@@ -105,7 +115,6 @@ function abandoned_recovery_phone_recently_sent(PDO $pdo, string $telDigits10): 
         $st = $pdo->prepare(
             "SELECT id FROM yarim_kalanlar
              WHERE recovery_sms_sent_at IS NOT NULL
-               AND recovery_sms_sent_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
                AND tel IS NOT NULL
                AND TRIM(tel) != ''
                AND RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tel), ' ', ''), '(', ''), ')', ''), '-', ''), '+', ''), 10) = ?
@@ -117,6 +126,14 @@ function abandoned_recovery_phone_recently_sent(PDO $pdo, string $telDigits10): 
     } catch (Throwable $e) {
         return false;
     }
+}
+
+/**
+ * @deprecated use abandoned_recovery_phone_already_sent
+ */
+function abandoned_recovery_phone_recently_sent(PDO $pdo, string $telDigits10): bool
+{
+    return abandoned_recovery_phone_already_sent($pdo, $telDigits10);
 }
 
 /**
@@ -161,11 +178,11 @@ function abandoned_recovery_send_sms(PDO $pdo, int $yarimId): bool
         return false;
     }
 
-    if (abandoned_recovery_phone_recently_sent($pdo, $tel)) {
-        if (empty($row['recovery_sms_sent_at'])) {
-            $pdo->prepare('UPDATE yarim_kalanlar SET recovery_sms_sent_at = NOW() WHERE id = ? AND recovery_sms_sent_at IS NULL')
-                ->execute([$yarimId]);
-        }
+    if (abandoned_recovery_phone_already_sent($pdo, $tel)) {
+        $pdo->prepare(
+            "UPDATE yarim_kalanlar SET recovery_sms_sent_at = NOW()
+             WHERE id = ? AND recovery_sms_sent_at IS NULL"
+        )->execute([$yarimId]);
 
         return false;
     }
@@ -191,6 +208,17 @@ function abandoned_recovery_send_sms(PDO $pdo, int $yarimId): bool
 
     $pdo->prepare('UPDATE yarim_kalanlar SET recovery_sms_sent_at = NOW() WHERE id = ? AND recovery_sms_sent_at IS NULL')
         ->execute([$yarimId]);
+
+    try {
+        $pdo->prepare(
+            "UPDATE yarim_kalanlar SET recovery_sms_sent_at = NOW()
+             WHERE recovery_sms_sent_at IS NULL
+               AND tel IS NOT NULL AND TRIM(tel) != ''
+               AND RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tel), ' ', ''), '(', ''), ')', ''), '-', ''), '+', ''), 10) = ?"
+        )->execute([$tel]);
+    } catch (Throwable $e) {
+        /* ignore */
+    }
 
     if (is_file(__DIR__ . '/app_log.php')) {
         require_once __DIR__ . '/app_log.php';
