@@ -173,6 +173,21 @@ $formPrefill = static function (string $key, string $default = '') use ($otpPref
     return $default;
 };
 
+$otpModalError = '';
+if ($showFrontOtpStep) {
+    $otpErrKey = (string) ($_GET['otp_err'] ?? '');
+    if ($otpErrKey === 'expired') {
+        $otpModalError = 'Kodun süresi doldu. Yeni kod gönderin.';
+    } elseif ($otpErrKey === 'invalid') {
+        $otpModalError = 'Kod hatalı. Lütfen tekrar deneyin.';
+    }
+}
+$otpMaskedPhone = '';
+if ($showFrontOtpStep && $otpPrefill !== []) {
+    require_once __DIR__ . '/includes/order_verification.php';
+    $otpMaskedPhone = ov_mask_tel((string) ($otpPrefill['customer_phone'] ?? ''));
+}
+
 // Eski varyant sorguları kaldırıldı
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -232,13 +247,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$customer_name || !$customer_phone || !$customer_address || !$customer_city || !$customer_district || $payment_method_id <= 0) {
         header("Location: error.php?error=missing_fields&product_id=$product_id");
-        exit;
-    }
-
-    $pmCheck = $pdo->prepare('SELECT payment_method_id FROM payment_methods WHERE payment_method_id = ? AND is_active = 1');
-    $pmCheck->execute([$payment_method_id]);
-    if (!$pmCheck->fetch()) {
-        header("Location: error.php?error=invalid_payment_method&product_id=$product_id");
         exit;
     }
 
@@ -474,28 +482,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
 
-<div class="full-width-section order-form">
+<div class="full-width-section order-form<?= $showFrontOtpStep ? ' order-form--otp-pending' : '' ?>">
     <form method="POST" id="order-checkout-form" autocomplete="on">
         <input type="hidden" name="carkifelek_odul" id="carkifelek_odul" value="<?= htmlspecialchars((string) ($_SESSION['carkifelek_odul'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
         <h2 class="order-form__title">Sipariş Bilgileriniz</h2>
 
-        <?php if ($showFrontOtpStep): ?>
-        <div class="alert alert-info" role="status">
-            <i class="fas fa-mobile-alt"></i>
-            Telefonunuza gönderilen 6 haneli doğrulama kodunu girin. Kod 5 dakika geçerlidir.
-            <?php if (! empty($_GET['otp_err'])): ?>
-                <br><strong class="text-danger"><?= ($_GET['otp_err'] ?? '') === 'expired' ? 'Kodun süresi doldu. Yeniden gönderin.' : 'Kod hatalı. Tekrar deneyin.' ?></strong>
-            <?php endif; ?>
-        </div>
-        <div class="form-group">
-            <label for="otp_code_front">SMS doğrulama kodu</label>
-            <input type="text" class="form-control" id="otp_code_front" name="otp_code_front" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
-        </div>
-        <div class="d-flex flex-wrap gap-2 mb-3">
-            <button type="submit" name="otp_stage_verify_submit" value="1" class="btn-custom order-form__submit">Kodu doğrula ve siparişi tamamla</button>
-            <button type="submit" name="otp_stage_resend_submit" value="1" class="btn btn-outline-secondary">Kodu yeniden gönder</button>
+        <?php if ($showFrontOtpStep && $otpPrefill !== []): ?>
+        <div class="order-otp-hidden-fields" aria-hidden="true">
+            <?php foreach ($otpPrefill as $hk => $hv): ?>
+                <?php if (! is_scalar($hv)) {
+                    continue;
+                } ?>
+                <input type="hidden" name="<?= htmlspecialchars((string) $hk, ENT_QUOTES, 'UTF-8') ?>" value="<?= htmlspecialchars((string) $hv, ENT_QUOTES, 'UTF-8') ?>">
+            <?php endforeach; ?>
         </div>
         <?php endif; ?>
+
+        <?php if ($showFrontOtpStep): ?>
+        <p class="order-otp-wait-msg"><i class="fas fa-mobile-alt"></i> Telefonunuza SMS gönderildi. Doğrulama penceresinden kodu girerek siparişinizi onaylayın.</p>
+        <?php else: ?>
 
         <!-- Yeni Sınırsız Varyant Sistemi (başlığın ALTINDA) -->
         <?php if (!empty($unlimited_variants)): ?>
@@ -558,7 +563,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <select class="form-control" id="customer_city" name="customer_city" required>
                 <option value=""><?= te('order.city_select', 'İl Seçiniz') ?></option>
                 <?php foreach ($cities as $city): ?>
-                    <option value="<?= $city['city_id'] ?>"><?= htmlspecialchars($city['city_name']) ?></option>
+                    <option value="<?= $city['city_id'] ?>"<?= $formPrefill('customer_city') === (string) $city['city_id'] ? ' selected' : '' ?>><?= htmlspecialchars($city['city_name']) ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
@@ -633,20 +638,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <select class="form-control" id="payment_method_id" name="payment_method_id" required>
                 <option value=""><?= te('order.payment_select', 'Seçiniz...') ?></option>
                 <?php foreach ($payment_methods as $pm): ?>
-                    <option value="<?= htmlspecialchars($pm['payment_method_id']) ?>">
+                    <option value="<?= htmlspecialchars($pm['payment_method_id']) ?>"<?= $formPrefill('payment_method_id') === (string) $pm['payment_method_id'] ? ' selected' : '' ?>>
                         <?= htmlspecialchars($pm['method_name']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
         </div>
 
-        <?php if (! $showFrontOtpStep): ?>
         <button type="submit" class="btn-custom order-form__submit">
             <?= te('order.submit_btn', 'SİPARİŞİ TAMAMLA') ?>
         </button>
+
+        <?php endif; ?>
+
+        <?php if ($showFrontOtpStep): ?>
+        <div class="modal fade order-otp-modal" id="orderOtpModal" tabindex="-1" role="dialog" aria-labelledby="orderOtpModalTitle" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content order-otp-modal__content">
+                    <div class="modal-header order-otp-modal__header">
+                        <h5 class="modal-title" id="orderOtpModalTitle"><i class="fas fa-shield-alt"></i> SMS Doğrulama</h5>
+                    </div>
+                    <div class="modal-body order-otp-modal__body">
+                        <p class="order-otp-modal__lead">Telefonunuza gönderilen 6 haneli kodu girin.</p>
+                        <?php if ($otpMaskedPhone !== '' && $otpMaskedPhone !== '***'): ?>
+                        <p class="order-otp-modal__tel"><i class="fas fa-phone"></i> <?= htmlspecialchars($otpMaskedPhone) ?></p>
+                        <?php endif; ?>
+                        <p class="order-otp-modal__hint">Kod 5 dakika geçerlidir. Doğrulama sonrası siparişiniz onaylanır.</p>
+                        <?php if ($otpModalError !== ''): ?>
+                        <div class="alert alert-danger order-otp-modal__error" role="alert"><?= htmlspecialchars($otpModalError) ?></div>
+                        <?php endif; ?>
+                        <div class="form-group mb-0">
+                            <label for="otp_code_front">Doğrulama kodu</label>
+                            <input type="text" class="form-control order-otp-modal__input" id="otp_code_front" name="otp_code_front" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="6 haneli kod" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer order-otp-modal__footer flex-column">
+                        <button type="submit" name="otp_stage_verify_submit" value="1" class="btn-custom order-form__submit order-otp-modal__btn-verify w-100">Kodu doğrula ve siparişi onayla</button>
+                        <button type="submit" name="otp_stage_resend_submit" value="1" class="btn btn-link order-otp-modal__btn-resend">Kodu yeniden gönder</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <?php endif; ?>
     </form>
 </div>
+
+<?php if ($showFrontOtpStep): ?>
+<style>
+.order-form--otp-pending { position: relative; }
+.order-otp-wait-msg {
+    margin: 0 0 1rem;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #e8f4fd;
+    color: #1e3a5f;
+    font-size: 15px;
+}
+.order-otp-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+    overflow: hidden;
+}
+.order-otp-modal__header {
+    background: linear-gradient(135deg, #1a2a44 0%, #243b55 100%);
+    color: #fff;
+    border: none;
+    justify-content: center;
+    padding: 1.1rem 1.25rem;
+}
+.order-otp-modal__header .modal-title { font-weight: 700; font-size: 1.15rem; }
+.order-otp-modal__body { padding: 1.25rem 1.35rem 0.5rem; text-align: center; }
+.order-otp-modal__lead { font-size: 1rem; color: #334155; margin-bottom: 0.35rem; }
+.order-otp-modal__tel { font-weight: 600; color: #1a2a44; margin-bottom: 0.25rem; }
+.order-otp-modal__hint { font-size: 0.875rem; color: #64748b; margin-bottom: 1rem; }
+.order-otp-modal__input {
+    text-align: center;
+    font-size: 1.5rem;
+    letter-spacing: 0.35em;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 0.65rem 0.5rem;
+}
+.order-otp-modal__footer {
+    border: none;
+    padding: 0 1.35rem 1.35rem;
+    gap: 0.35rem;
+}
+.order-otp-modal__btn-resend { font-size: 0.9rem; color: #64748b; }
+.order-otp-modal.show { display: block; background: rgba(15, 23, 42, 0.55); }
+</style>
+<?php endif; ?>
 
 
 <?php include 'social_buttons.php'; ?>
@@ -842,25 +924,43 @@ $__abOrderPayload = abandoned_capture_order_payload(is_array($product) ? $produc
 <script>
 // Form validasyonu + çift tıklama koruması
 (function () {
-    var form = document.querySelector('form');
+    var form = document.getElementById('order-checkout-form');
     if (!form) return;
     var submitting = false;
-    form.addEventListener('submit', function (e) {
-        var citySelect = document.getElementById('customer_city');
-        var districtSelect = document.getElementById('customer_district');
+    var otpPending = <?= $showFrontOtpStep ? 'true' : 'false' ?>;
 
-        if (!citySelect.value) {
-            e.preventDefault();
-            alert('Lütfen il seçiniz.');
-            citySelect.focus();
-            return false;
+    form.addEventListener('submit', function (e) {
+        var submitter = e.submitter;
+        var isOtpAction = submitter && (
+            submitter.name === 'otp_stage_verify_submit' ||
+            submitter.name === 'otp_stage_resend_submit'
+        );
+
+        if (!isOtpAction && !otpPending) {
+            var citySelect = document.getElementById('customer_city');
+            var districtSelect = document.getElementById('customer_district');
+            if (citySelect && !citySelect.value) {
+                e.preventDefault();
+                alert('Lütfen il seçiniz.');
+                citySelect.focus();
+                return false;
+            }
+            if (districtSelect && !districtSelect.value) {
+                e.preventDefault();
+                alert('Lütfen ilçe seçiniz.');
+                districtSelect.focus();
+                return false;
+            }
         }
 
-        if (!districtSelect.value) {
-            e.preventDefault();
-            alert('Lütfen ilçe seçiniz.');
-            districtSelect.focus();
-            return false;
+        if (isOtpAction) {
+            var otpInput = document.getElementById('otp_code_front');
+            if (submitter.name === 'otp_stage_verify_submit' && otpInput && otpInput.value.replace(/\D/g, '').length !== 6) {
+                e.preventDefault();
+                alert('Lütfen 6 haneli doğrulama kodunu girin.');
+                otpInput.focus();
+                return false;
+            }
         }
 
         if (submitting) {
@@ -868,10 +968,10 @@ $__abOrderPayload = abandoned_capture_order_payload(is_array($product) ? $produc
             return false;
         }
         submitting = true;
-        var btn = form.querySelector('.order-form__submit');
-        if (btn) {
-            btn.disabled = true;
-            btn.setAttribute('aria-busy', 'true');
+        var busyBtn = isOtpAction ? submitter : form.querySelector('.order-form__submit:not([hidden])');
+        if (busyBtn) {
+            busyBtn.disabled = true;
+            busyBtn.setAttribute('aria-busy', 'true');
         }
     });
 })();
@@ -922,6 +1022,22 @@ $__abOrderPayload = abandoned_capture_order_payload(is_array($product) ? $produc
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<?php if ($showFrontOtpStep): ?>
+<script>
+(function () {
+    var $modal = $('#orderOtpModal');
+    if (!$modal.length) return;
+    $modal.modal({ backdrop: 'static', keyboard: false, show: true });
+    setTimeout(function () {
+        var inp = document.getElementById('otp_code_front');
+        if (inp) inp.focus();
+    }, 350);
+    $modal.on('hidden.bs.modal', function () {
+        $modal.modal({ backdrop: 'static', keyboard: false, show: true });
+    });
+})();
+</script>
+<?php endif; ?>
 
     <!-- Varyant sistemi artık tamamen PHP ile çalışıyor -->
 
