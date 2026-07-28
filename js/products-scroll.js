@@ -14,6 +14,7 @@
     var SCROLL_MS_PER_PX = 0.58;
 
     var scrollAnimId = null;
+    var touchMoved = false;
 
     if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
@@ -36,6 +37,31 @@
     function prefersReducedMotion() {
         return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     }
+
+    function shouldAnimateSmooth() {
+        if (prefersReducedMotion()) {
+            return false;
+        }
+        if (window.matchMedia && window.matchMedia('(max-width: 768px), (pointer: coarse)').matches) {
+            return false;
+        }
+        return true;
+    }
+
+    function registerTouchGuards() {
+        document.addEventListener('touchstart', function() {
+            touchMoved = false;
+            cancelScrollAnimation();
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function() {
+            touchMoved = true;
+        }, { passive: true });
+
+        document.addEventListener('wheel', cancelScrollAnimation, { passive: true });
+    }
+
+    registerTouchGuards();
 
     function closeMenuIfOpen() {
         if (typeof window.closeAppMenu === 'function') {
@@ -141,7 +167,7 @@
      */
     function goToProductsSection(options) {
         var opts = options || {};
-        var smooth = opts.smooth !== false && !prefersReducedMotion();
+        var smooth = opts.smooth !== false && shouldAnimateSmooth();
         var updateHash = opts.updateHash !== false;
 
         if (!isOnIndex()) {
@@ -210,7 +236,7 @@
         if (videoTrigger) {
             return null;
         }
-        return node.closest('[data-go-products], .js-scroll-to-products, .slider-image');
+        return node.closest('[data-go-products], .js-scroll-to-products');
     }
 
     function hrefPointsToProducts(href) {
@@ -234,6 +260,15 @@
         }
 
         if (!trigger) {
+            return;
+        }
+
+        if (e.pointerType === 'touch' && touchMoved) {
+            return;
+        }
+
+        if (trigger.matches && trigger.matches('.slider-image[data-go-products]')
+            && window.matchMedia && window.matchMedia('(max-width: 768px), (pointer: coarse)').matches) {
             return;
         }
 

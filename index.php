@@ -547,7 +547,7 @@ try {
             </div>
         <?php else: foreach ($reviews as $rev): ?>
             <div class="col-12 mb-3">
-                <div class="card" style="border-radius:12px; cursor: pointer;" data-go-products role="button" tabindex="0">
+                <div class="card" style="border-radius:12px;">
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div>
