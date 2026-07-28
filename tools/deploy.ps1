@@ -72,7 +72,15 @@ if ($config.post_pull_commands) {
     }
 }
 
-ssh -p $sshPort "${sshUser}@${hostName}" $pullCmd
+$sshKeyPath = Join-Path $PSScriptRoot ".ssh\deploy_key"
+$sshArgs = @("-p", $sshPort, "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=accept-new")
+if (Test-Path $sshKeyPath) {
+    $sshArgs += @("-i", $sshKeyPath)
+} else {
+    Write-Host "UYARI: SSH anahtari yok. Bir kez kurun: .\tools\setup-deploy-ssh.ps1" -ForegroundColor Yellow
+}
+
+ssh @sshArgs "${sshUser}@${hostName}" $pullCmd
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""

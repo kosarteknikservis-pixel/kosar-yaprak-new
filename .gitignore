@@ -34,3 +34,4 @@ cache/
 
 # Deploy (sunucu bilgileri — gizli tutulur)
 tools/deploy.config.local.json
+tools/.ssh/
