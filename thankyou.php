@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require 'db.php';
 
 date_default_timezone_set('Europe/Istanbul');
@@ -6,6 +9,9 @@ date_default_timezone_set('Europe/Istanbul');
 require_once __DIR__ . '/tracking.php';
 require_once __DIR__ . '/includes/page_meta_load.php';
 require_once __DIR__ . '/includes/page_seo.php';
+require_once __DIR__ . '/includes/app_url.php';
+require_once __DIR__ . '/includes/order_sms_verify.php';
+require_once __DIR__ . '/includes/order_verification.php';
 
 $page_name = 'thankyou.php';
 $ip_address = $_SERVER['REMOTE_ADDR'];
@@ -33,6 +39,9 @@ $active_bank_accounts = [];
 $show_bank_transfer_box = false;
 $purchaseClientPayloadJson = '{}';
 $purchaseSignalsJson = '{}';
+$orderSmsPending = false;
+$otpUiMessage = '';
+$otpUiType = '';
 
 if (!$order_id || !preg_match('/^\d+$/', (string) $order_id)) {
     $thankyouInvalid = true;
@@ -56,6 +65,90 @@ if (!$order_id || !preg_match('/^\d+$/', (string) $order_id)) {
     $order = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$order) {
         $thankyouInvalid = true;
+    }
+}
+
+if (!$thankyouInvalid) {
+    $orderSmsPending = ov_order_is_pending($pdo, (int) $order_id);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['otp_verify_submit'])) {
+            $verifyRes = ov_verify_by_otp($pdo, (int) $order_id, (string) ($_POST['otp_code'] ?? ''));
+            if ($verifyRes['ok']) {
+                $orderSmsPending = false;
+                $otpUiMessage = 'Siparişiniz doğrulandı. Teşekkür ederiz!';
+                $otpUiType = 'success';
+                $stmt = $pdo->prepare('
+                    SELECT o.order_id, o.customer_name, o.customer_phone, o.customer_address,
+                           o.customer_city, o.customer_district, o.order_notes, o.order_date, s.status_name,
+                           GROUP_CONCAT(CONCAT(p.product_name, " (", oi.price, " TL)") SEPARATOR ", ") AS products,
+                           GROUP_CONCAT(p.product_image SEPARATOR ", ") AS product_images,
+                           pm.method_name AS payment_method_name,
+                           SUM(oi.price) AS total_price
+                    FROM orders o
+                    JOIN order_status s ON o.order_status_id = s.order_status_id
+                    JOIN order_items oi ON o.order_id = oi.order_id
+                    JOIN products p ON oi.product_id = p.product_id
+                    LEFT JOIN payment_methods pm ON o.payment_method_id = pm.payment_method_id
+                    WHERE o.order_id = ?
+                    GROUP BY o.order_id, pm.method_name
+                ');
+                $stmt->execute([$order_id]);
+                $order = $stmt->fetch(PDO::FETCH_ASSOC) ?: $order;
+            } else {
+                $reason = (string) ($verifyRes['reason'] ?? '');
+                if ($reason === 'expired') {
+                    $otpUiMessage = 'Doğrulama kodunun süresi doldu. Yeni kod gönderin.';
+                } elseif ($reason === 'invalid') {
+                    $otpUiMessage = 'Doğrulama kodu hatalı. Lütfen tekrar deneyin.';
+                } else {
+                    $otpUiMessage = 'Doğrulama yapılamadı. Lütfen tekrar deneyin.';
+                }
+                $otpUiType = 'danger';
+            }
+        } elseif (isset($_POST['otp_resend_submit']) && $orderSmsPending) {
+            $ovData = ov_create_or_refresh($pdo, (int) $order_id, (string) ($order['customer_phone'] ?? ''), 20);
+            if (is_array($ovData)) {
+                $verifyLink = app_url('order_verify', ['t' => $ovData['token']], $pdo);
+                if (ov_send_otp_sms((string) ($order['customer_phone'] ?? ''), $ovData['otp'], $verifyLink)) {
+                    $otpUiMessage = 'Yeni doğrulama kodu telefonunuza gönderildi.';
+                    $otpUiType = 'success';
+                } else {
+                    $otpUiMessage = 'SMS gönderilemedi. Lütfen daha sonra tekrar deneyin.';
+                    $otpUiType = 'danger';
+                }
+            }
+        }
+    }
+
+    $verifyFlag = trim((string) ($_GET['verify'] ?? ''));
+    if ($verifyFlag === 'ok' || $verifyFlag === 'already') {
+        $orderSmsPending = false;
+        $otpUiMessage = 'Siparişiniz link ile doğrulandı.';
+        $otpUiType = 'success';
+        $stmt = $pdo->prepare('
+            SELECT o.order_id, o.customer_name, o.customer_phone, o.customer_address,
+                   o.customer_city, o.customer_district, o.order_notes, o.order_date, s.status_name,
+                   GROUP_CONCAT(CONCAT(p.product_name, " (", oi.price, " TL)") SEPARATOR ", ") AS products,
+                   GROUP_CONCAT(p.product_image SEPARATOR ", ") AS product_images,
+                   pm.method_name AS payment_method_name,
+                   SUM(oi.price) AS total_price
+            FROM orders o
+            JOIN order_status s ON o.order_status_id = s.order_status_id
+            JOIN order_items oi ON o.order_id = oi.order_id
+            JOIN products p ON oi.product_id = p.product_id
+            LEFT JOIN payment_methods pm ON o.payment_method_id = pm.payment_method_id
+            WHERE o.order_id = ?
+            GROUP BY o.order_id, pm.method_name
+        ');
+        $stmt->execute([$order_id]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC) ?: $order;
+    } elseif ($verifyFlag === 'expired') {
+        $otpUiMessage = 'Doğrulama linkinin süresi doldu. Aşağıdan yeni kod isteyebilirsiniz.';
+        $otpUiType = 'warning';
+    } elseif ($verifyFlag === 'no') {
+        $otpUiMessage = 'Doğrulama linki geçersiz.';
+        $otpUiType = 'danger';
     }
 }
 
@@ -148,9 +241,6 @@ $cipStmt = $pdo->prepare('SELECT customer_ip FROM orders WHERE order_id = ?');
 $cipStmt->execute([(int)$order_id]);
 $orderCustIp = (string)($cipStmt->fetchColumn() ?: '');
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 conversion_send_after_purchase($pdo, [
     'order_id' => (string)$order_id,
     'value' => (float)($order['total_price'] ?? 0),
@@ -189,7 +279,9 @@ $purchaseSignalsJson = json_encode(
 );
 
 require_once __DIR__ . '/includes/netgsm_customer_sms.php';
-netgsm_send_new_order_sms_if_enabled($pdo, $order, (string) $order_id);
+if (! $orderSmsPending) {
+    netgsm_send_new_order_sms_if_enabled($pdo, $order, (string) $order_id);
+}
 
 } // !$thankyouInvalid
 
@@ -239,9 +331,31 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
             <span class="ty-success-icon"><i class="fas fa-check"></i></span>
         </div>
         <h1>Teşekkürler!</h1>
-        <p class="ty-success-sub">Siparişiniz başarıyla alındı.</p>
+        <p class="ty-success-sub"><?= $orderSmsPending ? 'Siparişiniz alındı. Lütfen telefonunuza gelen kod ile doğrulayın.' : 'Siparişiniz başarıyla alındı.' ?></p>
         <p class="ty-order-id"><i class="fas fa-receipt"></i> Sipariş #<?= htmlspecialchars((string) $order_id) ?></p>
     </div>
+
+    <?php if ($orderSmsPending || $otpUiMessage !== ''): ?>
+    <div class="ty-card">
+        <h2 class="ty-card__title ty-card__title--green">SMS Doğrulama</h2>
+        <?php if ($otpUiMessage !== ''): ?>
+            <div class="alert alert-<?= htmlspecialchars($otpUiType !== '' ? $otpUiType : 'info', ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($otpUiMessage) ?></div>
+        <?php endif; ?>
+        <?php if ($orderSmsPending): ?>
+        <p>Telefonunuza gönderilen 6 haneli kodu girin veya SMS’teki linke tıklayın. Kod 20 dakika geçerlidir.</p>
+        <form method="POST" class="mb-3">
+            <div class="form-group">
+                <label for="otp_code">Doğrulama kodu</label>
+                <input type="text" class="form-control" id="otp_code" name="otp_code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="submit" name="otp_verify_submit" value="1" class="btn-custom btn-custom--primary">Doğrula</button>
+                <button type="submit" name="otp_resend_submit" value="1" class="btn-custom btn-custom--secondary">Kodu yeniden gönder</button>
+            </div>
+        </form>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 
     <div class="ty-card">
         <h2 class="ty-card__title ty-card__title--green">Sipariş Bilgileri</h2>

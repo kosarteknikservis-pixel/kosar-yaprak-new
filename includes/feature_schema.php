@@ -14,7 +14,7 @@ function ensure_feature_schema(PDO $pdo): void
 
     // Kalıcı sürüm damgası: şema güncelse ağır SHOW/ALTER kontrollerini tümden atla.
     // Yeni migrasyon eklerken bu sürümü artır (ör. tarih-harf), tek seferde uygulansın.
-    $schemaVersion = '2026-07-09-i18n1';
+    $schemaVersion = '2026-07-28-sms-verify1';
     try {
         $cur = $pdo->query("SELECT meta_value FROM schema_meta WHERE meta_key = 'feature_version'")->fetchColumn();
         if ($cur === $schemaVersion) {
@@ -399,6 +399,19 @@ function ensure_feature_schema(PDO $pdo): void
         } catch (Throwable $e) {
             if (isset($_SERVER['HTTP_HOST'])) {
                 error_log('checkout_module_settings page_cache: ' . $e->getMessage());
+            }
+        }
+
+        try {
+            $hasSmsV = $pdo->query('SHOW COLUMNS FROM checkout_module_settings LIKE ' . $pdo->quote('order_sms_verify_enabled'));
+            if ($hasSmsV instanceof PDOStatement && ! $hasSmsV->fetch()) {
+                $pdo->exec('ALTER TABLE checkout_module_settings
+                    ADD COLUMN order_sms_verify_enabled TINYINT(1) NOT NULL DEFAULT 1,
+                    ADD COLUMN order_sms_front_otp_enabled TINYINT(1) NOT NULL DEFAULT 1');
+            }
+        } catch (Throwable $e) {
+            if (isset($_SERVER['HTTP_HOST'])) {
+                error_log('checkout_module_settings sms_verify: ' . $e->getMessage());
             }
         }
 

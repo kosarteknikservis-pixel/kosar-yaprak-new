@@ -16,6 +16,8 @@ require_once __DIR__ . '/includes/gateways/OrderPaymentFinalize.php';
 require_once __DIR__ . '/includes/variant_helpers.php';
 require_once __DIR__ . '/includes/order_guard_helpers.php';
 require_once __DIR__ . '/includes/abandoned_capture.php';
+require_once __DIR__ . '/includes/order_sms_verify.php';
+require_once __DIR__ . '/includes/order_verification.php';
 
 date_default_timezone_set('Europe/Istanbul');
 
@@ -152,6 +154,25 @@ $orderPageUi = order_page_ui_get($pdo);
 
 $abandonedPrefill = abandoned_prefill_contact($pdo);
 
+$showFrontOtpStep = order_front_otp_is_active() || (isset($_GET['otp']) && (string) $_GET['otp'] === '1');
+$otpPrefill = [];
+if ($showFrontOtpStep && order_front_otp_is_active()) {
+    $sessOtp = $_SESSION['front_order_verify']['post_data'] ?? [];
+    if (is_array($sessOtp)) {
+        $otpPrefill = $sessOtp;
+    }
+}
+$formPrefill = static function (string $key, string $default = '') use ($otpPrefill, $abandonedPrefill, $showFrontOtpStep): string {
+    if ($showFrontOtpStep && isset($otpPrefill[$key])) {
+        return (string) $otpPrefill[$key];
+    }
+    if ($key === 'customer_name' || $key === 'customer_phone') {
+        return (string) ($abandonedPrefill[$key === 'customer_name' ? 'ad' : 'tel'] ?? $default);
+    }
+
+    return $default;
+};
+
 // Eski varyant sorguları kaldırıldı
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -221,6 +242,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    $pmCheck = $pdo->prepare('SELECT payment_method_id FROM payment_methods WHERE payment_method_id = ? AND is_active = 1');
+    $pmCheck->execute([$payment_method_id]);
+    if (!$pmCheck->fetch()) {
+        header("Location: error.php?error=invalid_payment_method&product_id=$product_id");
+        exit;
+    }
+
+    $frontOtpResult = order_front_otp_handle_post($pdo, $_POST, (string) $customer_phone, $payment_method_id);
+    if ($frontOtpResult === 'pending') {
+        header('Location: ' . app_url('order', ['product_id' => $product_id, 'otp' => '1'], $pdo));
+        exit;
+    }
+    if ($frontOtpResult === 'invalid') {
+        header('Location: ' . app_url('order', ['product_id' => $product_id, 'otp' => '1', 'otp_err' => 'invalid'], $pdo));
+        exit;
+    }
+    if ($frontOtpResult === 'expired') {
+        header('Location: ' . app_url('order', ['product_id' => $product_id, 'otp' => '1', 'otp_err' => 'expired'], $pdo));
+        exit;
+    }
+    if ($frontOtpResult === 'sms_fail') {
+        header('Location: error.php?error=sms_fail&product_id=' . urlencode((string) $product_id));
+        exit;
+    }
+
+    $frontOtpPassed = $frontOtpResult === 'passed';
+    $needsSmsVerify = order_payment_needs_sms_verify($pdo, $payment_method_id);
+    $skipLayerB = $frontOtpPassed;
+    $initialOrderStatusId = order_sms_verify_approved_status_id($pdo);
+    $smsVerifyPending = false;
+    if ($needsSmsVerify && ! $skipLayerB) {
+        $initialOrderStatusId = order_sms_verify_pending_status_id($pdo);
+        $smsVerifyPending = true;
+    }
+
     $cookie_lifetime = (int) ($checkoutGuard['order_cookie_seconds'] ?? 60);
     $phone_digits = order_guard_phone_digits((string) $customer_phone);
 
@@ -251,9 +307,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $attribution_landing_url,
     ] = attribution_order_values_for_db($utmCaptureOn);
 
-    $stmt = $pdo->prepare('INSERT INTO orders (customer_name, customer_phone, customer_address, customer_city, customer_district, order_notes, payment_method_id, order_status_id, customer_ip, source, reklam, referrer, utm_source, utm_medium, utm_campaign, utm_content, utm_term, attribution_click_json, attribution_landing_url, invoice_vkn, invoice_tax_office, invoice_company_name, invoice_address) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt = $pdo->prepare('INSERT INTO orders (customer_name, customer_phone, customer_address, customer_city, customer_district, order_notes, payment_method_id, order_status_id, customer_ip, source, reklam, referrer, utm_source, utm_medium, utm_campaign, utm_content, utm_term, attribution_click_json, attribution_landing_url, invoice_vkn, invoice_tax_office, invoice_company_name, invoice_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
     $stmt->execute([
         $customer_name, $customer_phone, $customer_address, $customer_city, $customer_district, $order_notes, $payment_method_id,
+        $initialOrderStatusId,
         $ip_address, $source, $reklam, $referrer,
         $utm_source,
         $utm_medium,
@@ -363,6 +420,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($smsVerifyPending) {
+            $ovData = ov_create_or_refresh($pdo, $order_id, $customer_phone, 20);
+            if (is_array($ovData)) {
+                $verifyLink = app_url('order_verify', ['t' => $ovData['token']], $pdo);
+                ov_send_otp_sms($customer_phone, $ovData['otp'], $verifyLink);
+            }
+        }
+
         OrderPaymentFinalize::afterOrderConfirmed($pdo, $order_id, $finalizeCtx);
 
         header('Location: ' . app_url('thankyou', ['order_id' => $order_id], $pdo));
@@ -414,6 +479,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="hidden" name="carkifelek_odul" id="carkifelek_odul" value="<?= htmlspecialchars((string) ($_SESSION['carkifelek_odul'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
         <h2 class="order-form__title">Sipariş Bilgileriniz</h2>
 
+        <?php if ($showFrontOtpStep): ?>
+        <div class="alert alert-info" role="status">
+            <i class="fas fa-mobile-alt"></i>
+            Telefonunuza gönderilen 6 haneli doğrulama kodunu girin. Kod 5 dakika geçerlidir.
+            <?php if (! empty($_GET['otp_err'])): ?>
+                <br><strong class="text-danger"><?= ($_GET['otp_err'] ?? '') === 'expired' ? 'Kodun süresi doldu. Yeniden gönderin.' : 'Kod hatalı. Tekrar deneyin.' ?></strong>
+            <?php endif; ?>
+        </div>
+        <div class="form-group">
+            <label for="otp_code_front">SMS doğrulama kodu</label>
+            <input type="text" class="form-control" id="otp_code_front" name="otp_code_front" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <button type="submit" name="otp_stage_verify_submit" value="1" class="btn-custom order-form__submit">Kodu doğrula ve siparişi tamamla</button>
+            <button type="submit" name="otp_stage_resend_submit" value="1" class="btn btn-outline-secondary">Kodu yeniden gönder</button>
+        </div>
+        <?php endif; ?>
+
         <!-- Yeni Sınırsız Varyant Sistemi (başlığın ALTINDA) -->
         <?php if (!empty($unlimited_variants)): ?>
         <div id="variants-container">
@@ -451,7 +534,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="form-group">
             <label for="customer_name"><?= te('order.name_label', 'Adınız ve Soyadınız:') ?></label>
-            <input type="text" class="form-control" id="customer_name" name="customer_name" required maxlength="30" autocomplete="name" value="<?= htmlspecialchars($abandonedPrefill['ad'], ENT_QUOTES, 'UTF-8') ?>">
+            <input type="text" class="form-control" id="customer_name" name="customer_name" required maxlength="30" autocomplete="name" value="<?= htmlspecialchars($formPrefill('customer_name'), ENT_QUOTES, 'UTF-8') ?>">
         </div>
 
         <div class="form-group">
@@ -466,7 +549,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                    autocomplete="tel-national"
                    oninput="this.value = this.value.replace(/[^0-9]/g, '');"
                    maxlength="12"
-                   value="<?= htmlspecialchars($abandonedPrefill['tel'], ENT_QUOTES, 'UTF-8') ?>">
+                   value="<?= htmlspecialchars($formPrefill('customer_phone'), ENT_QUOTES, 'UTF-8') ?>">
         </div>
 
         <div class="order-form__row order-form__row--2">
@@ -491,7 +574,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="form-group">
             <label for="customer_address"><?= te('order.address_label', 'Teslimat Yapılacak Adres:') ?></label>
-            <textarea class="form-control" id="customer_address" name="customer_address" required maxlength="200"></textarea>
+            <textarea class="form-control" id="customer_address" name="customer_address" required maxlength="200"><?= htmlspecialchars($formPrefill('customer_address'), ENT_QUOTES, 'UTF-8') ?></textarea>
         </div>
 
         <?php if ($order_note['show_order_note'] == 1): ?>
@@ -501,7 +584,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </label>
             <textarea class="form-control"
                       id="order_notes"
-                      name="order_notes" maxlength="200"></textarea>
+                      name="order_notes" maxlength="200"><?= htmlspecialchars($formPrefill('order_notes'), ENT_QUOTES, 'UTF-8') ?></textarea>
         </div>
         <?php endif; ?>
 
@@ -557,9 +640,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </select>
         </div>
 
+        <?php if (! $showFrontOtpStep): ?>
         <button type="submit" class="btn-custom order-form__submit">
             <?= te('order.submit_btn', 'SİPARİŞİ TAMAMLA') ?>
         </button>
+        <?php endif; ?>
     </form>
 </div>
 

@@ -31,6 +31,18 @@ $s = static function (string $key, $default = '') use ($settings) {
 $statuses = $pdo->query('SELECT order_status_id, status_name FROM order_status ORDER BY order_status_id ASC')
     ->fetchAll(PDO::FETCH_ASSOC);
 
+$smsVerifySettings = ['order_sms_verify_enabled' => 1, 'order_sms_front_otp_enabled' => 1];
+try {
+    $svRow = $pdo->query(
+        'SELECT order_sms_verify_enabled, order_sms_front_otp_enabled FROM checkout_module_settings WHERE id = 1 LIMIT 1'
+    )->fetch(PDO::FETCH_ASSOC);
+    if (is_array($svRow)) {
+        $smsVerifySettings = array_merge($smsVerifySettings, $svRow);
+    }
+} catch (Throwable $e) {
+    /* ignore */
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = trim((string) ($_POST['action'] ?? 'save'));
 
@@ -139,6 +151,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message_on_status,
             ]);
 
+            $orderSmsVerifyEnabled = isset($_POST['order_sms_verify_enabled']) ? 1 : 0;
+            $orderSmsFrontOtpEnabled = isset($_POST['order_sms_front_otp_enabled']) ? 1 : 0;
+            try {
+                $pdo->prepare(
+                    'UPDATE checkout_module_settings SET order_sms_verify_enabled = ?, order_sms_front_otp_enabled = ? WHERE id = 1'
+                )->execute([$orderSmsVerifyEnabled, $orderSmsFrontOtpEnabled]);
+            } catch (Throwable $e) {
+                /* kolon yoksa feature_schema sonraki istekte ekler */
+            }
+
             $_SESSION['message'] = 'SMS ayarları kaydedildi.';
             $_SESSION['message_type'] = 'success';
         } catch (PDOException $e) {
@@ -199,6 +221,26 @@ if (! in_array($currentProvider, ['mutlucell', 'netgsm'], true)) {
                         <input class="form-check-input" type="checkbox" name="is_enabled" id="is_enabled" <?= !empty($s('is_enabled', 1)) ? 'checked' : '' ?>>
                         <label class="form-check-label fw-semibold" for="is_enabled">SMS gönderimi açık</label>
                     </div>
+                </div>
+
+                <div class="col-12"><hr class="my-1"></div>
+
+                <div class="col-12">
+                    <h5 class="mb-2"><i class="fas fa-shield-alt me-1"></i> Sipariş SMS doğrulama</h5>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="order_sms_verify_enabled" id="order_sms_verify_enabled" <?= ! empty($smsVerifySettings['order_sms_verify_enabled']) ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="order_sms_verify_enabled">Kapıda ödeme / havale için SMS doğrulama açık</label>
+                    </div>
+                    <div class="form-text">PayTR ve online kart ödemelerinde otomatik kapalıdır.</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="order_sms_front_otp_enabled" id="order_sms_front_otp_enabled" <?= ! empty($smsVerifySettings['order_sms_front_otp_enabled']) ? 'checked' : '' ?>>
+                        <label class="form-check-label" for="order_sms_front_otp_enabled">Form öncesi OTP (5 dk, siparişten önce)</label>
+                    </div>
+                    <div class="form-text">Kapalıysa yalnızca sipariş sonrası OTP + link gönderilir.</div>
                 </div>
 
                 <div class="col-12"><hr class="my-1"></div>
