@@ -11,6 +11,9 @@
     var SCROLL_MIN_MS = 720;
     var SCROLL_MAX_MS = 1100;
     var SCROLL_MS_PER_PX = 0.58;
+    var SCROLL_MIN_MS_MOBILE = 380;
+    var SCROLL_MAX_MS_MOBILE = 620;
+    var SCROLL_MS_PER_PX_MOBILE = 0.32;
     var TAP_MOVE_PX = 12;
 
     var scrollAnimId = null;
@@ -60,10 +63,22 @@
     }
 
     function shouldAnimateSmooth() {
-        if (prefersReducedMotion() || isMobileLike()) {
-            return false;
+        return !prefersReducedMotion();
+    }
+
+    function scrollTiming() {
+        if (isMobileLike()) {
+            return {
+                min: SCROLL_MIN_MS_MOBILE,
+                max: SCROLL_MAX_MS_MOBILE,
+                perPx: SCROLL_MS_PER_PX_MOBILE
+            };
         }
-        return true;
+        return {
+            min: SCROLL_MIN_MS,
+            max: SCROLL_MAX_MS,
+            perPx: SCROLL_MS_PER_PX
+        };
     }
 
     function registerTouchGuards() {
@@ -136,7 +151,8 @@
     }
 
     function durationForDistance(px) {
-        return Math.min(SCROLL_MAX_MS, Math.max(SCROLL_MIN_MS, Math.round(Math.abs(px) * SCROLL_MS_PER_PX)));
+        var timing = scrollTiming();
+        return Math.min(timing.max, Math.max(timing.min, Math.round(Math.abs(px) * timing.perPx)));
     }
 
     function cancelScrollAnimation() {
@@ -242,13 +258,9 @@
             });
         }
 
-        if (isMobileLike()) {
-            runScroll();
-        } else {
-            window.requestAnimationFrame(function() {
-                window.setTimeout(runScroll, 72);
-            });
-        }
+        window.requestAnimationFrame(function() {
+            window.setTimeout(runScroll, isMobileLike() ? 16 : 72);
+        });
 
         return true;
     }
