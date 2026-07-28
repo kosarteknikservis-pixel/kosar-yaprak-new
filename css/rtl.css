@@ -1,0 +1,64 @@
+/* Sağdan-sola (RTL) — Arapça için. Düzeni bozmadan yön çevirir.
+   direction:rtl modern flex/grid'de otomatik yansımayı sağlar; kritik alanlar korunur. */
+
+html[dir="rtl"] { direction: rtl; }
+html[dir="rtl"] body { direction: rtl; text-align: right; }
+
+/* Metin hizalaması */
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] h4,
+html[dir="rtl"] p,
+html[dir="rtl"] li,
+html[dir="rtl"] label,
+html[dir="rtl"] .text-start { text-align: right; }
+
+html[dir="rtl"] .text-end { text-align: left; }
+
+/* Form kontrolleri sağa hizalı */
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select { text-align: right; }
+
+/* Latin/sayısal veriler doğru okunsun (telefon, e-posta, sayı, IBAN, fiyat, sayaç) */
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] .keep-ltr,
+html[dir="rtl"] .price,
+html[dir="rtl"] .product-price,
+html[dir="rtl"] .lp-product__price,
+html[dir="rtl"] .lp-cd__timer,
+html[dir="rtl"] code,
+html[dir="rtl"] .site-currency-amount {
+    direction: ltr;
+    unicode-bidi: embed;
+}
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="url"] { text-align: left; }
+
+/* Bootstrap yardımcı sınıfları için ayna (yaygın olanlar) */
+html[dir="rtl"] .me-1, html[dir="rtl"] .me-2, html[dir="rtl"] .me-3 { margin-right: 0 !important; }
+html[dir="rtl"] .ms-1 { margin-left: 0 !important; margin-right: .25rem !important; }
+html[dir="rtl"] .ms-2 { margin-left: 0 !important; margin-right: .5rem !important; }
+html[dir="rtl"] .ms-3 { margin-left: 0 !important; margin-right: 1rem !important; }
+html[dir="rtl"] .me-1 { margin-left: .25rem !important; }
+html[dir="rtl"] .me-2 { margin-left: .5rem !important; }
+html[dir="rtl"] .me-3 { margin-left: 1rem !important; }
+
+/* İkon + metin aralığı (fa ikonları) */
+html[dir="rtl"] .custom-menu-link-icon,
+html[dir="rtl"] .custom-menu-cta-icon { margin-left: .5rem; margin-right: 0; }
+
+/* Kaydıran yan menü: RTL'de sağdan yerine soldan gelsin (simetrik his) */
+html[dir="rtl"] .custom-menu { left: auto; right: 0; }
+
+/* Liste madde işareti tarafını düzelt */
+html[dir="rtl"] ul, html[dir="rtl"] ol { padding-right: 1.5rem; padding-left: 0; }
+
+/* Dil/para seçici hizası */
+html[dir="rtl"] .site-lang-switch, html[dir="rtl"] .site-cur-switch { direction: rtl; }

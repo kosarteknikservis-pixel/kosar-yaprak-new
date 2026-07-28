@@ -1,0 +1,33 @@
+# Hassas yapılandırma
+db.php
+.env
+.env.*
+includes/laravel4_config.php
+
+# Kullanıcı yüklemeleri ve yedekler
+uploads/**
+!uploads/.htaccess
+theme_backups/
+storage/cache/
+
+# Composer
+phx/vendor/
+
+# Node
+node_modules/
+
+# Log, dump ve geçici dosyalar
+*.log
+*.sql
+*.bak
+*.tmp
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.cursor/
+
+# Önbellek
+cache/

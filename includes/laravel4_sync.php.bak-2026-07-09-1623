@@ -1,0 +1,438 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * 3dhesap → YQ Panel entegrasyonu (sipariş API + form webhook).
+ * Ayarlar: includes/laravel4_config.php
+ */
+
+function laravel4_sync_config(): array
+{
+    static $cfg = null;
+
+    if ($cfg !== null) {
+        return $cfg;
+    }
+
+    $fileCfg = [];
+    $configPath = __DIR__.'/laravel4_config.php';
+
+    if (is_file($configPath)) {
+        $loaded = require $configPath;
+        if (is_array($loaded)) {
+            $fileCfg = $loaded;
+        }
+    }
+
+    $cfg = [
+        'panel_base_url' => rtrim(
+            (string) (getenv('LARAVEL4_PANEL_URL') ?: ($fileCfg['panel_base_url'] ?? 'http://laravel4.test')),
+            '/'
+        ),
+        'order_api_key' => (string) (getenv('LARAVEL4_API_KEY') ?: ($fileCfg['order_api_key'] ?? '')),
+        'order_source_key' => (string) (getenv('LARAVEL_INTEGRATION_SOURCE_KEY') ?: ($fileCfg['order_source_key'] ?? 'quattro_web')),
+        'form_source_key' => (string) (getenv('LARAVEL4_FORM_SOURCE_KEY') ?: ($fileCfg['form_source_key'] ?? 'website')),
+        'webhook_secret' => (string) (getenv('LARAVEL4_WEBHOOK_SECRET') ?: ($fileCfg['webhook_secret'] ?? '')),
+    ];
+
+    return $cfg;
+}
+
+function laravel4_sync_log(string $message): void
+{
+    error_log('['.date('Y-m-d H:i:s').'] '.$message."\n", 3, dirname(__DIR__).'/hata_loglari.log');
+}
+
+/**
+ * @param  array<string, mixed>  $orderData
+ */
+function laravel4_sync_order(array $orderData): void
+{
+    try {
+        $cfg = laravel4_sync_config();
+
+        if ($cfg['order_api_key'] === '') {
+            laravel4_sync_log('Laravel4 order sync SKIPPED: order_api_key boş');
+
+            return;
+        }
+
+        $url = $cfg['panel_base_url'].'/api/external-sync/orders';
+        $body = json_encode($orderData, JSON_UNESCAPED_UNICODE);
+
+        if ($body === false) {
+            return;
+        }
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $body,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+                'Accept: application/json',
+                'Authorization: Bearer '.$cfg['order_api_key'],
+            ],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => false,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        $orderId = (string) ($orderData['external_order_id'] ?? '?');
+
+        if (in_array($httpCode, [200, 201], true)) {
+            laravel4_sync_log("Laravel4 order sync SUCCESS: Order #{$orderId}");
+        } else {
+            laravel4_sync_log("Laravel4 order sync FAILED: Order #{$orderId} | HTTP: {$httpCode} | Response: {$response} | cURL: {$curlError}");
+        }
+    } catch (Throwable $e) {
+        laravel4_sync_log('Laravel4 order sync EXCEPTION: '.$e->getMessage());
+    }
+}
+
+/**
+ * @param  array<string, scalar|null>  $fields
+ * @param  array<string, mixed>  $extra
+ */
+/**
+ * Checkout tamamlandıktan sonra (varyant + çarkıfelek notları dahil) panele gönderir.
+ *
+ * @param  array<string, mixed>  $ctx
+ */
+function laravel4_sync_checkout_order(array $ctx): void
+{
+    try {
+        /** @var PDO $pdo */
+        $pdo = $ctx['pdo'];
+        $orderId = (int) ($ctx['order_id'] ?? 0);
+        if ($orderId <= 0) {
+            return;
+        }
+
+        $customerCity = $ctx['customer_city'] ?? '';
+        $customerDistrict = $ctx['customer_district'] ?? '';
+        $paymentMethodId = (int) ($ctx['payment_method_id'] ?? 0);
+        $productId = (int) ($ctx['product_id'] ?? 0);
+        $product = is_array($ctx['product'] ?? null) ? $ctx['product'] : [];
+        $selectedVariants = is_array($ctx['selected_variants'] ?? null) ? $ctx['selected_variants'] : [];
+        $orderNotes = (string) ($ctx['order_notes'] ?? '');
+        $reklam = (string) ($ctx['reklam'] ?? '');
+        $sourceFallback = (string) ($ctx['source'] ?? '');
+        $utmCaptureOn = (bool) ($ctx['utm_capture_on'] ?? true);
+
+        $variantText = '';
+        if ($selectedVariants !== []) {
+            $variantParts = [];
+            foreach ($selectedVariants as $typeId => $optionId) {
+                $vtStmt = $pdo->prepare('SELECT type_name FROM product_variation_types WHERE type_id = ?');
+                $vtStmt->execute([$typeId]);
+                $typeName = $vtStmt->fetchColumn() ?: "Varyant $typeId";
+
+                $voStmt = $pdo->prepare('SELECT option_name FROM product_variation_options WHERE option_id = ?');
+                $voStmt->execute([$optionId]);
+                $optionName = $voStmt->fetchColumn() ?: "Seçenek $optionId";
+
+                $variantParts[] = "$typeName: $optionName";
+            }
+            $variantText = implode(', ', $variantParts);
+        }
+
+        $cityName = '';
+        $districtName = '';
+        if ($customerCity !== '') {
+            $cityStmt = $pdo->prepare('SELECT city_name FROM cities WHERE city_id = ?');
+            $cityStmt->execute([$customerCity]);
+            $cityName = (string) ($cityStmt->fetchColumn() ?: '');
+        }
+        if ($customerDistrict !== '') {
+            $districtStmt = $pdo->prepare('SELECT district_name FROM districts WHERE district_id = ?');
+            $districtStmt->execute([$customerDistrict]);
+            $districtName = (string) ($districtStmt->fetchColumn() ?: '');
+        }
+
+        $paymentMethodName = '';
+        if ($paymentMethodId > 0) {
+            $pmStmt = $pdo->prepare('SELECT method_name FROM payment_methods WHERE payment_method_id = ?');
+            $pmStmt->execute([$paymentMethodId]);
+            $paymentMethodName = (string) ($pmStmt->fetchColumn() ?: 'Belirtilmemiş');
+        }
+
+        $siteStmt = $pdo->query('SELECT site_url, site_name FROM settings WHERE id = 1 LIMIT 1');
+        $siteInfo = $siteStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        $siteName = (string) ($siteInfo['site_name'] ?? 'Web Sitesi');
+        $siteUrl = (string) ($siteInfo['site_url'] ?? '');
+
+        $adSourceText = '';
+        if ($reklam !== '' && $reklam !== 'Reklam Olmayabilir') {
+            $adSourceText = $reklam;
+        } elseif ($sourceFallback !== '') {
+            $adSourceText = $sourceFallback;
+        }
+
+        $productSku = $product['sku'] ?? null;
+
+        $refLink = '';
+        $customerIp = null;
+        $orderAttrRow = null;
+        try {
+            $metaStmt = $pdo->prepare('SELECT referrer, customer_ip, utm_source, utm_medium, utm_campaign, utm_content, utm_term, attribution_click_json, attribution_landing_url FROM orders WHERE order_id = ? LIMIT 1');
+            $metaStmt->execute([$orderId]);
+            $metaRow = $metaStmt->fetch(PDO::FETCH_ASSOC);
+            if (is_array($metaRow)) {
+                $orderAttrRow = $metaRow;
+                if (! empty($metaRow['referrer'])) {
+                    $refLink = trim((string) $metaRow['referrer']);
+                }
+                $ipRaw = trim((string) ($metaRow['customer_ip'] ?? ''));
+                if ($ipRaw !== '' && filter_var($ipRaw, FILTER_VALIDATE_IP)) {
+                    $customerIp = $ipRaw;
+                }
+            }
+        } catch (Throwable $e) {
+        }
+        if ($refLink === '') {
+            foreach (['ref', 'referrer', 'ref_link'] as $cookieKey) {
+                if (! empty($_COOKIE[$cookieKey])) {
+                    $refLink = trim((string) $_COOKIE[$cookieKey]);
+                    break;
+                }
+            }
+        }
+
+        $invoiceVkn = trim((string) ($ctx['invoice_vkn'] ?? ''));
+        $invoiceTaxOffice = trim((string) ($ctx['invoice_tax_office'] ?? ''));
+        $invoiceCompany = trim((string) ($ctx['invoice_company_name'] ?? ''));
+        $invoiceAddress = trim((string) ($ctx['invoice_address'] ?? ''));
+
+        $customerNotes = trim((string) ($ctx['customer_notes'] ?? ''));
+
+        $integrationSourceKey = laravel4_sync_config()['order_source_key'];
+
+        $orderData = array_merge([
+            'external_order_id' => (string) $orderId,
+            'integration_source_key' => $integrationSourceKey,
+            'source' => $siteName,
+            'platform' => 'website',
+            'ad_source' => $adSourceText !== '' ? $adSourceText : null,
+            'referrer' => $refLink !== '' ? $refLink : null,
+            'customer_name' => (string) ($ctx['customer_name'] ?? ''),
+            'customer_phone' => (string) ($ctx['customer_phone'] ?? ''),
+            'customer_address' => (string) ($ctx['customer_address'] ?? ''),
+            'customer_city' => $cityName,
+            'customer_district' => $districtName,
+            'total_amount' => (float) ($product['product_price'] ?? 0),
+            'payment_method' => $paymentMethodName !== '' ? $paymentMethodName : 'Belirtilmemiş',
+            'order_notes' => $orderNotes !== '' ? $orderNotes : null,
+            'customer_notes' => $customerNotes !== '' ? $customerNotes : null,
+            'customer_ip' => $customerIp,
+            'order_date' => date('Y-m-d H:i:s'),
+            'order_status_id' => 1,
+            'site_url' => $siteUrl,
+            'invoice_vkn' => $invoiceVkn !== '' ? $invoiceVkn : null,
+            'invoice_tax_office' => $invoiceTaxOffice !== '' ? $invoiceTaxOffice : null,
+            'invoice_company_name' => $invoiceCompany !== '' ? $invoiceCompany : null,
+            'invoice_address' => $invoiceAddress !== '' ? $invoiceAddress : null,
+            'items' => [
+                [
+                    'product_id' => (string) $productId,
+                    'product_sku' => $productSku,
+                    'product_name' => (string) ($product['product_name'] ?? 'Ürün'),
+                    'product_price' => (float) ($product['product_price'] ?? 0),
+                    'quantity' => 1,
+                    'variants' => $variantText !== '' ? $variantText : null,
+                ],
+            ],
+        ], attribution_api_payload_slice($utmCaptureOn, $orderAttrRow));
+
+        laravel4_sync_order($orderData);
+    } catch (Throwable $e) {
+        laravel4_sync_log('Laravel4 checkout sync EXCEPTION: '.$e->getMessage());
+    }
+}
+
+/**
+ * Admin manuel sipariş → panel (UTM gönderilmez; operasyonel alanlar yeterli).
+ */
+function laravel4_sync_admin_order(int $orderId, PDO $pdo): void
+{
+    try {
+        if ($orderId <= 0) {
+            return;
+        }
+
+        $orderStmt = $pdo->prepare('SELECT * FROM orders WHERE order_id = ? LIMIT 1');
+        $orderStmt->execute([$orderId]);
+        $order = $orderStmt->fetch(PDO::FETCH_ASSOC);
+        if (! is_array($order)) {
+            return;
+        }
+
+        $cityName = '';
+        $districtName = '';
+        $cityId = (int) ($order['customer_city'] ?? 0);
+        $districtId = (int) ($order['customer_district'] ?? 0);
+        if ($cityId > 0) {
+            $cityStmt = $pdo->prepare('SELECT city_name FROM cities WHERE city_id = ?');
+            $cityStmt->execute([$cityId]);
+            $cityName = (string) ($cityStmt->fetchColumn() ?: '');
+        }
+        if ($districtId > 0) {
+            $districtStmt = $pdo->prepare('SELECT district_name FROM districts WHERE district_id = ?');
+            $districtStmt->execute([$districtId]);
+            $districtName = (string) ($districtStmt->fetchColumn() ?: '');
+        }
+
+        $paymentMethodName = 'Belirtilmemiş';
+        $paymentMethodId = (int) ($order['payment_method_id'] ?? 0);
+        if ($paymentMethodId > 0) {
+            $pmStmt = $pdo->prepare('SELECT method_name FROM payment_methods WHERE payment_method_id = ?');
+            $pmStmt->execute([$paymentMethodId]);
+            $paymentMethodName = (string) ($pmStmt->fetchColumn() ?: 'Belirtilmemiş');
+        }
+
+        $itemsStmt = $pdo->prepare(
+            'SELECT oi.quantity, oi.price, p.product_id, p.product_name, p.sku
+             FROM order_items oi
+             INNER JOIN products p ON p.product_id = oi.product_id
+             WHERE oi.order_id = ?'
+        );
+        $itemsStmt->execute([$orderId]);
+        $itemRows = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $items = [];
+        $totalAmount = 0.0;
+        foreach ($itemRows as $row) {
+            $qty = max(1, (int) ($row['quantity'] ?? 1));
+            $price = (float) ($row['price'] ?? 0);
+            $totalAmount += $price * $qty;
+            $items[] = [
+                'product_id' => (string) ($row['product_id'] ?? ''),
+                'product_sku' => $row['sku'] ?? null,
+                'product_name' => (string) ($row['product_name'] ?? 'Ürün'),
+                'product_price' => $price,
+                'quantity' => $qty,
+                'variants' => null,
+            ];
+        }
+
+        if ($items === []) {
+            laravel4_sync_log("Laravel4 admin order sync SKIPPED: Order #{$orderId} — kalem yok");
+
+            return;
+        }
+
+        $siteStmt = $pdo->query('SELECT site_url, site_name FROM settings WHERE id = 1 LIMIT 1');
+        $siteInfo = $siteStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        $siteName = (string) ($siteInfo['site_name'] ?? 'Web Sitesi');
+        $siteUrl = (string) ($siteInfo['site_url'] ?? '');
+
+        $customerIp = null;
+        $ipRaw = trim((string) ($order['customer_ip'] ?? ''));
+        if ($ipRaw !== '' && filter_var($ipRaw, FILTER_VALIDATE_IP)) {
+            $customerIp = $ipRaw;
+        }
+
+        $orderData = [
+            'external_order_id' => (string) $orderId,
+            'integration_source_key' => laravel4_sync_config()['order_source_key'],
+            'source' => $siteName.' — Admin Manuel',
+            'platform' => 'website',
+            'ad_source' => 'Manuel',
+            'referrer' => null,
+            'customer_name' => (string) ($order['customer_name'] ?? ''),
+            'customer_phone' => (string) ($order['customer_phone'] ?? ''),
+            'customer_address' => (string) ($order['customer_address'] ?? ''),
+            'customer_city' => $cityName,
+            'customer_district' => $districtName,
+            'total_amount' => $totalAmount > 0 ? $totalAmount : (float) ($items[0]['product_price'] ?? 0),
+            'payment_method' => $paymentMethodName,
+            'order_notes' => trim((string) ($order['order_notes'] ?? '')) !== ''
+                ? trim((string) $order['order_notes'])
+                : 'Manuel oluşturuldu.',
+            'customer_notes' => trim((string) ($order['customer_notes'] ?? '')) !== ''
+                ? trim((string) $order['customer_notes'])
+                : null,
+            'customer_ip' => $customerIp,
+            'order_date' => (string) ($order['order_date'] ?? date('Y-m-d H:i:s')),
+            'order_status_id' => (int) ($order['order_status_id'] ?? 1),
+            'site_url' => $siteUrl,
+            'invoice_vkn' => trim((string) ($order['invoice_vkn'] ?? '')) !== '' ? trim((string) $order['invoice_vkn']) : null,
+            'invoice_tax_office' => trim((string) ($order['invoice_tax_office'] ?? '')) !== '' ? trim((string) $order['invoice_tax_office']) : null,
+            'invoice_company_name' => trim((string) ($order['invoice_company_name'] ?? '')) !== '' ? trim((string) $order['invoice_company_name']) : null,
+            'invoice_address' => trim((string) ($order['invoice_address'] ?? '')) !== '' ? trim((string) $order['invoice_address']) : null,
+            'items' => $items,
+        ];
+
+        laravel4_sync_order($orderData);
+    } catch (Throwable $e) {
+        laravel4_sync_log('Laravel4 admin order sync EXCEPTION: '.$e->getMessage());
+    }
+}
+
+function laravel4_sync_form(string $templateKey, array $fields, string $externalSubmissionId = '', array $extra = []): void
+{
+    try {
+        $cfg = laravel4_sync_config();
+        $sourceKey = $cfg['form_source_key'];
+        $url = $cfg['panel_base_url'].'/integration/webhook/'.rawurlencode($sourceKey);
+
+        $payload = array_merge([
+            'type' => 'form',
+            'template_key' => $templateKey,
+            'external_submission_id' => $externalSubmissionId,
+            'fields' => $fields,
+        ], $extra);
+
+        if (! isset($payload['utm_source']) && is_file(__DIR__.'/attribution_helpers.php')) {
+            require_once __DIR__.'/attribution_helpers.php';
+            if (function_exists('attribution_api_payload_slice')) {
+                $payload = array_merge($payload, attribution_api_payload_slice(true));
+            }
+        }
+
+        $body = json_encode($payload, JSON_UNESCAPED_UNICODE);
+        if ($body === false) {
+            return;
+        }
+
+        $headers = [
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ];
+
+        if ($cfg['webhook_secret'] !== '') {
+            $headers[] = 'X-Webhook-Signature: '.hash_hmac('sha256', $body, $cfg['webhook_secret']);
+        }
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => $body,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => false,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        $ref = $externalSubmissionId !== '' ? $externalSubmissionId : $templateKey;
+
+        if (in_array($httpCode, [200, 201], true)) {
+            laravel4_sync_log("Laravel4 form sync SUCCESS: {$templateKey} #{$ref}");
+        } else {
+            laravel4_sync_log("Laravel4 form sync FAILED: {$templateKey} #{$ref} | HTTP: {$httpCode} | Response: {$response} | cURL: {$curlError}");
+        }
+    } catch (Throwable $e) {
+        laravel4_sync_log('Laravel4 form sync EXCEPTION: '.$e->getMessage());
+    }
+}

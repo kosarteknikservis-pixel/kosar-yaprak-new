@@ -1,0 +1,113 @@
+/* Header/menü: css/site-shell.css (#app-nav) — sayfa CSS tekrar etmez */
+
+body {
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+}
+
+.container {
+    margin-top: 12px;
+    max-width: 600px;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 32px;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+label {
+    font-weight: bold;
+    color: #555;
+}
+
+.form-control {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.form-control:focus {
+    border-color: #FF7F00;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+    height: 50px;
+}
+
+.btn-custom {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background-color: #FF7F00;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-custom:hover {
+    background-color: #0056b3;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group textarea {
+    resize: none;
+}
+
+.message {
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Mobil uyumluluk */
+@media (max-width: 768px) {
+    .container {
+        margin-top: 10px;
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .btn-custom {
+        padding: 10px;
+        font-size: 16px;
+    }
+}
+
+/* Hata mesajları */
+.message-error {
+    background-color: #e74c3c; /* Kırmızı arka plan */
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Başarı mesajları */
+.message-success {
+    background-color: #28a745; /* Yeşil arka plan */
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}

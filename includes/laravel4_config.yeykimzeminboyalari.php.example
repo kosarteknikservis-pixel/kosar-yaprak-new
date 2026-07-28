@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * www.yeykimzeminboyalari.com.tr → https://a.qypanel.com
+ * Site köküne laravel4_config.php olarak kopyalayın.
+ *
+ * Not: Ürün/fiyat zeminboyasiyeykim.com ile aynı; panelde orders.source bu domain ile ayrı raporlanır.
+ */
+return [
+    'panel_base_url' => 'https://a.qypanel.com',
+    'order_api_key' => 'YqExt_Quanem_7mK9pL2xR4vN8wQ6tH3jF5bD1cG0sZaX9',
+    'order_source_key' => 'zeminboyasi2_web',
+    'form_source_key' => 'zeminboyasi2_web_form',
+    'webhook_secret' => '',
+];

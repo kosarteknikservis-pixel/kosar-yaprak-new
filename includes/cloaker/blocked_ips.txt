@@ -1,0 +1,2 @@
+# Tek satırda bir IPv4 adresi veya CIDR aralığı (örn 198.51.100.10 veya 10.0.0.0/24)
+# Cloaker ile eş zamanlı olarak uygulanır; satır başı # olanlar yoksayılır

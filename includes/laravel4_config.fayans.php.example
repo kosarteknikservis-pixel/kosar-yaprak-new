@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * www.yeykimfayansboyasi.com.tr → https://a.qypanel.com
+ * Site köküne laravel4_config.php olarak kopyalayın.
+ * order_api_key = panel .env EXTERNAL_SYNC_API_KEY ile birebir aynı olmalı.
+ */
+return [
+    'panel_base_url' => 'https://a.qypanel.com',
+    'order_api_key' => 'YqExt_Quanem_7mK9pL2xR4vN8wQ6tH3jF5bD1cG0sZaX9',
+    'order_source_key' => 'fayans_web',
+    'form_source_key' => 'fayans_web_form',
+    'webhook_secret' => '',
+];

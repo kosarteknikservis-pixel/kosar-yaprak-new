@@ -1,0 +1,188 @@
+/* Geri sayım — site-shell 480px ile hizalı, ikna odaklı canlı palet */
+.countdown-banner {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    background: linear-gradient(105deg, #0d9488 0%, #10b981 42%, #fbbf24 100%);
+    color: #0f172a;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 0 0 14px 14px;
+    box-shadow: 0 6px 24px rgba(13, 148, 136, 0.35);
+}
+
+.countdown-banner::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.22) 45%,
+        transparent 70%
+    );
+    animation: cd-shine 4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes cd-shine {
+    0%, 100% { opacity: 0.35; transform: translateX(-30%); }
+    50% { opacity: 0.85; transform: translateX(30%); }
+}
+
+.countdown-banner.countdown-banner--sticky-home {
+    position: sticky;
+    top: var(--app-header-clear, 62px);
+    z-index: 9998;
+    max-width: 100%;
+    align-self: stretch;
+    border-radius: 0;
+}
+
+.countdown-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 14px 14px;
+}
+
+.countdown-msg {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-align: center;
+}
+
+.countdown-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(15, 23, 42, 0.88);
+    color: #fde047;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+}
+
+.countdown-label {
+    flex: 1 1 100%;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #0f172a;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.countdown-timer {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 6px;
+    flex-wrap: nowrap;
+}
+
+.time-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+    flex: 1 1 0;
+    max-width: 72px;
+}
+
+.time-value {
+    display: block;
+    width: 100%;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.92);
+    color: #fde047;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.time-label {
+    margin-top: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgba(15, 23, 42, 0.75);
+    text-transform: uppercase;
+}
+
+.time-separator {
+    display: flex;
+    align-items: center;
+    padding-top: 10px;
+    font-size: 18px;
+    font-weight: 800;
+    color: rgba(15, 23, 42, 0.45);
+    flex-shrink: 0;
+}
+
+.time-expired {
+    width: 100%;
+    text-align: center;
+    font-weight: 800;
+    font-size: 15px;
+    padding: 8px;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.9);
+    color: #fde047;
+}
+
+@media (max-width: 480px) {
+    .countdown-banner {
+        border-radius: 0;
+    }
+
+    .countdown-inner {
+        padding: 10px 12px 12px;
+    }
+
+    .countdown-label {
+        font-size: 13px;
+    }
+
+    .time-value {
+        font-size: 17px;
+        padding: 7px 2px;
+    }
+
+    .time-label {
+        font-size: 9px;
+    }
+
+    .time-separator {
+        font-size: 15px;
+        padding-top: 8px;
+    }
+}
+
+/* Açıklama blokları — countdown sonrası boşluk sıfırlama */
+.intro-items-container,
+.intro-item,
+.intro-item-content,
+.intro-item-content h4,
+.intro-item-content div {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}

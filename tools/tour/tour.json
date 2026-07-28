@@ -1,0 +1,891 @@
+{
+  "base_url": "http://localhost/3dhesap",
+  "sections": [
+    {
+      "title": "Giris & Yol",
+      "items": [
+        {
+          "text": "Giris sayfasi /phx/login.php acilyor",
+          "method": "GET",
+          "path": "/phx/login.php",
+          "expect_status": 200,
+          "contains": "login",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Giris CSS'i yukleniyor",
+          "method": "GET",
+          "path": "/phx/css/login.css",
+          "expect_status": 200,
+          "contains": null,
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Eski /admin/login.php kapali (404)",
+          "method": "GET",
+          "path": "/admin/login.php",
+          "expect_status": 404,
+          "contains": null,
+          "auth": false,
+          "noerror": false
+        }
+      ]
+    },
+    {
+      "title": "Tema (Aydinlik / Karanlik)",
+      "items": [
+        {
+          "text": "Tema kontrolcusu JS yukleniyor",
+          "method": "GET",
+          "path": "/phx/js/admin-theme.js",
+          "expect_status": 200,
+          "contains": "data-theme",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Karanlik tema CSS tanimli",
+          "method": "GET",
+          "path": "/phx/css/modern_admin.css",
+          "expect_status": 200,
+          "contains": "[data-theme=\"dark\"]",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Aydinlik menu (sidebar-bg beyaz)",
+          "method": "GET",
+          "path": "/phx/css/modern_admin.css",
+          "expect_status": 200,
+          "contains": "--sidebar-bg: #ffffff",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Tema gecis butonu stili var",
+          "method": "GET",
+          "path": "/phx/css/modern_admin.css",
+          "expect_status": 200,
+          "contains": ".topbar-theme-btn",
+          "auth": false,
+          "noerror": false
+        }
+      ]
+    },
+    {
+      "title": "Klavye Kisayollari",
+      "items": [
+        {
+          "text": "kbd metin rengi tanimli (gorunur)",
+          "method": "GET",
+          "path": "/phx/css/admin-panel-ui.css",
+          "expect_status": 200,
+          "contains": "#3730a3",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Kisayol modal paneli tema uyumlu",
+          "method": "GET",
+          "path": "/phx/css/admin-panel-ui.css",
+          "expect_status": 200,
+          "contains": "var(--surface",
+          "auth": false,
+          "noerror": false
+        }
+      ]
+    },
+    {
+      "title": "Menu Tasarimi",
+      "items": [
+        {
+          "text": "Aktif nav vurgu rengi tanimli",
+          "method": "GET",
+          "path": "/phx/css/modern_admin.css",
+          "expect_status": 200,
+          "contains": "--sidebar-active-text",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Nav ikon renk degiskeni tanimli",
+          "method": "GET",
+          "path": "/phx/css/modern_admin.css",
+          "expect_status": 200,
+          "contains": "--sidebar-icon",
+          "auth": false,
+          "noerror": false
+        }
+      ]
+    },
+    {
+      "title": "Vitrin Sagligi",
+      "items": [
+        {
+          "text": "Ana sayfa aciliyor",
+          "method": "GET",
+          "path": "/",
+          "expect_status": 200,
+          "contains": null,
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Siparis sayfasi aciliyor",
+          "method": "GET",
+          "path": "/order.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": false,
+          "noerror": false
+        }
+      ]
+    },
+    {
+      "title": "Landing Page (Acilis) Sistemi",
+      "items": [
+        {
+          "text": "Landing CSS yukleniyor",
+          "method": "GET",
+          "path": "/css/landing.css",
+          "expect_status": 200,
+          "contains": ".lp-hero",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Yayindaki demo sayfa aciliyor",
+          "method": "GET",
+          "path": "/landing.php?slug=demo-kampanya",
+          "expect_status": 200,
+          "contains": "lp-hero",
+          "auth": false,
+          "noerror": true
+        },
+        {
+          "text": "Hero blogu render ediliyor",
+          "method": "GET",
+          "path": "/landing.php?slug=demo-kampanya",
+          "expect_status": 200,
+          "contains": "lp-hero__title",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Geri sayim blogu render ediliyor",
+          "method": "GET",
+          "path": "/landing.php?slug=demo-kampanya",
+          "expect_status": 200,
+          "contains": "lp-cd__timer",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Urun blogu (ad/fiyat/gorsel) render ediliyor",
+          "method": "GET",
+          "path": "/landing.php?slug=demo-kampanya",
+          "expect_status": 200,
+          "contains": "lp-product",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Yorumlar blogu render ediliyor",
+          "method": "GET",
+          "path": "/landing.php?slug=demo-kampanya",
+          "expect_status": 200,
+          "contains": "lp-review",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "SSS blogu render ediliyor",
+          "method": "GET",
+          "path": "/landing.php?slug=demo-kampanya",
+          "expect_status": 200,
+          "contains": "lp-faq__item",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Yok/taslak slug 404 veriyor",
+          "method": "GET",
+          "path": "/landing.php?slug=___olmayan-sayfa___",
+          "expect_status": 404,
+          "contains": null,
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Temiz URL /l/<slug> calisiyor",
+          "method": "GET",
+          "path": "/l/demo-kampanya",
+          "expect_status": 200,
+          "contains": "lp-hero",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Admin liste sayfasi aciliyor",
+          "method": "GET",
+          "path": "/phx/landing_pages.php",
+          "expect_status": 200,
+          "contains": "Landing sayfalar",
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Admin editor aciliyor",
+          "method": "GET",
+          "path": "/phx/landing_edit.php?id=1",
+          "expect_status": 200,
+          "contains": "Bloklar",
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Editor blok karti render ediliyor",
+          "method": "GET",
+          "path": "/phx/landing_edit.php?id=1",
+          "expect_status": 200,
+          "contains": "lp-block",
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Editor tema secici var",
+          "method": "GET",
+          "path": "/phx/landing_edit.php?id=1",
+          "expect_status": 200,
+          "contains": "Aurora",
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Gorsel yukleme ucu CSRF'siz reddediyor (403)",
+          "method": "GET",
+          "path": "/phx/landing_upload.php",
+          "expect_status": 403,
+          "contains": null,
+          "auth": true,
+          "noerror": false
+        }
+      ]
+    },
+    {
+      "title": "Cok Dilli & Para Birimi (i18n)",
+      "items": [
+        {
+          "text": "RTL stil dosyasi yukleniyor",
+          "method": "GET",
+          "path": "/css/rtl.css",
+          "expect_status": 200,
+          "contains": "dir=\"rtl\"",
+          "auth": false,
+          "noerror": false
+        },
+        {
+          "text": "Dil/para secici on yuzde render ediliyor",
+          "method": "GET",
+          "path": "/",
+          "expect_status": 200,
+          "contains": "site-switcher",
+          "auth": false,
+          "noerror": true
+        },
+        {
+          "text": "Ingilizce ceviri uygulaniyor (Track Order)",
+          "method": "GET",
+          "path": "/?lang=en",
+          "expect_status": 200,
+          "contains": "Track Order",
+          "auth": false,
+          "noerror": true
+        },
+        {
+          "text": "Arapca ceviri uygulaniyor (menu.order_query)",
+          "method": "GET",
+          "path": "/?lang=ar",
+          "expect_status": 200,
+          "contains": "تتبع الطلب",
+          "auth": false,
+          "noerror": true
+        },
+        {
+          "text": "Arapcada RTL etkin (rtl.css yukleniyor)",
+          "method": "GET",
+          "path": "/?lang=ar",
+          "expect_status": 200,
+          "contains": "css/rtl.css",
+          "auth": false,
+          "noerror": true
+        },
+        {
+          "text": "Para birimi degistirme baglantisi var (USD)",
+          "method": "GET",
+          "path": "/?cur=USD",
+          "expect_status": 200,
+          "contains": "cur=USD",
+          "auth": false,
+          "noerror": true
+        },
+        {
+          "text": "Admin diller sayfasi aciliyor",
+          "method": "GET",
+          "path": "/phx/languages.php",
+          "expect_status": 200,
+          "contains": "Diller",
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Para birimleri sekmesi + kur guncelle",
+          "method": "GET",
+          "path": "/phx/languages.php?tab=currencies",
+          "expect_status": 200,
+          "contains": "Kurları güncelle",
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Ceviri editoru sekmesi",
+          "method": "GET",
+          "path": "/phx/languages.php?tab=translations",
+          "expect_status": 200,
+          "contains": "Arayüz çevirileri",
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Ice/disa aktar sekmesi",
+          "method": "GET",
+          "path": "/phx/languages.php?tab=io",
+          "expect_status": 200,
+          "contains": "Dışa aktar",
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "JSON disa aktarma calisiyor",
+          "method": "GET",
+          "path": "/phx/languages.php?export=json",
+          "expect_status": 200,
+          "contains": "menu.home",
+          "auth": true,
+          "noerror": false
+        }
+      ]
+    },
+    {
+      "title": "Tum Menu Sayfalari (kimlik dogrulamali)",
+      "items": [
+        {
+          "text": "Menu: index.php",
+          "method": "GET",
+          "path": "/phx/index.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: order_manual.php",
+          "method": "GET",
+          "path": "/phx/order_manual.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: abandoned_settings.php",
+          "method": "GET",
+          "path": "/phx/abandoned_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: manage_order_status.php",
+          "method": "GET",
+          "path": "/phx/manage_order_status.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: order_lookup_settings.php",
+          "method": "GET",
+          "path": "/phx/order_lookup_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: export.php",
+          "method": "GET",
+          "path": "/phx/export.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: cargo_csv_export.php",
+          "method": "GET",
+          "path": "/phx/cargo_csv_export.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: quick_notes.php",
+          "method": "GET",
+          "path": "/phx/quick_notes.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: manage_payment_methods.php",
+          "method": "GET",
+          "path": "/phx/manage_payment_methods.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: manage_locations.php",
+          "method": "GET",
+          "path": "/phx/manage_locations.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: bank_accounts.php",
+          "method": "GET",
+          "path": "/phx/bank_accounts.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: products.php",
+          "method": "GET",
+          "path": "/phx/products.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: variant_management.php",
+          "method": "GET",
+          "path": "/phx/variant_management.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: call_confirmation.php",
+          "method": "GET",
+          "path": "/phx/call_confirmation.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: cirolar.php",
+          "method": "GET",
+          "path": "/phx/cirolar.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: final.php",
+          "method": "GET",
+          "path": "/phx/final.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: admin_log.php",
+          "method": "GET",
+          "path": "/phx/admin_log.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: review_intro.php",
+          "method": "GET",
+          "path": "/phx/review_intro.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: reviews.php",
+          "method": "GET",
+          "path": "/phx/reviews.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: order_image_maker.php",
+          "method": "GET",
+          "path": "/phx/order_image_maker.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: user_management.php",
+          "method": "GET",
+          "path": "/phx/user_management.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: admin_slider.php",
+          "method": "GET",
+          "path": "/phx/admin_slider.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: homepage_products_section.php",
+          "method": "GET",
+          "path": "/phx/homepage_products_section.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: order_page_ui.php",
+          "method": "GET",
+          "path": "/phx/order_page_ui.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: admin_footer.php",
+          "method": "GET",
+          "path": "/phx/admin_footer.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: buttons.php",
+          "method": "GET",
+          "path": "/phx/buttons.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: theme_backup.php",
+          "method": "GET",
+          "path": "/phx/theme_backup.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: cms_pages.php",
+          "method": "GET",
+          "path": "/phx/cms_pages.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: landing_pages.php",
+          "method": "GET",
+          "path": "/phx/landing_pages.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: languages.php",
+          "method": "GET",
+          "path": "/phx/languages.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: sss.php",
+          "method": "GET",
+          "path": "/phx/sss.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: custom_forms.php",
+          "method": "GET",
+          "path": "/phx/custom_forms.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: admin_meta.php",
+          "method": "GET",
+          "path": "/phx/admin_meta.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: conversion_api_settings.php",
+          "method": "GET",
+          "path": "/phx/conversion_api_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: attribution_settings.php",
+          "method": "GET",
+          "path": "/phx/attribution_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: attribution_orders.php",
+          "method": "GET",
+          "path": "/phx/attribution_orders.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: fake_notifications.php",
+          "method": "GET",
+          "path": "/phx/fake_notifications.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: admin_notification_settings.php",
+          "method": "GET",
+          "path": "/phx/admin_notification_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: countdown_settings.php",
+          "method": "GET",
+          "path": "/phx/countdown_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: carkifelek_settings.php",
+          "method": "GET",
+          "path": "/phx/carkifelek_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: carkifelek_logs.php",
+          "method": "GET",
+          "path": "/phx/carkifelek_logs.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: telegram_settings.php",
+          "method": "GET",
+          "path": "/phx/telegram_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: netgsm_settings.php",
+          "method": "GET",
+          "path": "/phx/netgsm_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: parasut_settings.php",
+          "method": "GET",
+          "path": "/phx/parasut_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: paytr_settings.php",
+          "method": "GET",
+          "path": "/phx/paytr_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: iyzico_settings.php",
+          "method": "GET",
+          "path": "/phx/iyzico_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: admin_smtp_settings.php",
+          "method": "GET",
+          "path": "/phx/admin_smtp_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: blocked_ips.php",
+          "method": "GET",
+          "path": "/phx/blocked_ips.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: blocked_phones.php",
+          "method": "GET",
+          "path": "/phx/blocked_phones.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: cloaker_settings.php",
+          "method": "GET",
+          "path": "/phx/cloaker_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: cloaker_traffic.php",
+          "method": "GET",
+          "path": "/phx/cloaker_traffic.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: cache_settings.php",
+          "method": "GET",
+          "path": "/phx/cache_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: link_cloak/campaigns.php",
+          "method": "GET",
+          "path": "/phx/link_cloak/campaigns.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: link_cloak/traffic.php",
+          "method": "GET",
+          "path": "/phx/link_cloak/traffic.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: safe_page_settings.php",
+          "method": "GET",
+          "path": "/phx/safe_page_settings.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        },
+        {
+          "text": "Menu: edit_password.php",
+          "method": "GET",
+          "path": "/phx/edit_password.php",
+          "expect_status": 200,
+          "contains": null,
+          "auth": true,
+          "noerror": true
+        }
+      ]
+    }
+  ]
+}

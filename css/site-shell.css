@@ -1,0 +1,857 @@
+:root {
+  --site-shell-max: 480px;
+  --app-header-clear: 62px;
+  /* Mobil menü — genişlik / yükseklik buradan ayarlanır */
+  --app-menu-mobile-width: min(calc(var(--site-shell-max) - 12px), calc(100vw - 12px));
+  --app-menu-mobile-top: calc(var(--app-header-clear) + 8px);
+  --app-menu-mobile-max-height: calc(100dvh - var(--app-menu-mobile-top) - 12px);
+  --app-menu-mobile-radius: 20px;
+  --app-menu-overlay: rgba(24, 32, 56, 0.55);
+  --app-brand: #283458;
+  --app-brand-soft: #eef1f8;
+  --app-accent: #5fbd0f;
+  --app-accent-soft: #edf8e3;
+}
+
+html,
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+html {
+  height: 100%;
+  scroll-padding-top: calc(var(--app-header-clear) + 96px);
+}
+
+#products-heading,
+section#products.homepage-products-scope {
+  scroll-margin-top: calc(var(--app-header-clear) + 96px);
+}
+
+body {
+  min-height: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* App shell */
+html body.site-shell-app {
+  max-width: var(--site-shell-max) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  overflow-x: hidden;
+  padding-top: var(--app-header-clear) !important;
+  padding-left: 0;
+  padding-right: 0;
+  background: #ffffff;
+}
+
+/* Menu typography + akış: header/menu fixed, #app-nav yer kaplamaz */
+#app-nav {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+/* Header altı ince boşluk — tüm vitrin sayfaları */
+html body.site-shell-app > .info-page-shell,
+html body.site-shell-app > .order-page-shell,
+html body.site-shell-app > .thankyou-shell,
+html body.site-shell-app > .container,
+html body.site-shell-app > .slider,
+html body.site-shell-app > .countdown-banner {
+  margin-top: 0 !important;
+}
+
+/* Header: always aligned to 480px shell (overrides page CSS) */
+#app-nav .custom-header {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  transform: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: var(--app-header-clear) !important;
+  z-index: 10000 !important;
+  margin: 0 !important;
+  border-bottom: none !important;
+  background-color: #283458 !important;
+  box-sizing: border-box;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  -webkit-transform: translateZ(0);
+}
+
+#app-nav .custom-header-inner {
+  max-width: var(--site-shell-max);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 479px) {
+  /* Mobilde 480px shell ortalaması bozulma yaratıyor: full-width'e geç */
+  html body.site-shell-app {
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  #app-nav .custom-header {
+    max-width: none !important;
+  }
+
+  #app-nav .custom-header-inner {
+    max-width: 100%;
+  }
+
+  #app-nav .custom-header-inner {
+    padding-left: 6px;
+    padding-right: 12px;
+  }
+}
+
+/* Logo */
+#app-nav .logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-decoration: none;
+  background-color: transparent;
+  padding: 0;
+  gap: 0;
+}
+
+#app-nav .logo-icon-only {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background-color: transparent;
+  padding: 0;
+  position: relative;
+}
+
+#app-nav .logo-main {
+  align-self: flex-start;
+  font-size: 32px;
+  font-weight: bold;
+  color: white;
+  line-height: 1.02;
+  position: relative;
+  padding-bottom: 0;
+  margin: 0;
+}
+
+#app-nav .logo-sub {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  text-transform: lowercase;
+  letter-spacing: 0.03em;
+  position: static;
+  line-height: 1.05;
+  margin: -2px 0 0;
+}
+
+#app-nav .custom-menu-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+#app-nav .custom-menu-toggle:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+#app-nav .custom-menu-toggle:active {
+  transform: scale(0.98);
+}
+
+#app-nav .custom-menu-toggle i {
+  font-size: 22px;
+  color: #fff;
+}
+
+#app-nav .custom-menu-toggle span {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  #app-nav .custom-header {
+    height: var(--app-header-clear) !important;
+  }
+  #app-nav .logo-main {
+    font-size: 30px;
+  }
+  #app-nav .logo-sub {
+    font-size: 17px;
+  }
+  #app-nav .custom-menu-toggle i {
+    font-size: 28px;
+  }
+  #app-nav .custom-menu-toggle span {
+    font-size: 21px;
+  }
+}
+
+/* Menü paneli — mobil + masaüstü: ortalanmış popup (480px shell içinde) */
+html body.app-menu-open {
+  overflow: hidden;
+}
+
+html body.app-menu-open::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--app-menu-overlay);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+#app-nav .custom-menu {
+  position: fixed;
+  top: var(--app-menu-mobile-top) !important;
+  bottom: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  width: var(--app-menu-mobile-width) !important;
+  max-width: var(--app-menu-mobile-width) !important;
+  max-height: var(--app-menu-mobile-max-height);
+  margin-top: 0;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(40, 52, 88, 0.08);
+  box-shadow:
+    0 18px 48px rgba(24, 32, 56, 0.26),
+    0 0 0 1px rgba(255, 255, 255, 0.65) inset;
+  padding: 0;
+  z-index: 10001 !important;
+  overflow: hidden;
+  border-radius: var(--app-menu-mobile-radius);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+#app-nav .custom-menu.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%);
+}
+
+#app-nav .custom-menu-head {
+  display: flex;
+  border-radius: var(--app-menu-mobile-radius) var(--app-menu-mobile-radius) 0 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid rgba(40, 52, 88, 0.08);
+  background: linear-gradient(135deg, var(--app-brand) 0%, #1e2844 100%);
+  color: #fff;
+}
+
+#app-nav .custom-menu-head-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+#app-nav .custom-menu-head-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+#app-nav .custom-menu-head-title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+#app-nav .custom-close-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+}
+
+#app-nav .custom-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+#app-nav .custom-close-btn:active {
+  transform: scale(0.96);
+}
+
+#app-nav .custom-close-btn i {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+/* Menü ikonları: beyaz + kalın */
+#app-nav .custom-menu-link-icon i,
+#app-nav .campaign-card-icon i,
+#app-nav .custom-menu-cta-icon i,
+#app-nav .custom-menu-cta-arrow i {
+  color: #fff !important;
+  font-weight: 900;
+  -webkit-text-stroke: 0.45px rgba(255, 255, 255, 0.85);
+  paint-order: stroke fill;
+}
+
+#app-nav .custom-menu-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin: 12px 14px 8px;
+  padding: 14px 15px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: #fff;
+  background: linear-gradient(135deg, #2d6b0a 0%, #3f8f0f 38%, #2a5c08 100%);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  box-shadow:
+    0 12px 28px rgba(34, 78, 8, 0.42),
+    0 0 0 1px rgba(0, 0, 0, 0.08) inset;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  min-height: 72px;
+  box-sizing: border-box;
+}
+
+#app-nav .custom-menu-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.22) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.55s ease;
+  pointer-events: none;
+}
+
+#app-nav .custom-menu-cta:hover::before,
+#app-nav .custom-menu-cta:focus-visible::before {
+  transform: translateX(120%);
+}
+
+#app-nav .custom-menu-cta:hover,
+#app-nav .custom-menu-cta:focus-visible {
+  transform: translateY(-1px);
+  box-shadow:
+    0 16px 34px rgba(95, 189, 15, 0.44),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  outline: none;
+  filter: saturate(1.05);
+}
+
+#app-nav .custom-menu-cta:active {
+  transform: translateY(0) scale(0.99);
+}
+
+#app-nav .custom-menu-cta-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+#app-nav .custom-menu-cta-icon i {
+  font-size: 19px;
+}
+
+#app-nav .custom-menu-cta-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+#app-nav .custom-menu-cta-copy strong {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+#app-nav .custom-menu-cta-copy span {
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.96);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#app-nav .custom-menu-cta-arrow {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+#app-nav .custom-menu-cta-arrow i {
+  font-size: 15px;
+}
+
+/* Kaydırılabilir menü gövdesi */
+#app-nav .custom-menu-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(40, 52, 88, 0.28) transparent;
+}
+
+#app-nav .custom-menu-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+#app-nav .custom-menu-scroll::-webkit-scrollbar-thumb {
+  background: rgba(40, 52, 88, 0.28);
+  border-radius: 999px;
+}
+
+#app-nav .custom-menu-scroll-hint {
+  position: sticky;
+  bottom: 8px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px auto 4px;
+  padding: 8px 16px;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  left: 0;
+  right: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #334155;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(40, 52, 88, 0.12);
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(40, 52, 88, 0.1);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+#app-nav .custom-menu-scroll-hint i {
+  font-size: 11px;
+  color: var(--app-accent);
+  animation: app-menu-scroll-bounce 1.4s ease-in-out infinite;
+}
+
+#app-nav .custom-menu-scroll.has-overflow:not(.is-scrolled-end) .custom-menu-scroll-hint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#app-nav .custom-menu.menu-has-scroll::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28px;
+  pointer-events: none;
+  border-radius: 0 0 var(--app-menu-mobile-radius) var(--app-menu-mobile-radius);
+  background: linear-gradient(180deg, transparent 0%, rgba(248, 250, 252, 0.95) 100%);
+  z-index: 4;
+}
+
+@keyframes app-menu-scroll-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+
+#app-nav .custom-menu-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px 8px;
+}
+
+#app-nav .custom-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  color: #1f2937;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+#app-nav .custom-menu-link-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #33466f 0%, var(--app-brand) 100%);
+  box-shadow: 0 4px 10px rgba(40, 52, 88, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+#app-nav .custom-menu-link-icon i {
+  font-size: 17px;
+}
+
+#app-nav .custom-menu-link-text {
+  flex: 1;
+  min-width: 0;
+}
+
+#app-nav .custom-menu-link:hover,
+#app-nav .custom-menu-link:focus-visible {
+  background: #fff;
+  border-color: rgba(40, 52, 88, 0.1);
+  box-shadow: 0 4px 14px rgba(40, 52, 88, 0.08);
+  outline: none;
+}
+
+#app-nav .custom-menu-link:active {
+  transform: scale(0.99);
+}
+
+@media (max-width: 768px) {
+  #app-nav .custom-menu-nav {
+    padding: 10px 14px 8px;
+  }
+
+  #app-nav .custom-menu-link {
+    font-size: 16px;
+    padding: 12px 13px;
+  }
+
+  #app-nav .custom-menu-cta {
+    margin-left: 12px;
+    margin-right: 12px;
+    margin-top: 10px;
+    margin-bottom: 6px;
+    padding: 15px 14px;
+    min-height: 76px;
+  }
+
+  #app-nav .custom-menu-cta-copy strong {
+    font-size: 18px;
+  }
+
+  #app-nav .custom-menu-cta-copy span {
+    font-size: 13px;
+  }
+
+  #app-nav .custom-menu-cta:hover,
+  #app-nav .custom-menu-cta:focus-visible {
+    transform: none;
+  }
+
+  #app-nav .custom-menu-link:active {
+    transform: none;
+  }
+}
+
+/* Masaüstü: mobil ile aynı genişlik (480px shell), avantajlar 3 sütun */
+@media (min-width: 769px) {
+  #app-nav .custom-menu {
+    width: var(--app-menu-mobile-width) !important;
+    max-width: var(--app-menu-mobile-width) !important;
+    max-height: min(var(--app-menu-mobile-max-height), calc(100dvh - var(--app-menu-mobile-top) - 16px));
+  }
+
+  #app-nav .custom-menu-cta {
+    flex-shrink: 0;
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+
+  #app-nav .custom-menu-nav {
+    padding: 10px 12px 8px;
+  }
+
+  #app-nav .campaign-section {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  #app-nav .campaign-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #app-nav .campaign-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  #app-nav .campaign-card:nth-child(n + 2) {
+    display: flex;
+  }
+}
+
+/* Menü CTA / link butonları — anchor ile aynı görünüm */
+#app-nav button.custom-menu-cta,
+#app-nav button.custom-menu-link {
+  width: calc(100% - 28px);
+  margin-left: 14px;
+  margin-right: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+#app-nav button.custom-menu-cta {
+  width: auto;
+  margin: 12px 14px 8px;
+}
+
+#app-nav .custom-menu-nav button.custom-menu-link {
+  width: 100%;
+  margin: 0;
+}
+
+/* Avantaj kartları */
+#app-nav .campaign-section {
+  margin: 4px 12px 14px;
+  padding: 12px 12px 14px;
+  border-radius: 14px;
+  background: rgba(40, 52, 88, 0.04);
+  border: 1px solid rgba(40, 52, 88, 0.06);
+}
+
+#app-nav .campaign-section-label {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+#app-nav .campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#app-nav .campaign-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(40, 52, 88, 0.08);
+  box-shadow: 0 2px 8px rgba(40, 52, 88, 0.05);
+}
+
+#app-nav .campaign-card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+}
+
+#app-nav .campaign-card-icon i {
+  font-size: 17px;
+}
+
+#app-nav .campaign-card strong {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.2;
+}
+
+#app-nav .campaign-card span {
+  font-size: 10px;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+#app-nav .campaign-card--discount .campaign-card-icon {
+  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+}
+
+#app-nav .campaign-card--shipping .campaign-card-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+#app-nav .campaign-card--fast .campaign-card-icon {
+  background: linear-gradient(135deg, var(--app-accent) 0%, #4ca30d 100%);
+}
+
+
+/* Eski container üst boşluğu kapatıldı */
+html body.site-shell-app .container {
+  margin-top: 0 !important;
+}
+
+@media (max-width: 768px) {
+  html body.site-shell-app .container {
+    margin-top: 0 !important;
+  }
+}
+
+/* Yukarı çık — ana sayfa, yumuşak minimal */
+html body.homepage-view .scroll-to-top {
+  position: fixed;
+  z-index: 9990;
+  bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 1px solid rgba(40, 52, 88, 0.07);
+  border-radius: 50%;
+  cursor: pointer;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(14px);
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0.45s,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    0 1px 3px rgba(40, 52, 88, 0.04),
+    0 6px 20px rgba(40, 52, 88, 0.08);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (min-width: 480px) {
+  html body.homepage-view .scroll-to-top {
+    right: calc(50% - min(var(--site-shell-max), 100vw) / 2 + 14px);
+  }
+}
+
+html body.homepage-view .scroll-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+html body.homepage-view .scroll-to-top i {
+  font-size: 17px;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+html body.homepage-view .scroll-to-top:hover,
+html body.homepage-view .scroll-to-top:focus-visible {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(95, 189, 15, 0.18);
+  box-shadow:
+    0 2px 8px rgba(95, 189, 15, 0.08),
+    0 8px 24px rgba(40, 52, 88, 0.1);
+}
+
+html body.homepage-view .scroll-to-top:hover i,
+html body.homepage-view .scroll-to-top:focus-visible i {
+  color: #5fbd0f;
+  transform: translateY(-2px);
+}
+
+html body.homepage-view .scroll-to-top:focus-visible {
+  outline: 2px solid rgba(95, 189, 15, 0.35);
+  outline-offset: 2px;
+}
+
+html body.homepage-view .scroll-to-top.is-visible:active {
+  transform: translateY(1px) scale(0.97);
+}
+

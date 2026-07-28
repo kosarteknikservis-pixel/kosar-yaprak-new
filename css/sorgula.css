@@ -1,0 +1,311 @@
+/* Header/menü: css/site-shell.css (#app-nav) */
+
+body.site-shell-app {
+    background-color: #f4f6f8;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body.sorgula-modal-open {
+    overflow: hidden;
+}
+
+.sorgula-page.container {
+    margin-top: 12px;
+    max-width: 640px;
+    background-color: #fff;
+    padding: 28px 24px 32px;
+    border-radius: 16px;
+    box-shadow: 0 8px 28px rgba(40, 52, 88, 0.08);
+}
+
+.custom-title {
+    color: #283458;
+    font-size: 1.45rem;
+    font-weight: 800;
+    margin-bottom: 1.25rem;
+}
+
+.sorgula-form-wrap {
+    max-width: 520px;
+    margin: 0 auto 1.25rem;
+}
+
+.sorgula-form-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.25rem;
+}
+
+.sorgula-label {
+    display: block;
+    color: #283458;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}
+
+.sorgula-hint {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.85rem;
+}
+
+.custom-form .form-control {
+    height: 48px;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+}
+
+.custom-form .form-control:focus {
+    border-color: #5fbd0f;
+    box-shadow: 0 0 0 3px rgba(95, 189, 15, 0.18);
+    outline: none;
+}
+
+.custom-form .input-group-text {
+    background: #eef2ff;
+    color: #283458;
+    border-color: #cbd5e1;
+    border-radius: 10px 0 0 10px;
+}
+
+.sorgula-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #5fbd0f 0%, #4da00c 100%);
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 16px;
+    font-size: 1.05rem;
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.sorgula-submit:hover {
+    filter: brightness(1.04);
+    transform: translateY(-1px);
+    color: #fff;
+}
+
+.btn-custom.sorgula-action {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+}
+
+.btn-custom.sorgula-action:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: #fff;
+}
+
+.sorgula-action--shop {
+    background: #d35400;
+    color: #fff;
+}
+
+.sorgula-action--support {
+    background: #e67e22;
+    color: #fff;
+}
+
+/* Modal popup */
+.sorgula-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.sorgula-modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.sorgula-modal {
+    position: relative;
+    width: min(480px, 100%);
+    max-height: min(88vh, 720px);
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px 22px 22px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+    transform: translateY(16px) scale(0.98);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sorgula-modal-overlay.is-open .sorgula-modal {
+    transform: translateY(0) scale(1);
+}
+
+.sorgula-modal__close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #475569;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+
+.sorgula-modal__close:hover {
+    background: #e2e8f0;
+}
+
+.sorgula-modal__icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+}
+
+.sorgula-modal__icon--error {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.sorgula-modal__status {
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.05rem;
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.sorgula-modal__status.text-success { background: #ecfdf5; color: #047857; }
+.sorgula-modal__status.text-danger { background: #fef2f2; color: #b91c1c; }
+.sorgula-modal__status.text-warning { background: #fffbeb; color: #b45309; }
+.sorgula-modal__status.text-info { background: #eff6ff; color: #1d4ed8; }
+.sorgula-modal__status.text-primary { background: #eef2ff; color: #4338ca; }
+
+.sorgula-modal__title {
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #283458;
+    margin-bottom: 8px;
+}
+
+.sorgula-modal__message {
+    text-align: center;
+    color: #64748b;
+    margin-bottom: 18px;
+}
+
+.sorgula-modal__note {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: -4px 0 12px;
+}
+
+.sorgula-detail-list {
+    margin: 0 0 18px;
+}
+
+.sorgula-detail-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 8px 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sorgula-detail-row:last-child {
+    border-bottom: 0;
+}
+
+.sorgula-detail-row dt {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+}
+
+.sorgula-detail-row dd {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #1e293b;
+    word-break: break-word;
+}
+
+.sorgula-detail-row--highlight dd {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #5fbd0f;
+}
+
+.sorgula-modal__btn {
+    display: block;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.sorgula-modal__btn--primary {
+    background: linear-gradient(135deg, #283458 0%, #1e293b 100%);
+    color: #fff;
+}
+
+.sorgula-modal__btn--primary:hover {
+    filter: brightness(1.06);
+}
+
+@media (max-width: 480px) {
+    .sorgula-page.container {
+        padding: 20px 16px 24px;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .sorgula-detail-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .sorgula-modal {
+        border-radius: 16px;
+        padding: 24px 16px 18px;
+    }
+}

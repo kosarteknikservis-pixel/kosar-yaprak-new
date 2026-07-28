@@ -1,0 +1,63 @@
+body.error-page-view {
+    background-color: #f4f4f4;
+}
+
+.error-card {
+    text-align: center;
+}
+
+.error-card__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #dc3545;
+    margin-bottom: 1rem;
+}
+
+.error-card__message {
+    font-size: 1.05rem;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.error-card__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 420px;
+    margin: 0 auto 1rem;
+}
+
+.error-card__subtitle {
+    font-size: 1.1rem;
+    margin: 1rem 0;
+    color: #334155;
+}
+
+.product-summary img {
+    max-width: 220px;
+    height: auto;
+    border-radius: 8px;
+    margin: 0 auto 12px;
+    display: block;
+}
+
+.product-summary h2 {
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+}
+
+.product-summary p {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+@media (min-width: 576px) {
+    .error-card__actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        max-width: none;
+    }
+}

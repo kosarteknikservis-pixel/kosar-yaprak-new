@@ -1,0 +1,111 @@
+# 3dhesap — orta düzey güvenlik (Laragon + canlı uyumlu)
+
+Options -Indexes -MultiViews
+ServerSignature Off
+
+<IfModule mod_headers.c>
+    Header unset X-Powered-By
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Plesk / nginx proxy: PHP HTTPS algısı
+    RewriteCond %{HTTP:X-Forwarded-Proto} =https [NC]
+    RewriteRule .* - [E=HTTPS:on]
+
+    # index.php gizle (ana sayfa temiz URL) — hedef mutlaka / olmalı (./ sunucuda dosya yolu üretir)
+    RewriteCond %{THE_REQUEST} \s/+(.*/)?index\.php[\s?] [NC]
+    RewriteRule ^index\.php$ / [R=301,L]
+
+    # Landing (açılış) sayfaları temiz URL: /l/<slug>
+    RewriteRule ^l/([a-z0-9][a-z0-9\-]{0,158})/?$ landing.php?slug=$1 [L,QSA]
+
+    # Uzantısız sayfalar (order, hakkimizda, payment/paytr …)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.+?)/?$ $1.php [L,QSA]
+
+    # Gizli dosyalar (.env vb.) — .well-known (SSL) hariç
+    RewriteRule (^|/)\.(?!well-known/) - [F,L,NC]
+
+    # Dahili klasörlere doğrudan HTTP erişimi
+    RewriteRule ^(?:includes|scripts|deploy|theme_backups|tools)/ - [F,L,NC]
+
+    # HTTPS — localhost / geliştirme hariç
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
+    RewriteCond %{SERVER_PORT} !^443$
+    RewriteCond %{HTTP_HOST} !^localhost(:\d+)?$ [NC]
+    RewriteCond %{HTTP_HOST} !^127\.0\.0\.1(:\d+)?$ [NC]
+    RewriteCond %{HTTP_HOST} !\.(test|local)$ [NC]
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+</IfModule>
+
+# ---- Performans: gzip sıkıştırma ----
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+    AddOutputFilterByType DEFLATE application/javascript application/x-javascript text/javascript
+    AddOutputFilterByType DEFLATE application/json application/xml application/rss+xml
+    AddOutputFilterByType DEFLATE image/svg+xml application/x-font-ttf application/vnd.ms-fontobject font/woff font/woff2
+</IfModule>
+
+# ---- Performans: statik varlık tarayıcı önbelleği ----
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 30 days"
+    ExpiresByType application/javascript "access plus 30 days"
+    ExpiresByType text/javascript "access plus 30 days"
+    ExpiresByType image/jpeg "access plus 60 days"
+    ExpiresByType image/png "access plus 60 days"
+    ExpiresByType image/gif "access plus 60 days"
+    ExpiresByType image/webp "access plus 60 days"
+    ExpiresByType image/svg+xml "access plus 60 days"
+    ExpiresByType image/x-icon "access plus 180 days"
+    ExpiresByType font/woff "access plus 180 days"
+    ExpiresByType font/woff2 "access plus 180 days"
+    ExpiresByType application/vnd.ms-fontobject "access plus 180 days"
+    ExpiresByType application/x-font-ttf "access plus 180 days"
+</IfModule>
+
+# Statik varlıklara uzun önbellek (PHP sayfalarının kendi cache mantığı korunur)
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot)$">
+        Header set Cache-Control "public, max-age=2592000"
+    </FilesMatch>
+</IfModule>
+
+<Files "db.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+<FilesMatch "^(integration_test|.*_test_local)\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<FilesMatch "\.(log|sql|bak|md|lock|env|ini|yml|yaml)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

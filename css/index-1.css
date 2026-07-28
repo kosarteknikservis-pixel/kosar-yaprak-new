@@ -1,0 +1,522 @@
+/* Header/menü: css/site-shell.css (#app-nav) — sayfa CSS tekrar etmez */
+
+html {
+            scroll-behavior: auto;
+        }
+
+        .slider {
+            width: 100%;
+            margin: 0 !important;
+            margin-bottom: 0;
+            padding: 0 !important;
+        }
+
+        .slider-image,
+        .slider-image a {
+            display: block;
+            margin: 0;
+            padding: 0;
+            line-height: 0;
+        }
+
+        .slider-image[data-go-products] {
+            cursor: pointer;
+        }
+
+        .slider-image img {
+            display: block;
+            width: 100%;
+            height: auto;
+            vertical-align: top;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .product {
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 0;
+            margin: 10px 0;
+            text-align: center;
+            box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* Ana sayfa ürün kartı — minimal vitrin */
+        .homepage-products-scope .hp-product-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .homepage-products-scope .hp-product-card__media {
+            line-height: 0;
+            background: #f8fafc;
+        }
+
+        .homepage-products-scope .js-hp-product-popup {
+            cursor: pointer;
+        }
+
+        .homepage-products-scope .hp-product-card__img {
+            display: block;
+            width: 100%;
+            max-height: 420px;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .homepage-products-scope .hp-product-card__body {
+            padding: 28px 22px 26px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        .homepage-products-scope .hp-product-card__title {
+            margin: 0 0 12px;
+            font-size: 1.3125rem;
+            font-weight: 700;
+            line-height: 1.35;
+            letter-spacing: -0.01em;
+            max-width: 22rem;
+        }
+
+        .homepage-products-scope .hp-product-card__hint {
+            display: inline-block;
+            margin: 0 0 16px;
+            padding: 7px 15px;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            line-height: 1.3;
+            color: #64748b !important;
+            background: #f1f5f9;
+            border-radius: 999px;
+            max-width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .homepage-products-scope .hp-product-card__prices {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            margin-bottom: 6px;
+        }
+
+        .homepage-products-scope .hp-product-card__price-old {
+            font-size: 1.0625rem;
+            font-weight: 500;
+            text-decoration: line-through;
+            opacity: 0.75;
+        }
+
+        .homepage-products-scope .hp-product-card__price-sale {
+            font-size: 1.625rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+
+        .homepage-products-scope .hp-product-card__discount {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 16px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            color: #fff;
+            background: linear-gradient(135deg, #fb923c 0%, #f97316 48%, #ea580c 100%);
+            box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+            animation: hp-discount-glow 2.6s ease-in-out infinite;
+        }
+
+        .homepage-products-scope .hp-product-card__discount-pct {
+            font-size: 0.9375rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+
+        .homepage-products-scope .hp-product-card__discount-label {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            line-height: 1;
+            opacity: 0.96;
+        }
+
+        @keyframes hp-discount-glow {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+            }
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 6px 18px rgba(234, 88, 12, 0.45);
+            }
+        }
+
+        .homepage-products-scope .hp-product-card__cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            max-width: 20rem;
+            margin-top: 8px;
+            padding: 14px 20px !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-size: 1.125rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.01em;
+            text-transform: none !important;
+            box-shadow: 0 4px 14px rgba(95, 189, 15, 0.28);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        }
+
+        .homepage-products-scope .hp-product-card__cta:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+            box-shadow: 0 6px 18px rgba(95, 189, 15, 0.34);
+            color: #fff !important;
+        }
+
+        .product img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0;
+            margin-bottom: 0;
+        }
+
+        .product h5 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .product p {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .product a {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 15px 25px;
+            background-color: #5fbd0f;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 18px;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .product a:hover {
+            background-color: #4da00c;
+        }
+
+
+        @media (max-width: 480px) {
+            .product {
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .homepage-products-scope .hp-product-card__body {
+                padding: 24px 18px 22px;
+            }
+
+            .homepage-products-scope .hp-product-card__title {
+                font-size: 1.1875rem;
+            }
+
+            .homepage-products-scope .hp-product-card__hint {
+                font-size: 0.875rem;
+                padding: 6px 13px;
+                max-width: 100%;
+            }
+
+            .homepage-products-scope .hp-product-card__price-old {
+                font-size: 1rem;
+            }
+
+            .homepage-products-scope .hp-product-card__price-sale {
+                font-size: 1.5rem;
+            }
+
+            .homepage-products-scope .hp-product-card__discount {
+                padding: 5px 12px;
+                margin-bottom: 14px;
+            }
+
+            .homepage-products-scope .hp-product-card__discount-pct {
+                font-size: 0.875rem;
+            }
+
+            .homepage-products-scope .hp-product-card__discount-label {
+                font-size: 0.625rem;
+            }
+
+            .homepage-products-scope .hp-product-card__cta {
+                max-width: none;
+                font-size: 1.0625rem !important;
+                padding: 14px 16px !important;
+            }
+
+            .product h5 {
+                font-size: 22px;
+            }
+
+            .product p {
+                font-size: 18px;
+            }
+
+            .product a:not(.hp-product-card__cta) {
+                font-size: 20px;
+                padding: 10px 18px;
+                background-color: #ff7f00;
+                border-radius: 10px;
+                font-weight: bold;
+                border: 2px solid #fff;
+                transition: background-color 0.3s ease, transform 0.2s ease;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        /* Üst bildirim şeridi — | ile iki kademe: örn. EKİM AYI | TEK FİYAT (ikisi de okunaklı; küçültülmüş tek satır değil) */
+        .promo-banner {
+            background-color: #ff7f00;
+            color: #fff;
+            text-align: center;
+            margin: 0 !important;
+            padding: 16px 14px;
+            position: relative;
+            z-index: 998;
+            box-sizing: border-box;
+            animation: promo-banner-pulse 2.8s ease-in-out infinite;
+        }
+
+        .promo-banner--plain {
+            font-size: clamp(18px, 4.9vw, 24px);
+            font-weight: 800;
+            letter-spacing: 0.03em;
+            line-height: 1.25;
+            text-transform: uppercase;
+        }
+
+        .promo-banner--split {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding-top: 18px;
+            padding-bottom: 18px;
+            line-height: 1.15;
+        }
+
+        .promo-banner__kicker {
+            display: inline-block;
+            font-size: clamp(15px, 4vw, 19px);
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            opacity: 0.98;
+            line-height: 1.2;
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+            max-width: 100%;
+        }
+
+        .promo-banner__headline {
+            display: block;
+            font-size: clamp(21px, 6vw, 32px);
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            line-height: 1.08;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+            max-width: 100%;
+        }
+
+        @keyframes promo-banner-pulse {
+            0%, 100% { opacity: 1; filter: saturate(1); }
+            50% { opacity: 0.92; filter: saturate(1.05); }
+        }
+
+        /* Geri sayım + bildirim şeridi kombinasyonunda üst/alt beyaz şeridi kapat */
+        .promo-banner + .slider,
+        .promo-banner + * {
+            margin-top: 0 !important;
+        }
+
+        /* Bazı tarayıcılarda 1–2px “dikiş” boşluğu kalabiliyor — slider’ı banner’a hafif bindir */
+        .promo-banner + .slider {
+            margin-top: -2px !important;
+            position: relative;
+            top: -2px;
+        }
+
+        .slider:first-of-type {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% {
+                opacity: 1;
+            }
+            25%, 75% {
+                opacity: 0.5;
+            }
+        }
+
+
+
+    .lightning-effect {
+        font-weight: bold;
+        position: relative;
+        color: #000;
+        font-size: 24px;
+        text-transform: uppercase;
+        overflow: hidden;
+        animation: glow 1.5s infinite alternate;
+    }
+
+    .lightning-effect::before {
+        content: '';
+        position: absolute;
+        top: -100%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%);
+        animation: lightning-strike 2s infinite ease-in-out;
+    }
+
+    @keyframes glow {
+        0% {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0), 0 0 20px rgba(255, 255, 255, 0), 0 0 30px rgba(255, 255, 255, 0);
+        }
+        100% {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 1);
+        }
+    }
+
+    @keyframes lightning-strike {
+        0% {
+            top: -100%;
+        }
+        50% {
+            top: 100%;
+        }
+        100% {
+            top: -100%;
+        }
+    }
+
+  .arrow-down {
+    display: inline-block;
+    margin: 0 10px;
+    animation: bounce 1s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(10px);
+    }
+  }
+
+.carousel-indicators li {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    cursor: pointer;
+}
+
+.carousel-indicators .active {
+    background-color: #5fbd0f;
+}
+
+.zoom-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    padding: 5px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+.zoom-icon:hover {
+    transform: scale(1.1);
+}
+
+.popup-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 10050;
+    overflow: auto;
+}
+
+.popup-modal img {
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+        .original-price {
+    text-decoration: line-through;
+    color: gray;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.discounted-price {
+    color: #5fbd0f;
+    font-weight: bold;
+    font-size: 24px;
+}
+

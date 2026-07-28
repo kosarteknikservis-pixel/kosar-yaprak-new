@@ -1,0 +1,614 @@
+/* Header/menü: css/site-shell.css (#app-nav) — sayfa CSS tekrar etmez */
+
+        body {
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .full-width-section {
+            width: 100%;
+            max-width: 100%;
+            padding: 16px;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin: 0 0 16px;
+            box-sizing: border-box;
+        }
+
+        /* Sipariş sayfası — kutulu kart düzeni */
+        html body.site-shell-app.order-page-view {
+            background: #f0f2f5 !important;
+        }
+
+        .order-page-shell {
+            width: 100%;
+            max-width: 100%;
+            padding: 0 0 8px;
+            margin-top: 0;
+            box-sizing: border-box;
+        }
+
+        .order-page-shell > .countdown-banner:first-child,
+        .order-page-shell > .full-width-section:first-child {
+            margin-top: 0 !important;
+            border-top-left-radius: 0 !important;
+            border-top-right-radius: 0 !important;
+        }
+
+        .order-page-shell .full-width-section {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 0 14px;
+            padding: 16px;
+            background: #fff;
+            border: 1px solid rgba(40, 52, 88, 0.07);
+            border-radius: 12px;
+            box-shadow: 0 2px 14px rgba(40, 52, 88, 0.08);
+            box-sizing: border-box;
+        }
+
+        .order-page-shell .opui-cart-h2 {
+            margin: 0 0 10px;
+            padding: 12px 14px;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff !important;
+            text-align: center;
+            background: #5fbd0f;
+            border-radius: 10px;
+            text-shadow: none;
+            animation: none;
+        }
+
+        .order-page-shell .opui-cart-h2::before {
+            display: none;
+        }
+
+        /* Sipariş formu — renkli başlıklar, tek kart içinde */
+        .order-page-shell .order-form {
+            padding: 0 16px 16px;
+            overflow: hidden;
+        }
+
+        .order-page-shell .order-form form {
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: transparent;
+        }
+
+        .order-page-shell .order-form .order-form__title {
+            clear: both;
+            margin: 0 -16px 14px;
+            padding: 16px 14px;
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            background-color: #5fbd0f;
+            border: none;
+            border-radius: 0;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .order-page-shell .order-form .order-form__section-title {
+            margin: 20px 0 14px;
+            padding: 15px;
+            font-size: 25px;
+            font-weight: 700;
+            color: #fff;
+            background-color: #283458;
+            border: none;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        body.site-shell-app .order-form .order-form__row--2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 0;
+        }
+
+        body.site-shell-app .order-form .order-form__row--2 .form-group {
+            margin-bottom: 14px;
+        }
+
+        body.site-shell-app .order-form label {
+            display: block;
+            font-size: 18px;
+            font-weight: 700;
+            color: #283458;
+            margin-bottom: 6px;
+        }
+
+        body.site-shell-app .order-form .form-group {
+            margin: 0 0 14px;
+            padding: 0;
+        }
+
+        body.site-shell-app .order-form .form-control {
+            width: 100%;
+            height: 50px;
+            font-size: 18px;
+            border-radius: 20px;
+            border: 1px solid #ced4da;
+            background: #fff;
+            color: #283458;
+            box-sizing: border-box;
+        }
+
+        body.site-shell-app .order-form textarea.form-control {
+            height: auto;
+            min-height: 65px;
+            font-size: 18px;
+            padding: 10px 14px;
+        }
+
+        body.site-shell-app .order-form #order_notes.form-control {
+            min-height: 100px;
+        }
+
+        body.site-shell-app .order-form #payment_method_id.form-control {
+            height: 50px !important;
+            font-size: 22px !important;
+            border-radius: 20px !important;
+        }
+
+        body.site-shell-app .order-form #payment_method_id option {
+            font-size: 22px;
+        }
+
+        body.site-shell-app .order-form .opui-variant-select {
+            background-color: #283458 !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            padding: 10px !important;
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        body.site-shell-app .order-form .opui-variant-select:focus {
+            background-color: #ff7f00 !important;
+            color: #fff !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 127, 0, 0.25);
+        }
+
+        body.site-shell-app .order-form .opui-variant-swatch {
+            display: none;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+            flex-shrink: 0;
+        }
+
+        body.site-shell-app .order-form .opui-variant-swatch.is-visible {
+            display: inline-block;
+        }
+
+        body.site-shell-app .order-form #customer_district:disabled {
+            background-color: #f8f9fa !important;
+            color: #6c757d !important;
+        }
+
+        body.site-shell-app .order-form .kurumsal-fatura-details {
+            margin: 16px 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #f8fafc;
+            overflow: hidden;
+        }
+
+        body.site-shell-app .order-form .kurumsal-fatura-details summary {
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 16px !important;
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            color: #283458 !important;
+            background: linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%) !important;
+        }
+
+        body.site-shell-app .order-form .kurumsal-fatura-details__hint {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        body.site-shell-app .order-form .kurumsal-fatura-details__body {
+            padding: 14px 16px 18px;
+        }
+
+        body.site-shell-app .order-form .kurumsal-fatura-details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        body.site-shell-app .order-form .order-form__submit {
+            width: 100%;
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 25px;
+            font-weight: 700;
+            line-height: 1.2;
+            color: #fff;
+            background-color: #5fbd0f;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        body.site-shell-app .order-form .order-form__submit:hover {
+            background-color: #4da00c;
+        }
+
+        body.site-shell-app .order-form #variants-container {
+            margin-bottom: 16px;
+        }
+
+        body.site-shell-app .order-form .opui-variant-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        body.site-shell-app .order-form .order-form__required {
+            color: #dc3545;
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .order-form .btn-custom:not(.order-form__submit) {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 60px;
+            cursor: pointer;
+        }
+
+        .order-form .btn-custom:not(.order-form__submit):hover {
+            background-color: #218838;
+        }
+
+        .order-page-shell .product-summary.op-order-vitrin {
+            padding: 0;
+        }
+
+        .product-summary.op-order-vitrin img,
+        .product-summary.op-order-vitrin .opui-hero-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0;
+            margin-bottom: 0;
+        }
+
+        .product-summary.op-order-vitrin h2,
+        .product-summary.op-order-vitrin .op-order-vitrin__title {
+            font-size: 1.3125rem;
+            margin-bottom: 12px;
+            text-align: center;
+            line-height: 1.35;
+            color: #15803d;
+        }
+
+        .product-summary.op-order-vitrin p {
+            font-size: 0.9375rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        /* Eski genel product-summary (başka sayfalar) */
+        .product-summary:not(.op-order-vitrin) img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .product-summary:not(.op-order-vitrin) h2 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .product-summary:not(.op-order-vitrin) p {
+            font-size: 1rem;
+            color: #555;
+            text-align: center;
+        }
+
+        /* Mobilde tam genişlik — yan boşluk yok, input/başlıklar yuvarlak */
+        @media (max-width: 479px) {
+            html body.site-shell-app.order-page-view {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+
+            .order-page-shell {
+                padding: 0;
+            }
+
+            .order-page-shell .opui-cart-h2 {
+                margin: 0 0 0;
+                border-radius: 0;
+            }
+
+            .order-page-shell .full-width-section {
+                width: 100%;
+                max-width: 100%;
+                margin: 0 0 8px;
+                padding: 14px;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+                box-shadow: none;
+            }
+
+            .order-page-shell .order-form {
+                padding: 14px;
+            }
+
+            .order-page-shell .order-form .order-form__title {
+                margin: -14px -14px 12px;
+                padding: 14px 12px;
+                border-radius: 0;
+                font-size: 26px;
+            }
+
+            .order-page-shell .order-form .order-form__section-title {
+                border-radius: 10px;
+                font-size: 20px;
+                padding: 12px 10px;
+            }
+
+            .order-page-shell .promo-banner {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .order-page-view .countdown-banner {
+                max-width: 100%;
+                margin-left: 0;
+                margin-right: 0;
+                border-radius: 0;
+            }
+
+            body.site-shell-app .order-form .form-control {
+                height: 48px;
+                font-size: 16px;
+                border-radius: 20px;
+            }
+
+            body.site-shell-app .order-form textarea.form-control {
+                border-radius: 16px;
+            }
+
+            body.site-shell-app .order-form .opui-variant-select {
+                border-radius: 10px !important;
+            }
+
+            body.site-shell-app .order-form .order-form__submit {
+                border-radius: 10px;
+            }
+
+            body.site-shell-app .order-form .order-form__row--2 {
+                gap: 8px;
+            }
+
+            .product-summary.op-order-vitrin .op-order-vitrin__body {
+                padding: 24px 18px 22px !important;
+            }
+
+            .product-summary.op-order-vitrin h2,
+            .product-summary.op-order-vitrin .op-order-vitrin__title {
+                font-size: 1.1875rem !important;
+                margin-bottom: 12px !important;
+                line-height: 1.3;
+            }
+
+            .product-summary.op-order-vitrin .op-order-vitrin__notice {
+                font-size: 0.9375rem !important;
+                line-height: 1.45 !important;
+            }
+
+            .product-summary.op-order-vitrin img,
+            .product-summary.op-order-vitrin .opui-hero-img {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: auto !important;
+                object-fit: contain;
+            }
+        }
+
+       .promo-banner {
+            background: linear-gradient(135deg, #e65100 0%, #f57c00 48%, #ef6c00 100%);
+            color: #fff;
+            text-align: center;
+            padding: 16px 12px;
+            font-size: clamp(17px, 4.5vw, 23px);
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+            animation: promo-soft-pulse 2.6s ease-in-out infinite;
+        }
+
+        .promo-banner--split {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            line-height: 1.2;
+        }
+
+        .promo-banner__kicker {
+            font-size: clamp(14px, 3.6vw, 17px);
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            opacity: 0.95;
+        }
+
+        .promo-banner__headline {
+            font-size: clamp(18px, 5vw, 26px);
+            font-weight: 900;
+            letter-spacing: 0.06em;
+        }
+
+        @keyframes promo-soft-pulse {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.06); }
+        }
+
+        /* Promo ile hemen sonraki içerik arasında beyaz dikiş olmasın */
+        .promo-banner + * {
+            margin-top: 0 !important;
+        }
+
+        .promo-banner + .slider {
+            margin-top: -2px !important;
+        }
+
+/* Blink animasyonu */
+@keyframes blink {
+    0%, 50%, 100% {
+        opacity: 1;
+    }
+    25%, 75% {
+        opacity: 0.5;
+    }
+}
+
+/* Arka plan renk geçiş animasyonu */
+@keyframes backgroundShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+
+        @media (max-width: 768px) {
+            .order-page-shell .order-form .order-form__title {
+                font-size: 27px;
+            }
+
+            .order-page-shell .order-form .order-form__section-title {
+                font-size: 22px;
+            }
+            .product-summary.op-order-vitrin h2,
+            .product-summary.op-order-vitrin .op-order-vitrin__title {
+                font-size: 1.25rem;
+            }
+
+            .product-summary.op-order-vitrin {
+                padding: 0;
+            }
+        }
+
+       /* Animasyonlu Mesaj */
+    .animated-message {
+        opacity: 0;
+        animation: fadeIn 3s forwards;
+        font-size: 20px; /* Font boyutu */
+        font-weight: bold; /* Kalın yazı */
+        color: #ff0000; /* Kırmızı renk */
+    }
+
+    /* Fade-in animasyonu */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+               /* Kalın metin */
+    .lightning-effect {
+        font-weight: bold;
+        position: relative;
+        color: #000;
+        font-size: 24px;
+        text-transform: uppercase;
+        overflow: hidden; /* Efekt için gerekli */
+        animation: glow 1.5s infinite alternate; /* Yanıp sönme efekti */
+    }
+
+    /* Yıldırım efekti için animasyon */
+    .lightning-effect::before {
+        content: '';
+        position: absolute;
+        top: -100%;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0) 100%);
+        animation: lightning-strike 2s infinite ease-in-out;
+    }
+
+    /* Parlaklık (yanıp sönme) animasyonu */
+    @keyframes glow {
+        0% {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0), 0 0 20px rgba(255, 255, 255, 0), 0 0 30px rgba(255, 255, 255, 0);
+        }
+        100% {
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.8), 0 0 30px rgba(255, 255, 255, 1);
+        }
+    }
+
+    /* Yıldırım animasyonu */
+    @keyframes lightning-strike {
+        0% {
+            top: -100%;
+        }
+        50% {
+            top: 100%;
+        }
+        100% {
+            top: -100%;
+        }
+    }
+
+    .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.form-group {
+    padding-right: 15px;
+    padding-left: 15px;
+    flex: 1;
+}
+
+  .arrow-down {
+    display: inline-block;
+    margin: 0 10px;
+    animation: bounce 1s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(10px);
+    }
+  }
