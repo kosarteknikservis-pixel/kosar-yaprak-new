@@ -320,6 +320,9 @@ document.addEventListener('DOMContentLoaded', function () { checkNewOrders(); se
                                 <td><strong>#<?= (int) $order['order_id'] ?></strong></td>
                                 <td>
                                     <div class="orders-ws-customer"><?= htmlspecialchars((string) $order['customer_name'], ENT_QUOTES, 'UTF-8') ?></div>
+                                    <?php if ((int) ($order['abandoned_yarim_id'] ?? 0) > 0): ?>
+                                        <span class="cc-badge cc-badge--call mt-1">↩ Yarım kalandan #<?= (int) $order['abandoned_yarim_id'] ?></span>
+                                    <?php endif; ?>
                                     <div class="orders-ws-loc"><i class="fas fa-map-marker-alt me-1"></i><?= htmlspecialchars((string) ($order['customer_city'] ?? ''), ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars((string) ($order['customer_district'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
                                     <?php if (!empty($order['cc_last_call_note'])): ?>
                                         <div class="orders-ws-loc"><i class="fas fa-headset me-1"></i><?= htmlspecialchars(mb_substr((string) $order['cc_last_call_note'], 0, 60), ENT_QUOTES, 'UTF-8') ?></div>

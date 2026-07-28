@@ -67,6 +67,15 @@ final class OrderPaymentFinalize
         }
         sendTelegramNotification($pdo, 'new_order', $message);
 
+        try {
+            $abYarim = (int) $pdo->query('SELECT COALESCE(abandoned_yarim_id, 0) FROM orders WHERE order_id = ' . (int) $orderId . ' LIMIT 1')->fetchColumn();
+            if ($abYarim > 0) {
+                sendTelegramNotification($pdo, 'new_order', "↩️ Yarım kalandan dönüş (YK-{$abYarim}) — Sipariş #{$orderId}");
+            }
+        } catch (Throwable $e) {
+            /* ignore */
+        }
+
         if (is_file(dirname(__DIR__) . '/app_log.php')) {
             require_once dirname(__DIR__) . '/app_log.php';
             app_log('order', 'confirmed', [
@@ -174,10 +183,27 @@ final class OrderPaymentFinalize
 
         $activeWhere = isset($cols['is_converted']) ? ' AND IFNULL(is_converted, 0) = 0' : '';
 
+        $findSql = 'SELECT id FROM yarim_kalanlar WHERE ('.implode(' OR ', $conds).')'.$activeWhere.' ORDER BY id DESC LIMIT 1';
+        $findStmt = $pdo->prepare($findSql);
+        $findStmt->execute($params);
+        $yarimId = (int) ($findStmt->fetchColumn() ?: 0);
+
         $sql = 'UPDATE yarim_kalanlar SET '.implode(', ', $sets)
             .' WHERE ('.implode(' OR ', $conds).')'.$activeWhere;
 
         $pdo->prepare($sql)->execute(array_merge($setParams, $params));
+
+        if ($yarimId > 0) {
+            try {
+                $ordCol = $pdo->query('SHOW COLUMNS FROM orders LIKE ' . $pdo->quote('abandoned_yarim_id'));
+                if ($ordCol instanceof PDOStatement && $ordCol->fetch()) {
+                    $pdo->prepare('UPDATE orders SET abandoned_yarim_id = ? WHERE order_id = ? AND abandoned_yarim_id IS NULL')
+                        ->execute([$yarimId, $orderId]);
+                }
+            } catch (Throwable $e) {
+                /* ignore */
+            }
+        }
     }
 
     public static function merchantOidForOrder(int $orderId): string

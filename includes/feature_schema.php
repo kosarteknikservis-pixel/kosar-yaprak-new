@@ -14,7 +14,7 @@ function ensure_feature_schema(PDO $pdo): void
 
     // Kalıcı sürüm damgası: şema güncelse ağır SHOW/ALTER kontrollerini tümden atla.
     // Yeni migrasyon eklerken bu sürümü artır (ör. tarih-harf), tek seferde uygulansın.
-    $schemaVersion = '2026-07-28-sms-verify1';
+    $schemaVersion = '2026-07-28-ab-recovery1';
     try {
         $cur = $pdo->query("SELECT meta_value FROM schema_meta WHERE meta_key = 'feature_version'")->fetchColumn();
         if ($cur === $schemaVersion) {
@@ -412,6 +412,41 @@ function ensure_feature_schema(PDO $pdo): void
         } catch (Throwable $e) {
             if (isset($_SERVER['HTTP_HOST'])) {
                 error_log('checkout_module_settings sms_verify: ' . $e->getMessage());
+            }
+        }
+
+        try {
+            $hasAbSms = $pdo->query('SHOW COLUMNS FROM checkout_module_settings LIKE ' . $pdo->quote('abandoned_sms_enabled'));
+            if ($hasAbSms instanceof PDOStatement && ! $hasAbSms->fetch()) {
+                $pdo->exec('ALTER TABLE checkout_module_settings
+                    ADD COLUMN abandoned_sms_enabled TINYINT(1) NOT NULL DEFAULT 1,
+                    ADD COLUMN abandoned_whatsapp_number VARCHAR(20) NOT NULL DEFAULT \'05527391073\'');
+            }
+        } catch (Throwable $e) {
+            if (isset($_SERVER['HTTP_HOST'])) {
+                error_log('checkout_module_settings abandoned_sms: ' . $e->getMessage());
+            }
+        }
+
+        try {
+            $ykAb = $pdo->query('SHOW COLUMNS FROM yarim_kalanlar LIKE ' . $pdo->quote('recovery_sms_sent_at'));
+            if ($ykAb instanceof PDOStatement && ! $ykAb->fetch()) {
+                $pdo->exec('ALTER TABLE yarim_kalanlar ADD COLUMN recovery_sms_sent_at DATETIME NULL DEFAULT NULL AFTER converted_order_id');
+            }
+        } catch (Throwable $e) {
+            if (isset($_SERVER['HTTP_HOST'])) {
+                error_log('yarim_kalanlar recovery_sms_sent_at: ' . $e->getMessage());
+            }
+        }
+
+        try {
+            $hasAbOrd = $pdo->query('SHOW COLUMNS FROM orders LIKE ' . $pdo->quote('abandoned_yarim_id'));
+            if ($hasAbOrd instanceof PDOStatement && ! $hasAbOrd->fetch()) {
+                $pdo->exec('ALTER TABLE orders ADD COLUMN abandoned_yarim_id INT UNSIGNED NULL DEFAULT NULL AFTER referrer');
+            }
+        } catch (Throwable $e) {
+            if (isset($_SERVER['HTTP_HOST'])) {
+                error_log('orders abandoned_yarim_id: ' . $e->getMessage());
             }
         }
 

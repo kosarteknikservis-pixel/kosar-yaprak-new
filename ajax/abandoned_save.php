@@ -5,6 +5,7 @@ require dirname(__DIR__) . '/db.php';
 require_once dirname(__DIR__) . '/includes/app_url.php';
 require_once dirname(__DIR__) . '/includes/attribution_helpers.php';
 require_once dirname(__DIR__) . '/includes/abandoned_capture.php';
+require_once dirname(__DIR__) . '/includes/abandoned_recovery.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -201,6 +202,16 @@ try {
             'INSERT INTO yarim_kalanlar ('.implode(', ', $insertCols).') VALUES ('.implode(', ', $placeholders).')'
         );
         $ins->execute($insertParams);
+        $rid = (int) $pdo->lastInsertId();
+    }
+
+    $savedId = $rid ? (int) $rid : 0;
+    if ($savedId > 0 && $tel !== '') {
+        try {
+            abandoned_recovery_send_sms($pdo, $savedId);
+        } catch (Throwable $smsEx) {
+            abandoned_debug_log('recovery_sms_error', ['id' => $savedId, 'error' => $smsEx->getMessage()]);
+        }
     }
 
     echo json_encode(['ok' => true]);

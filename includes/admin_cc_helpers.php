@@ -17,7 +17,7 @@ function cc_phone_tail10(string $raw): string
 }
 
 /** WhatsApp wa.me linki */
-function cc_whatsapp_href(string $raw): string
+function cc_whatsapp_href(string $raw, string $text = ''): string
 {
     $d = cc_phone_digits($raw);
     if ($d === '') {
@@ -30,7 +30,12 @@ function cc_whatsapp_href(string $raw): string
         $d = '90' . $d;
     }
 
-    return 'https://wa.me/' . $d;
+    $url = 'https://wa.me/' . $d;
+    if ($text !== '') {
+        $url .= '?text=' . rawurlencode($text);
+    }
+
+    return $url;
 }
 
 function cc_tel_href(string $raw): string
@@ -78,14 +83,14 @@ function cc_extract_phone_from_payload(array $payload): string
     return '';
 }
 
-function cc_phone_actions_html(string $phone, bool $compact = false): string
+function cc_phone_actions_html(string $phone, bool $compact = false, string $whatsappText = ''): string
 {
     $phone = trim($phone);
     if ($phone === '') {
         return '<span class="text-muted">—</span>';
     }
 
-    $wa = htmlspecialchars(cc_whatsapp_href($phone), ENT_QUOTES, 'UTF-8');
+    $wa = htmlspecialchars(cc_whatsapp_href($phone, $whatsappText), ENT_QUOTES, 'UTF-8');
     $tel = htmlspecialchars(cc_tel_href($phone), ENT_QUOTES, 'UTF-8');
     $disp = htmlspecialchars($phone, ENT_QUOTES, 'UTF-8');
     $cls = $compact ? ' cc-phone-actions--compact' : '';

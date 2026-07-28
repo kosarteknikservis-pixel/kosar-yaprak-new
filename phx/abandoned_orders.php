@@ -4,6 +4,7 @@ declare(strict_types=1);
 require '../db.php';
 require 'auth.php';
 require_once __DIR__ . '/../includes/admin_cc_helpers.php';
+require_once __DIR__ . '/../includes/abandoned_recovery.php';
 
 $q = trim((string) ($_GET['q'] ?? ''));
 $todayOnly = isset($_GET['today']) && $_GET['today'] === '1';
@@ -181,6 +182,12 @@ include 'admin_header.php';
                                 || ($last10 !== '' && (isset($blockedPhoneSet[$last10]) || isset($blockedPhoneSet[ltrim($last10, '0') ?: $last10])));
                             $isFresh = !empty($r['tarih']) && date('Y-m-d', strtotime((string) $r['tarih'])) === date('Y-m-d');
                             $isConverted = (int) ($r['is_converted'] ?? 0) === 1;
+                            $smsSent = ! empty($r['recovery_sms_sent_at']);
+                            $waText = abandoned_recovery_whatsapp_prefill(
+                                (int) $r['id'],
+                                (string) ($r['ad'] ?? ''),
+                                (string) ($r['urun'] ?? '')
+                            );
                             $rowCls = $isConverted
                                 ? 'cc-row-converted'
                                 : ($isBlocked ? 'cc-row-blocked' : ($isFresh ? 'cc-row-fresh' : ''));
@@ -195,14 +202,17 @@ include 'admin_header.php';
                                 <td>
                                     <strong><?= htmlspecialchars((string) ($r['ad'] ?? '—')) ?></strong>
                                     <?php if ($isConverted): ?>
-                                        <span class="cc-badge cc-badge--bad ms-1">Siparişe döndü<?= !empty($r['converted_order_id']) ? ' #'.(int) $r['converted_order_id'] : '' ?></span>
+                                        <span class="cc-badge cc-badge--ok ms-1">Siparişe döndü<?= !empty($r['converted_order_id']) ? ' #'.(int) $r['converted_order_id'] : '' ?></span>
+                                    <?php endif; ?>
+                                    <?php if ($smsSent): ?>
+                                        <span class="cc-badge cc-badge--muted ms-1">SMS gönderildi</span>
                                     <?php endif; ?>
                                     <?php if ($isBlocked): ?>
                                         <span class="cc-badge cc-badge--bad ms-1">Engelli</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?= cc_phone_actions_html($rtel, true) ?>
+                                    <?= cc_phone_actions_html($rtel, true, $waText) ?>
                                     <?php if ($rtel !== ''): ?>
                                         <div class="mt-1">
                                             <a href="orders.php?customer_phone=<?= urlencode($rtel) ?>" class="small text-muted">Sipariş ara →</a>

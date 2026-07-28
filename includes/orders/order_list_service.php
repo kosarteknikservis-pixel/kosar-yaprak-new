@@ -187,7 +187,7 @@ final class OrderListService
                    c.city_name AS customer_city, d.district_name AS customer_district,
                    o.order_notes, o.customer_notes, o.order_date,
                    s.status_name, o.source, o.reklam, o.updated_by,
-                   o.referrer,
+                   o.referrer, o.abandoned_yarim_id,
                    GROUP_CONCAT(DISTINCT CONCAT(p.product_name, \' (\', oi.price, \' TL)\') SEPARATOR \', \') AS products,
                    (SELECT COALESCE(SUM(oi_q.quantity), 0) FROM order_items oi_q WHERE oi_q.order_id = o.order_id) AS item_count,
                    (SELECT COALESCE(SUM(oi_t.price), 0) FROM order_items oi_t WHERE oi_t.order_id = o.order_id) AS total_price,
