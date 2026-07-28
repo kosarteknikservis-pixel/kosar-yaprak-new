@@ -219,7 +219,7 @@ $admin_quick_nav_active = static function (array $files) use ($admin_cur): bool 
         <div class="sidebar-section-label">Entegrasyonlar</div>
         <nav class="sidebar-nav">
             <a href="<?= admin_href('telegram_settings.php') ?>"<?= $admin_nav_active('telegram_settings.php') ?>><i class="fab fa-telegram"></i> Telegram</a>
-            <a href="<?= admin_href('netgsm_settings.php') ?>"<?= $admin_nav_active('netgsm_settings.php') ?>><i class="fas fa-sms"></i> NETGSM</a>
+            <a href="<?= admin_href('netgsm_settings.php') ?>"<?= $admin_nav_active('netgsm_settings.php') ?>><i class="fas fa-sms"></i> SMS Ayarları</a>
             <a href="<?= admin_href('parasut_settings.php') ?>"<?= $admin_nav_active('parasut_settings.php') ?>><i class="fas fa-file-invoice-dollar"></i> Paraşüt</a>
             <a href="<?= admin_href('paytr_settings.php') ?>"<?= $admin_nav_active('paytr_settings.php') ?>><i class="fas fa-credit-card"></i> PayTR</a>
             <a href="<?= admin_href('iyzico_settings.php') ?>"<?= $admin_nav_active('iyzico_settings.php') ?>><i class="fas fa-wallet"></i> iyzico</a>

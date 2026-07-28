@@ -16,6 +16,7 @@ if (!$settings) {
         'appkey' => '',
         'message' => '',
         'is_enabled' => 1,
+        'sms_provider' => 'mutlucell',
         'sms_new_order_enabled' => 1,
         'sms_status_change_enabled' => 0,
         'sms_status_trigger_id' => 16,
@@ -31,7 +32,56 @@ $statuses = $pdo->query('SELECT order_status_id, status_name FROM order_status O
     ->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = trim((string) ($_POST['action'] ?? 'save'));
+
+    if ($action === 'sms_test' || $action === 'sms_api_test') {
+        require_once dirname(__DIR__) . '/includes/transactional_sms.php';
+
+        $testPhone = preg_replace('/\D+/', '', (string) ($_POST['test_phone'] ?? ''));
+        if (strlen($testPhone) === 11 && str_starts_with($testPhone, '05')) {
+            $testPhone = substr($testPhone, 1);
+        }
+        if (strlen($testPhone) !== 10 || $testPhone[0] !== '5') {
+            $_SESSION['message'] = 'Test telefonu 10 haneli olmalı (5XXXXXXXXX).';
+            $_SESSION['message_type'] = 'error';
+        } else {
+            $cfg = is_array($settings) ? $settings : [];
+            $cfg['username'] = trim((string) ($_POST['username'] ?? $cfg['username'] ?? ''));
+            $cfg['password'] = trim((string) ($_POST['password'] ?? $cfg['password'] ?? ''));
+            $cfg['header'] = trim((string) ($_POST['header'] ?? $cfg['header'] ?? ''));
+            $cfg['appkey'] = trim((string) ($_POST['appkey'] ?? $cfg['appkey'] ?? ''));
+            $cfg['is_enabled'] = 1;
+            $provider = strtolower(trim((string) ($_POST['sms_provider'] ?? $cfg['sms_provider'] ?? 'mutlucell')));
+            $cfg['sms_provider'] = in_array($provider, ['mutlucell', 'netgsm'], true) ? $provider : 'mutlucell';
+
+            $msg = $action === 'sms_api_test'
+                ? 'API TEST ' . date('Y-m-d H:i:s')
+                : 'Test mesaji — ' . date('d.m.Y H:i');
+
+            $ok = sendTransactionalSms($testPhone, $msg, $cfg);
+            $resp = smsLastResponseGet();
+            $err = smsLastErrorGet();
+
+            if ($ok) {
+                $_SESSION['message'] = 'Test SMS gönderildi.'
+                    . ($action === 'sms_api_test' && $resp !== '' ? ' Yanıt: ' . $resp : '');
+                $_SESSION['message_type'] = 'success';
+            } else {
+                $_SESSION['message'] = 'Test SMS gönderilemedi: ' . ($err !== '' ? $err : 'bilinmeyen hata')
+                    . ($resp !== '' ? ' | Yanıt: ' . $resp : '');
+                $_SESSION['message_type'] = 'error';
+            }
+        }
+
+        header('Location: netgsm_settings.php');
+        exit();
+    }
+
     $is_enabled = isset($_POST['is_enabled']) ? 1 : 0;
+    $sms_provider = strtolower(trim((string) ($_POST['sms_provider'] ?? 'mutlucell')));
+    if (! in_array($sms_provider, ['mutlucell', 'netgsm'], true)) {
+        $sms_provider = 'mutlucell';
+    }
     $sms_new_order_enabled = isset($_POST['sms_new_order_enabled']) ? 1 : 0;
     $sms_status_change_enabled = isset($_POST['sms_status_change_enabled']) ? 1 : 0;
     $sms_status_trigger_id = max(1, min(99999, (int) ($_POST['sms_status_trigger_id'] ?? 16)));
@@ -47,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($is_enabled) {
         if ($username === '' || $password === '' || $header === '') {
-            $err = 'NETGSM açıkken kullanıcı adı, şifre ve mesaj başlığı zorunludur.';
+            $err = 'SMS açıkken kullanıcı adı, API key/şifre ve mesaj başlığı zorunludur.';
         }
     }
 
@@ -58,9 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $sql = 'INSERT INTO netgsm_settings (
                 id, username, password, header, appkey, message,
-                is_enabled, sms_new_order_enabled, sms_status_change_enabled,
+                is_enabled, sms_provider, sms_new_order_enabled, sms_status_change_enabled,
                 sms_status_trigger_id, message_on_status
-            ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE
                 username = VALUES(username),
                 password = VALUES(password),
@@ -68,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 appkey = VALUES(appkey),
                 message = VALUES(message),
                 is_enabled = VALUES(is_enabled),
+                sms_provider = VALUES(sms_provider),
                 sms_new_order_enabled = VALUES(sms_new_order_enabled),
                 sms_status_change_enabled = VALUES(sms_status_change_enabled),
                 sms_status_trigger_id = VALUES(sms_status_trigger_id),
@@ -81,13 +132,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $appkey,
                 $message,
                 $is_enabled,
+                $sms_provider,
                 $sms_new_order_enabled,
                 $sms_status_change_enabled,
                 $sms_status_trigger_id,
                 $message_on_status,
             ]);
 
-            $_SESSION['message'] = 'NETGSM ayarları kaydedildi.';
+            $_SESSION['message'] = 'SMS ayarları kaydedildi.';
             $_SESSION['message_type'] = 'success';
         } catch (PDOException $e) {
             $_SESSION['message'] = 'Hata: ' . $e->getMessage();
@@ -99,15 +151,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-$page_title = 'NETGSM Ayarları';
+$page_title = 'SMS Ayarları';
 include 'admin_header.php';
+$currentProvider = strtolower(trim((string) $s('sms_provider', 'mutlucell')));
+if (! in_array($currentProvider, ['mutlucell', 'netgsm'], true)) {
+    $currentProvider = 'mutlucell';
+}
 ?>
 
 <div class="container mt-4">
     <div class="top-bar mb-3">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <h2 class="mb-0"><i class="fas fa-sms me-2"></i>NETGSM Ayarları</h2>
-            <span class="text-muted">SMS anahtarı ve hangi olayda gideceğini seçin</span>
+            <h2 class="mb-0"><i class="fas fa-sms me-2"></i>SMS Ayarları</h2>
+            <span class="text-muted">Mutlucell veya NETGSM — sipariş bildirimleri</span>
         </div>
     </div>
 
@@ -120,17 +176,28 @@ include 'admin_header.php';
 
     <div class="alert alert-info mb-4">
         <i class="fas fa-info-circle me-2"></i>
-        <strong>Nasıl çalışır?</strong> NETGSM’i tamamen kapatabilir veya yalnızca belirli kurallar için açabilirsiniz.
-        <em>Yeni sipariş</em> SMS’i teşekkür sayfasında; <em>durum</em> SMS’i panelden sipariş durumu seçilen statüye geçince gider (ör. “Onaylandı” ID’si).
+        <strong>Nasıl çalışır?</strong> Sağlayıcı olarak <strong>Mutlucell</strong> veya <strong>NETGSM</strong> seçin.
+        <em>Yeni sipariş</em> SMS’i teşekkür sayfasında; <em>durum</em> SMS’i panelden sipariş durumu seçilen statüye geçince gider.
+        Mutlucell için şifre alanına <strong>API key</strong> yazın.
     </div>
 
     <div class="card">
         <div class="card-body">
-            <form method="POST" class="row g-3">
-                <div class="col-12">
+            <form method="POST" class="row g-3" id="sms-settings-form">
+                <input type="hidden" name="action" value="save">
+
+                <div class="col-md-6">
+                    <label for="sms_provider" class="form-label">SMS sağlayıcı</label>
+                    <select class="form-select" name="sms_provider" id="sms_provider">
+                        <option value="mutlucell"<?= $currentProvider === 'mutlucell' ? ' selected' : '' ?>>Mutlucell</option>
+                        <option value="netgsm"<?= $currentProvider === 'netgsm' ? ' selected' : '' ?>>NETGSM</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6 d-flex align-items-end">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="is_enabled" id="is_enabled" <?= !empty($s('is_enabled', 1)) ? 'checked' : '' ?>>
-                        <label class="form-check-label fw-semibold" for="is_enabled">NETGSM SMS (genel) açık</label>
+                        <label class="form-check-label fw-semibold" for="is_enabled">SMS gönderimi açık</label>
                     </div>
                 </div>
 
@@ -170,7 +237,7 @@ include 'admin_header.php';
                 <div class="col-12"><hr class="my-1"></div>
 
                 <div class="col-md-6">
-                    <label for="username" class="form-label">Kullanıcı adı</label>
+                    <label for="username" class="form-label" id="label-username">Kullanıcı adı</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-user"></i></span>
                         <input type="text" class="form-control" id="username" name="username"
@@ -179,7 +246,7 @@ include 'admin_header.php';
                 </div>
 
                 <div class="col-md-6">
-                    <label for="password" class="form-label">Şifre</label>
+                    <label for="password" class="form-label" id="label-password">API key / şifre</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-lock"></i></span>
                         <input type="password" class="form-control" id="password" name="password"
@@ -199,8 +266,8 @@ include 'admin_header.php';
                     </div>
                 </div>
 
-                <div class="col-md-6">
-                    <label for="appkey" class="form-label">AppKey (isteğe bağlı)</label>
+                <div class="col-md-6" id="appkey-wrap">
+                    <label for="appkey" class="form-label">AppKey (NETGSM, isteğe bağlı)</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-key"></i></span>
                         <input type="text" class="form-control" id="appkey" name="appkey"
@@ -229,11 +296,71 @@ include 'admin_header.php';
                     </button>
                 </div>
             </form>
+
+            <hr class="my-4">
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="test_phone" class="form-label">Test telefonu</label>
+                    <input type="text" class="form-control" id="test_phone" placeholder="5XXXXXXXXX" maxlength="11">
+                    <div class="form-text">10 hane, 5 ile başlamalı</div>
+                </div>
+                <div class="col-md-8 d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-outline-primary" onclick="submitSmsTest('sms_test')">
+                        <i class="fas fa-paper-plane me-1"></i> Test SMS gönder
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="submitSmsTest('sms_api_test')">
+                        <i class="fas fa-code me-1"></i> API ham yanıt testi
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
+function syncSmsProviderUi() {
+    var provider = document.getElementById('sms_provider').value;
+    var appkeyWrap = document.getElementById('appkey-wrap');
+    var labelPass = document.getElementById('label-password');
+    if (provider === 'mutlucell') {
+        appkeyWrap.style.display = 'none';
+        labelPass.textContent = 'Mutlucell API key';
+    } else {
+        appkeyWrap.style.display = '';
+        labelPass.textContent = 'NETGSM şifre';
+    }
+}
+document.getElementById('sms_provider').addEventListener('change', syncSmsProviderUi);
+syncSmsProviderUi();
+
+function submitSmsTest(action) {
+    var main = document.getElementById('sms-settings-form');
+    var phone = document.getElementById('test_phone').value;
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'netgsm_settings.php';
+    ['username','password','header','appkey','sms_provider'].forEach(function(name) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = main.querySelector('[name=' + name + ']').value;
+        form.appendChild(input);
+    });
+    var act = document.createElement('input');
+    act.type = 'hidden';
+    act.name = 'action';
+    act.value = action;
+    form.appendChild(act);
+    var tel = document.createElement('input');
+    tel.type = 'hidden';
+    tel.name = 'test_phone';
+    tel.value = phone;
+    form.appendChild(tel);
+    document.body.appendChild(form);
+    form.submit();
+}
+
 document.getElementById('togglePassword').addEventListener('click', function() {
     const passwordInput = document.getElementById('password');
     const icon = this.querySelector('i');

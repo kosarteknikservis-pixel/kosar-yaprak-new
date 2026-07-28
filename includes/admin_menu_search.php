@@ -64,7 +64,7 @@ function admin_menu_search_catalog(): array
         ['label' => 'Çark logları', 'href' => 'carkifelek_logs.php', 'section' => 'Pazarlama', 'keywords' => 'çark log ip', 'perm' => 'menu_entegrasyon'],
 
         ['label' => 'Telegram', 'href' => 'telegram_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'telegram bot', 'perm' => 'menu_entegrasyon'],
-        ['label' => 'NETGSM', 'href' => 'netgsm_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'sms netgsm', 'perm' => 'menu_entegrasyon'],
+        ['label' => 'SMS Ayarları', 'href' => 'netgsm_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'sms mutlucell netgsm', 'perm' => 'menu_entegrasyon'],
         ['label' => 'Paraşüt', 'href' => 'parasut_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'fatura parasut', 'perm' => 'menu_entegrasyon'],
         ['label' => 'PayTR', 'href' => 'paytr_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'paytr ödeme', 'perm' => 'menu_entegrasyon'],
         ['label' => 'iyzico', 'href' => 'iyzico_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'iyzico ödeme', 'perm' => 'menu_entegrasyon'],

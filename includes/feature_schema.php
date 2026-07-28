@@ -838,6 +838,7 @@ function ensure_feature_schema(PDO $pdo): void
                 $ncol($pdo, 'netgsm_settings', 'sms_status_change_enabled', 'TINYINT(1) NOT NULL DEFAULT 0');
                 $ncol($pdo, 'netgsm_settings', 'sms_status_trigger_id', 'INT NOT NULL DEFAULT 16');
                 $ncol($pdo, 'netgsm_settings', 'message_on_status', 'TEXT NULL');
+                $ncol($pdo, 'netgsm_settings', 'sms_provider', "VARCHAR(20) NOT NULL DEFAULT 'mutlucell'");
             }
             $ttel = $pdo->query("SHOW TABLES LIKE 'telegram_settings'");
             if ($ttel instanceof PDOStatement && $ttel->fetch()) {

@@ -27,7 +27,7 @@ function admin_quick_menu_definitions(): array
         ['href' => 'add_shipping_process.php', 'icon' => 'fa-truck', 'label' => 'Kargo Süreci Sayfası', 'perm' => 'menu_icerik'],
         ['href' => 'admin_notification_settings.php', 'icon' => 'fa-bell', 'label' => 'Bildirim Yönetimi', 'perm' => 'menu_entegrasyon'],
         ['href' => 'countdown_settings.php', 'icon' => 'fa-hourglass-half', 'label' => 'Geri Sayım Yönetimi', 'perm' => 'menu_entegrasyon'],
-        ['href' => 'netgsm_settings.php', 'icon' => 'fa-sms', 'label' => 'NETGSM Yönetimi', 'perm' => 'menu_entegrasyon'],
+        ['href' => 'netgsm_settings.php', 'icon' => 'fa-sms', 'label' => 'SMS Ayarları', 'perm' => 'menu_entegrasyon'],
         ['href' => 'telegram_settings.php', 'icon' => 'fab fa-telegram', 'label' => 'Telegram Bildirim', 'perm' => 'menu_entegrasyon'],
         ['href' => 'admin_meta.php', 'icon' => 'fa-code', 'label' => 'Site Pazarlama Kodları', 'perm' => 'menu_pazarlama'],
         ['href' => 'call_confirmation.php', 'icon' => 'fa-chart-line', 'label' => 'Kullanıcı Raporları', 'perm' => 'menu_rapor'],

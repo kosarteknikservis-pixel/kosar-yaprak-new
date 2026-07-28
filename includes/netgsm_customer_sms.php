@@ -158,13 +158,13 @@ function netgsm_send_new_order_sms_if_enabled(PDO $pdo, array $order, string $or
         }
 
         if (!netgsm_credentials_usable($cfg)) {
-            error_log('netgsm: yeni sipariş SMS kapalı — eksik API bilgisi');
+            error_log('sms: yeni sipariş SMS kapalı — eksik API bilgisi');
 
             return;
         }
 
-        $gsmno = netgsm_normalize_gsm_for_tr((string) ($order['customer_phone'] ?? ''));
-        if ($gsmno === '' || strlen($gsmno) < 10) {
+        $gsmno = (string) ($order['customer_phone'] ?? '');
+        if (trim($gsmno) === '') {
             return;
         }
 
@@ -182,17 +182,11 @@ function netgsm_send_new_order_sms_if_enabled(PDO $pdo, array $order, string $or
                 . ' TL. Teşekkür eder, iyi günler dileriz.';
         }
 
-        $res = netgsm_api_send_get(
-            trim((string) ($cfg['username'] ?? '')),
-            (string) ($cfg['password'] ?? ''),
-            trim((string) ($cfg['header'] ?? '')),
-            $gsmno,
-            $message,
-            trim((string) ($cfg['appkey'] ?? ''))
-        );
+        require_once __DIR__ . '/transactional_sms.php';
+        $ok = sendTransactionalSms($gsmno, $message, $cfg);
 
-        if (!$res['ok'] && isset($_SERVER['HTTP_HOST'])) {
-            error_log('NETGSM yeni sipariş SMS hatası: ' . $res['detail']);
+        if (! $ok && isset($_SERVER['HTTP_HOST'])) {
+            error_log('Yeni sipariş SMS hatası: ' . smsLastErrorGet());
         }
     } catch (Throwable $e) {
         if (isset($_SERVER['HTTP_HOST'])) {
@@ -232,7 +226,7 @@ function netgsm_try_send_customer_sms_on_status_transition(
         }
 
         if (!netgsm_credentials_usable($cfg)) {
-            error_log('netgsm: durum SMS eksik API bilgisi');
+            error_log('sms: durum SMS eksik API bilgisi');
 
             return;
         }
@@ -248,8 +242,8 @@ function netgsm_try_send_customer_sms_on_status_transition(
             return;
         }
 
-        $gsmno = netgsm_normalize_gsm_for_tr((string) ($order['customer_phone'] ?? ''));
-        if ($gsmno === '' || strlen($gsmno) < 10) {
+        $gsmno = (string) ($order['customer_phone'] ?? '');
+        if (trim($gsmno) === '') {
             return;
         }
 
@@ -265,17 +259,11 @@ function netgsm_try_send_customer_sms_on_status_transition(
             'UTF-8'
         );
 
-        $res = netgsm_api_send_get(
-            trim((string) ($cfg['username'] ?? '')),
-            (string) ($cfg['password'] ?? ''),
-            trim((string) ($cfg['header'] ?? '')),
-            $gsmno,
-            $message,
-            trim((string) ($cfg['appkey'] ?? ''))
-        );
+        require_once __DIR__ . '/transactional_sms.php';
+        $ok = sendTransactionalSms($gsmno, $message, $cfg);
 
-        if (!$res['ok'] && isset($_SERVER['HTTP_HOST'])) {
-            error_log('NETGSM durum SMS hatası (sipariş ' . $orderPk . '): ' . $res['detail']);
+        if (! $ok && isset($_SERVER['HTTP_HOST'])) {
+            error_log('Durum SMS hatası (sipariş ' . $orderPk . '): ' . smsLastErrorGet());
         }
     } catch (Throwable $e) {
         if (isset($_SERVER['HTTP_HOST'])) {
