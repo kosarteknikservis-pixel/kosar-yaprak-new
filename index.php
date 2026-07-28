@@ -308,11 +308,8 @@ $hpNormalizeUploadPath = static function (string $path): string {
             $sliderIsVideo = $hpVideoPopupMatches($sliderImgPath, $sliderIndex, 'trigger_slider_position');
             ?>
             <div class="slider-image<?= $sliderIsVideo ? ' js-hp-product-popup' : '' ?>"
-                 <?= $sliderIsVideo ? '' : 'data-go-products' ?>
                  <?= $sliderIsVideo ? 'data-hp-popup="video" data-hp-src="' . htmlspecialchars($sliderImgPath, ENT_QUOTES, 'UTF-8') . '"' : '' ?>
-                 role="button"
-                 tabindex="0"
-                 aria-label="<?= $sliderIsVideo ? 'Ürün videosunu oynat' : 'Ürünlere git' ?>">
+                 <?= $sliderIsVideo ? 'role="button" tabindex="0" aria-label="Ürün videosunu oynat"' : '' ?>>
                 <img src="<?= htmlspecialchars($sliderImgPath) ?>" alt="">
             </div>
         <?php endforeach; ?>
@@ -842,7 +839,8 @@ if ($tf2 !== '') {
     }
 
     btn.addEventListener('click', function() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        var smoothTop = !(window.matchMedia && window.matchMedia('(max-width: 768px), (pointer: coarse), (hover: none)').matches);
+        window.scrollTo({ top: 0, behavior: smoothTop ? 'smooth' : 'auto' });
     });
 
     window.addEventListener('scroll', onScroll, { passive: true });

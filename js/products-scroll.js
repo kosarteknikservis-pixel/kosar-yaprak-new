@@ -1,6 +1,5 @@
 /**
- * Ürünler bölümüne git — menü CTA, slider, hash (ana sayfa).
- * Tek yumuşak JS animasyonu (#products-heading).
+ * Ürünler bölümüne git — yalnızca menü CTA ve açık bağlantılar (ana sayfa).
  */
 (function() {
     if (window.__PRODUCTS_SCROLL_INIT__) {
@@ -12,9 +11,13 @@
     var SCROLL_MIN_MS = 720;
     var SCROLL_MAX_MS = 1100;
     var SCROLL_MS_PER_PX = 0.58;
+    var TAP_MOVE_PX = 12;
 
     var scrollAnimId = null;
     var touchMoved = false;
+    var touchStartX = 0;
+    var touchStartY = 0;
+    var lastTouchEndedAt = 0;
 
     if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
@@ -38,24 +41,54 @@
         return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     }
 
-    function shouldAnimateSmooth() {
-        if (prefersReducedMotion()) {
-            return false;
+    function isMobileLike() {
+        if (window.matchMedia) {
+            if (window.matchMedia('(max-width: 768px)').matches) {
+                return true;
+            }
+            if (window.matchMedia('(pointer: coarse)').matches) {
+                return true;
+            }
+            if (window.matchMedia('(hover: none)').matches) {
+                return true;
+            }
         }
-        if (window.matchMedia && window.matchMedia('(max-width: 768px), (pointer: coarse)').matches) {
+        if (typeof navigator !== 'undefined' && Number(navigator.maxTouchPoints) > 0 && window.innerWidth <= 1024) {
+            return true;
+        }
+        return false;
+    }
+
+    function shouldAnimateSmooth() {
+        if (prefersReducedMotion() || isMobileLike()) {
             return false;
         }
         return true;
     }
 
     function registerTouchGuards() {
-        document.addEventListener('touchstart', function() {
+        document.addEventListener('touchstart', function(event) {
             touchMoved = false;
             cancelScrollAnimation();
+            if (event.touches && event.touches[0]) {
+                touchStartX = event.touches[0].clientX;
+                touchStartY = event.touches[0].clientY;
+            }
         }, { passive: true });
 
-        document.addEventListener('touchmove', function() {
-            touchMoved = true;
+        document.addEventListener('touchmove', function(event) {
+            if (!event.touches || !event.touches[0]) {
+                return;
+            }
+            var dx = Math.abs(event.touches[0].clientX - touchStartX);
+            var dy = Math.abs(event.touches[0].clientY - touchStartY);
+            if (dx > TAP_MOVE_PX || dy > TAP_MOVE_PX) {
+                touchMoved = true;
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', function() {
+            lastTouchEndedAt = Date.now();
         }, { passive: true });
 
         document.addEventListener('wheel', cancelScrollAnimation, { passive: true });
@@ -98,7 +131,6 @@
         return el.getBoundingClientRect().top + readScrollTop() - marginTop;
     }
 
-    /** Yavaş başlayıp hızlanma hissi vermeyen, simetrik yumuşak eğri */
     function easeInOutQuad(t) {
         return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     }
@@ -116,6 +148,14 @@
 
     function animateScrollTo(targetY, done) {
         cancelScrollAnimation();
+
+        if (!shouldAnimateSmooth()) {
+            setScrollTop(targetY);
+            if (done) {
+                done();
+            }
+            return;
+        }
 
         var startY = readScrollTop();
         var delta = targetY - startY;
@@ -202,9 +242,13 @@
             });
         }
 
-        window.requestAnimationFrame(function() {
-            window.setTimeout(runScroll, 72);
-        });
+        if (isMobileLike()) {
+            runScroll();
+        } else {
+            window.requestAnimationFrame(function() {
+                window.setTimeout(runScroll, 72);
+            });
+        }
 
         return true;
     }
@@ -228,15 +272,14 @@
     window.scrollToProductsHeading = scrollToProducts;
     window.scrollToProducts = scrollToProducts;
 
-    function isGoProductsTrigger(node) {
+    function isExplicitProductsTrigger(node) {
         if (!node || !node.closest) {
             return null;
         }
-        var videoTrigger = node.closest('.js-hp-product-popup');
-        if (videoTrigger) {
+        if (node.closest('.js-hp-product-popup, .slider-image')) {
             return null;
         }
-        return node.closest('[data-go-products], .js-scroll-to-products');
+        return node.closest('.custom-menu-cta[data-go-products], .custom-menu-link[data-go-products], .js-scroll-to-products');
     }
 
     function hrefPointsToProducts(href) {
@@ -250,9 +293,22 @@
             || /#products-heading(?:[?#]|$)/i.test(href);
     }
 
+    function shouldIgnoreTap(event) {
+        if (touchMoved) {
+            return true;
+        }
+        if (event.pointerType === 'touch' && touchMoved) {
+            return true;
+        }
+        if (isMobileLike() && lastTouchEndedAt && (Date.now() - lastTouchEndedAt) > 500) {
+            return false;
+        }
+        return false;
+    }
+
     document.addEventListener('click', function(e) {
         var target = e.target;
-        var trigger = isGoProductsTrigger(target);
+        var trigger = isExplicitProductsTrigger(target);
         var link = target && target.closest ? target.closest('a[href]') : null;
 
         if (!trigger && link && (link.classList.contains('js-scroll-to-products') || hrefPointsToProducts((link.getAttribute('href') || '').trim()))) {
@@ -263,12 +319,7 @@
             return;
         }
 
-        if (e.pointerType === 'touch' && touchMoved) {
-            return;
-        }
-
-        if (trigger.matches && trigger.matches('.slider-image[data-go-products]')
-            && window.matchMedia && window.matchMedia('(max-width: 768px), (pointer: coarse)').matches) {
+        if (shouldIgnoreTap(e)) {
             return;
         }
 
@@ -277,21 +328,21 @@
         }
 
         e.preventDefault();
-        e.stopImmediatePropagation();
+        e.stopPropagation();
 
-        goToProductsSection({ smooth: true, updateHash: true });
-    }, true);
+        goToProductsSection({ updateHash: true });
+    }, false);
 
     document.addEventListener('keydown', function(e) {
         if (e.key !== 'Enter' && e.key !== ' ') {
             return;
         }
-        var trigger = e.target && e.target.closest ? e.target.closest('[data-go-products], .slider-image[tabindex]') : null;
+        var trigger = isExplicitProductsTrigger(e.target);
         if (!trigger || !isOnIndex()) {
             return;
         }
         e.preventDefault();
-        goToProductsSection({ smooth: true, updateHash: true });
+        goToProductsSection({ updateHash: true });
     });
 
     function runFromHash() {

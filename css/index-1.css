@@ -9,6 +9,7 @@ html {
             margin: 0 !important;
             margin-bottom: 0;
             padding: 0 !important;
+            touch-action: pan-y;
         }
 
         .slider-image,
@@ -19,7 +20,7 @@ html {
             line-height: 0;
         }
 
-        .slider-image[data-go-products] {
+        .slider-image.js-hp-product-popup {
             cursor: pointer;
         }
 

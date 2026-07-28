@@ -313,4 +313,4 @@ $__has_switcher = (count($__langs) > 1 || count($__curs) > 1);
 
 })();
 </script>
-<script src="js/products-scroll.js"></script>
+<script src="js/products-scroll.js?v=20260728b"></script>
