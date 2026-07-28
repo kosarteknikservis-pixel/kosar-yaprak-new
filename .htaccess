@@ -1,6 +1,6 @@
 # 3dhesap — orta düzey güvenlik (Laragon + canlı uyumlu)
 
-Options -Indexes -MultiViews
+Options -Indexes -MultiViews +FollowSymLinks
 ServerSignature Off
 
 <IfModule mod_headers.c>
@@ -13,6 +13,7 @@ ServerSignature Off
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteBase /
 
     # Plesk / nginx proxy: PHP HTTPS algısı
     RewriteCond %{HTTP:X-Forwarded-Proto} =https [NC]
@@ -28,7 +29,6 @@ ServerSignature Off
     # Uzantısız sayfalar (order, hakkimizda, payment/paytr …)
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME}.php -f
     RewriteRule ^(.+?)/?$ $1.php [L,QSA]
 
     # Gizli dosyalar (.env vb.) — .well-known (SSL) hariç
