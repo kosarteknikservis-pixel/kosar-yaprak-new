@@ -151,7 +151,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['install_run'])) {
                     $panelData['form_source_key'] = install_suggest_source_key($baseTitle, 'form');
                 }
                 if ($panelData['panel_base_url'] === '') {
-                    $panelData['panel_base_url'] = 'https://qypanel.com';
+                    $panelData['panel_base_url'] = 'https://panel.kosarvantilator.com';
+                }
+                $panelData['site_origin'] = trim((string) ($_POST['panel_site_origin'] ?? ''));
+                if ($panelData['site_origin'] === '') {
+                    $siteUrl = trim((string) ($_POST['site_url'] ?? ''));
+                    $host = is_string($siteUrl) ? parse_url($siteUrl, PHP_URL_HOST) : '';
+                    $panelData['site_origin'] = is_string($host) && $host !== '' ? $host : 'kosarvantilator.com';
                 }
                 install_write_laravel4_config($panelConfigPath, $panelData);
 

@@ -256,6 +256,7 @@ function install_read_laravel4_config(string $path): array
         return [
             'panel_base_url' => '',
             'order_api_key' => '',
+            'site_origin' => '',
             'order_source_key' => '',
             'form_source_key' => '',
             'webhook_secret' => '',
@@ -271,12 +272,13 @@ function install_write_laravel4_config(string $path, array $cfg): bool
     $export = var_export([
         'panel_base_url' => trim((string) ($cfg['panel_base_url'] ?? '')),
         'order_api_key' => trim((string) ($cfg['order_api_key'] ?? '')),
+        'site_origin' => trim((string) ($cfg['site_origin'] ?? '')),
         'order_source_key' => trim((string) ($cfg['order_source_key'] ?? '')),
         'form_source_key' => trim((string) ($cfg['form_source_key'] ?? '')),
         'webhook_secret' => trim((string) ($cfg['webhook_secret'] ?? '')),
     ], true);
 
-    $content = "<?php\n\ndeclare(strict_types=1);\n\n/**\n * YQ Panel bağlantısı — install.php ile oluşturuldu/güncellendi.\n */\nreturn {$export};\n";
+    $content = "<?php\n\ndeclare(strict_types=1);\n\n/**\n * Ortak Panel sipariş senkronu — install.php ile oluşturuldu/güncellendi.\n */\nreturn {$export};\n";
 
     return file_put_contents($path, $content) !== false;
 }

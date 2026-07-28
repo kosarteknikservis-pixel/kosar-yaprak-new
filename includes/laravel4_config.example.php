@@ -1,23 +1,23 @@
 <?php
 
 /**
- * 3dhesap → YQ Panel bağlantı ayarları (örnek).
+ * Vitrin → Ortak Panel sipariş senkronu.
  * Kurulum: bu dosyayı kopyalayın → laravel4_config.php
- * Her site için order_source_key farklı olmalı (quattro_web, zemin_web, …).
  */
 return [
-    // Canlı: https://qypanel.com
-    'panel_base_url' => 'https://qypanel.com',
+    // Ortak Panel kök URL (sonunda / yok)
+    // Yerel: http://localhost/ortak%20panel/public_html%20(19)/public_html
+    // Canlı: https://panel.kosarvantilator.com
+    'panel_base_url' => 'https://panel.kosarvantilator.com',
 
-    // Laravel .env → EXTERNAL_SYNC_API_KEY ile birebir aynı
-    'order_api_key' => 'CHANGE_ME_same_as_EXTERNAL_SYNC_API_KEY',
+    // Ortak Panel → ayar.ayar_common_panel_key
+    'order_api_key' => 'CHANGE_ME_panel_api_key',
 
-    // Panel integration_sources.key — site başına farklı
-    'order_source_key' => 'quattro_web',
+    // Panelde görünecek site kaynağı (receive.php site_origin)
+    'site_origin' => 'kosarvantilator.com',
 
-    // Form webhook kaynağı (ortak kalabilir)
-    'form_source_key' => 'website',
-
-    // Panel entegrasyon kaynağı webhook_secret doluysa buraya da yazın
+    // Eski alanlar — form senkronu kullanılmıyorsa boş bırakılabilir
+    'order_source_key' => 'nova_web',
+    'form_source_key' => 'nova_form',
     'webhook_secret' => '',
 ];

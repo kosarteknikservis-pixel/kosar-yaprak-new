@@ -31,6 +31,7 @@ function laravel4_sync_config(): array
             '/'
         ),
         'order_api_key' => (string) (getenv('LARAVEL4_API_KEY') ?: ($fileCfg['order_api_key'] ?? '')),
+        'site_origin' => (string) (getenv('ORTAK_SITE_ORIGIN') ?: ($fileCfg['site_origin'] ?? '')),
         'order_source_key' => (string) (getenv('LARAVEL_INTEGRATION_SOURCE_KEY') ?: ($fileCfg['order_source_key'] ?? 'quattro_web')),
         'form_source_key' => (string) (getenv('LARAVEL4_FORM_SOURCE_KEY') ?: ($fileCfg['form_source_key'] ?? 'website')),
         'webhook_secret' => (string) (getenv('LARAVEL4_WEBHOOK_SECRET') ?: ($fileCfg['webhook_secret'] ?? '')),
@@ -46,6 +47,83 @@ function laravel4_sync_log(string $message): void
 
 /**
  * @param  array<string, mixed>  $orderData
+ * @param  array<string, string>  $cfg
+ * @return array<string, mixed>
+ */
+function laravel4_order_payload_for_ortak_panel(array $orderData, array $cfg): array
+{
+    $items = is_array($orderData['items'] ?? null) ? $orderData['items'] : [];
+    $productName = 'Ürün';
+    $quantity = 1;
+
+    if ($items !== []) {
+        $names = [];
+        $quantity = 0;
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $name = trim((string) ($item['product_name'] ?? ''));
+            if ($name !== '') {
+                $names[] = $name;
+            }
+            $quantity += max(1, (int) ($item['quantity'] ?? 1));
+        }
+        if ($names !== []) {
+            $productName = implode(' + ', $names);
+        }
+        $quantity = max(1, $quantity);
+    }
+
+    $siteOrigin = trim((string) ($cfg['site_origin'] ?? ''));
+    if ($siteOrigin === '' && ! empty($orderData['site_url'])) {
+        $host = parse_url((string) $orderData['site_url'], PHP_URL_HOST);
+        if (is_string($host) && $host !== '') {
+            $siteOrigin = $host;
+        }
+    }
+    if ($siteOrigin === '') {
+        $siteOrigin = 'kosarvantilator.com';
+    }
+
+    $payload = [
+        'api_key' => (string) ($cfg['order_api_key'] ?? ''),
+        'site_origin' => $siteOrigin,
+        'client_order_id' => (string) ($orderData['external_order_id'] ?? ''),
+        'order_total' => (float) ($orderData['total_amount'] ?? 0),
+        'customer_name' => (string) ($orderData['customer_name'] ?? ''),
+        'customer_phone' => (string) ($orderData['customer_phone'] ?? ''),
+        'customer_city' => (string) ($orderData['customer_city'] ?? ''),
+        'customer_district' => (string) ($orderData['customer_district'] ?? ''),
+        'customer_address' => (string) ($orderData['customer_address'] ?? ''),
+        'product_name' => $productName,
+        'product_quantity' => $quantity,
+        'payment_method' => (string) ($orderData['payment_method'] ?? ''),
+        'order_note' => trim((string) ($orderData['order_notes'] ?? '')),
+        'customer_ip' => $orderData['customer_ip'] ?? null,
+        'order_date' => $orderData['order_date'] ?? null,
+        'invoice_tax_id' => $orderData['invoice_vkn'] ?? null,
+        'invoice_tax_office' => $orderData['invoice_tax_office'] ?? null,
+        'invoice_company' => $orderData['invoice_company_name'] ?? null,
+        'invoice_address' => $orderData['invoice_address'] ?? null,
+        'items' => $items,
+    ];
+
+    foreach (['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'referrer'] as $key) {
+        if (! empty($orderData[$key])) {
+            $payload[$key] = $orderData[$key];
+        }
+    }
+
+    if (! empty($orderData['ad_source']) && empty($payload['ref'])) {
+        $payload['ref'] = $orderData['ad_source'];
+    }
+
+    return $payload;
+}
+
+/**
+ * @param  array<string, mixed>  $orderData
  */
 function laravel4_sync_order(array $orderData): bool
 {
@@ -53,13 +131,14 @@ function laravel4_sync_order(array $orderData): bool
         $cfg = laravel4_sync_config();
 
         if ($cfg['order_api_key'] === '') {
-            laravel4_sync_log('Laravel4 order sync SKIPPED: order_api_key boş');
+            laravel4_sync_log('Ortak panel order sync SKIPPED: order_api_key boş');
 
             return false;
         }
 
-        $url = $cfg['panel_base_url'].'/api/external-sync/orders';
-        $body = json_encode($orderData, JSON_UNESCAPED_UNICODE);
+        $url = $cfg['panel_base_url'].'/api/receive.php';
+        $payload = laravel4_order_payload_for_ortak_panel($orderData, $cfg);
+        $body = json_encode($payload, JSON_UNESCAPED_UNICODE);
 
         if ($body === false) {
             return false;
@@ -72,7 +151,6 @@ function laravel4_sync_order(array $orderData): bool
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
                 'Accept: application/json',
-                'Authorization: Bearer '.$cfg['order_api_key'],
             ],
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => 10,
@@ -85,19 +163,23 @@ function laravel4_sync_order(array $orderData): bool
         curl_close($ch);
 
         $orderId = (string) ($orderData['external_order_id'] ?? '?');
+        $responseData = is_string($response) ? json_decode($response, true) : null;
+        $ok = $httpCode === 200
+            && is_array($responseData)
+            && (($responseData['status'] ?? '') === 'success');
 
-        if (in_array($httpCode, [200, 201], true)) {
-            laravel4_sync_log("Laravel4 order sync SUCCESS: Order #{$orderId}");
+        if ($ok) {
+            laravel4_sync_log("Ortak panel order sync SUCCESS: Order #{$orderId}");
             laravel4_mark_order_synced($orderId);
 
             return true;
         }
 
-        laravel4_sync_log("Laravel4 order sync FAILED: Order #{$orderId} | HTTP: {$httpCode} | Response: {$response} | cURL: {$curlError}");
+        laravel4_sync_log("Ortak panel order sync FAILED: Order #{$orderId} | HTTP: {$httpCode} | Response: {$response} | cURL: {$curlError}");
 
         return false;
     } catch (Throwable $e) {
-        laravel4_sync_log('Laravel4 order sync EXCEPTION: '.$e->getMessage());
+        laravel4_sync_log('Ortak panel order sync EXCEPTION: '.$e->getMessage());
 
         return false;
     }
