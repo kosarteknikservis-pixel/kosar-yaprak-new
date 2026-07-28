@@ -173,7 +173,7 @@ include 'admin_header.php';
                 <div class="mb-3">
                     <label for="ab_whatsapp" class="form-label">WhatsApp numarası (SMS’teki link)</label>
                     <input type="text" class="form-control" id="ab_whatsapp" name="abandoned_whatsapp_number" value="<?= htmlspecialchars((string) ($settings['abandoned_whatsapp_number'] ?? '05527391073'), ENT_QUOTES, 'UTF-8') ?>" placeholder="05527391073">
-                    <div class="form-text">SMS’te kısa link: kosarvantilator.com/wa?r=ID → WhatsApp açılır.</div>
+                    <div class="form-text">SMS’te kısa link: kosarvantilator.com/wa/12 → WhatsApp açılır.</div>
                 </div>
 
                 <button type="submit" class="btn btn-primary mt-2"><i class="fas fa-save me-1"></i> Kaydet</button>

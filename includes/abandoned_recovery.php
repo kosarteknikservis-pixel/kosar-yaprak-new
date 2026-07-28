@@ -70,14 +70,19 @@ function abandoned_recovery_whatsapp_href(int $yarimId, string $ad, string $urun
 
 function abandoned_recovery_whatsapp_prefill(int $yarimId, string $ad, string $urun): string
 {
-    $name = trim($ad) !== '' ? trim($ad) : 'Merhaba';
-    $product = trim($urun) !== '' ? trim($urun) : 'ürün';
+    $product = trim($urun) !== '' ? trim($urun) : 'urun';
     if (mb_strlen($product) > 48) {
         $product = mb_substr($product, 0, 45) . '...';
     }
 
-    return 'Merhaba, ' . $name . '. Koşar Vantilatör\'den yazıyorum. '
-        . $product . ' için siparişimi tamamlamak istiyorum. (Ref: YK-' . $yarimId . ')';
+    $adTrim = trim($ad);
+    if ($adTrim !== '') {
+        return 'Merhaba, ben ' . $adTrim . '. ' . $product
+            . ' icin siparisimi tamamlamak istiyorum. (Ref: YK-' . $yarimId . ')';
+    }
+
+    return 'Merhaba, Kosar Vantilator. ' . $product
+        . ' icin siparisimi tamamlamak istiyorum. (Ref: YK-' . $yarimId . ')';
 }
 
 function abandoned_recovery_short_wa_url(int $yarimId, ?PDO $pdo = null): string
@@ -86,20 +91,19 @@ function abandoned_recovery_short_wa_url(int $yarimId, ?PDO $pdo = null): string
         return app_url('wa', [], $pdo);
     }
 
-    return app_url('wa', ['r' => $yarimId], $pdo);
+    return app_url('wa/' . $yarimId, [], $pdo);
 }
 
 function abandoned_recovery_sms_body(int $yarimId, string $ad, string $urun, ?PDO $pdo = null): string
 {
-    $name = trim($ad) !== '' ? trim($ad) : 'Merhaba';
     $product = trim($urun) !== '' ? trim($urun) : 'urununuz';
     if (mb_strlen($product) > 36) {
         $product = mb_substr($product, 0, 33) . '...';
     }
     $link = abandoned_recovery_short_wa_url($yarimId, $pdo);
 
-    return 'Merhaba ' . $name . ', Kosar Vantilator. '
-        . $product . ' siparisiniz yarım kaldi. WhatsApp: ' . $link;
+    return 'Merhaba, Kosar Vantilator\'den yaziyoruz. '
+        . $product . ' siparisiniz yarım kaldi. WhatsApp ile tamamlayin: ' . $link;
 }
 
 /**
