@@ -183,7 +183,7 @@ include 'admin_header.php';
                             $isFresh = !empty($r['tarih']) && date('Y-m-d', strtotime((string) $r['tarih'])) === date('Y-m-d');
                             $isConverted = (int) ($r['is_converted'] ?? 0) === 1;
                             $smsSent = ! empty($r['recovery_sms_sent_at']);
-                            $waText = abandoned_recovery_whatsapp_prefill(
+                            $waText = abandoned_recovery_staff_whatsapp_prefill(
                                 (int) $r['id'],
                                 (string) ($r['ad'] ?? ''),
                                 (string) ($r['urun'] ?? '')

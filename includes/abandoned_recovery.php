@@ -85,6 +85,37 @@ function abandoned_recovery_whatsapp_prefill(int $yarimId, string $ad, string $u
         . ' icin siparisimi tamamlamak istiyorum. (Ref: YK-' . $yarimId . ')';
 }
 
+/**
+ * Panelden müşteriye WhatsApp — işletme müşteriye yazıyor (geri kazanım).
+ */
+function abandoned_recovery_staff_whatsapp_prefill(int $yarimId, string $ad, string $urun): string
+{
+    $product = trim($urun) !== '' ? trim($urun) : 'urununuz';
+    if (mb_strlen($product) > 56) {
+        $product = mb_substr($product, 0, 53) . '...';
+    }
+
+    $greeting = 'Merhaba';
+    $adTrim = trim($ad);
+    if ($adTrim !== '') {
+        $parts = preg_split('/\s+/u', $adTrim, 2);
+        $first = trim((string) ($parts[0] ?? ''));
+        if ($first !== '') {
+            $greeting = 'Merhaba ' . $first . ' Bey/Hanım';
+        }
+    }
+
+    $msg = $greeting . ', Koşar Vantilatör\'den yazıyoruz. '
+        . 'Sitemizde ' . $product . ' için başlattığınız siparişinizi görüntülüyoruz. '
+        . 'Siparişinizi birlikte tamamlayalım mı? Ödeme ve teslimat konusunda yardımcı olabiliriz.';
+
+    if ($yarimId > 0) {
+        $msg .= ' (YK-' . $yarimId . ')';
+    }
+
+    return $msg;
+}
+
 function abandoned_recovery_short_wa_url(int $yarimId, ?PDO $pdo = null): string
 {
     if ($yarimId <= 0) {
