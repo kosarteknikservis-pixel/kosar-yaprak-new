@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../includes/laravel4_sync.php';
 
-$orderId = 'TEST-' . date('YmdHis');
+$orderId = (string) time();
 $ok = laravel4_sync_order([
     'external_order_id' => $orderId,
     'total_amount' => 1299.0,
