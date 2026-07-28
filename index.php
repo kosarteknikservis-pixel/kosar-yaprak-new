@@ -820,6 +820,9 @@ if ($tf2 !== '') {
 
     function updateScrollTopBtn() {
         ticking = false;
+        if (window.__PRODUCTS_SCROLL_ACTIVE__) {
+            return;
+        }
         var scrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
         var show = scrollY > minScroll;
 

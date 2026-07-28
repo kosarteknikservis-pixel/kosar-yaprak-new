@@ -1,5 +1,6 @@
 /**
  * Ürünler bölümüne git — slider, menü CTA, hash (ana sayfa).
+ * Yumuşak kaydırma tarayıcı native scroll ile (donma/jank azaltır).
  */
 (function() {
     if (window.__PRODUCTS_SCROLL_INIT__) {
@@ -8,19 +9,13 @@
     window.__PRODUCTS_SCROLL_INIT__ = true;
 
     var INDEX_PRODUCTS_URL = 'index.php#products-heading';
-    var SCROLL_MIN_MS = 720;
-    var SCROLL_MAX_MS = 1100;
-    var SCROLL_MS_PER_PX = 0.58;
-    var SCROLL_MIN_MS_MOBILE = 380;
-    var SCROLL_MAX_MS_MOBILE = 620;
-    var SCROLL_MS_PER_PX_MOBILE = 0.32;
     var TAP_MOVE_PX = 12;
+    var SCROLL_QUIET_MS = 90;
+    var SCROLL_MAX_WAIT_MS = 1400;
 
-    var scrollAnimId = null;
     var touchMoved = false;
     var touchStartX = 0;
     var touchStartY = 0;
-    var lastTouchEndedAt = 0;
 
     if ('scrollRestoration' in history) {
         history.scrollRestoration = 'manual';
@@ -44,47 +39,13 @@
         return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     }
 
-    function isMobileLike() {
-        if (window.matchMedia) {
-            if (window.matchMedia('(max-width: 768px)').matches) {
-                return true;
-            }
-            if (window.matchMedia('(pointer: coarse)').matches) {
-                return true;
-            }
-            if (window.matchMedia('(hover: none)').matches) {
-                return true;
-            }
-        }
-        if (typeof navigator !== 'undefined' && Number(navigator.maxTouchPoints) > 0 && window.innerWidth <= 1024) {
-            return true;
-        }
-        return false;
-    }
-
     function shouldAnimateSmooth() {
         return !prefersReducedMotion();
-    }
-
-    function scrollTiming() {
-        if (isMobileLike()) {
-            return {
-                min: SCROLL_MIN_MS_MOBILE,
-                max: SCROLL_MAX_MS_MOBILE,
-                perPx: SCROLL_MS_PER_PX_MOBILE
-            };
-        }
-        return {
-            min: SCROLL_MIN_MS,
-            max: SCROLL_MAX_MS,
-            perPx: SCROLL_MS_PER_PX
-        };
     }
 
     function registerTouchGuards() {
         document.addEventListener('touchstart', function(event) {
             touchMoved = false;
-            cancelScrollAnimation();
             if (event.touches && event.touches[0]) {
                 touchStartX = event.touches[0].clientX;
                 touchStartY = event.touches[0].clientY;
@@ -101,12 +62,6 @@
                 touchMoved = true;
             }
         }, { passive: true });
-
-        document.addEventListener('touchend', function() {
-            lastTouchEndedAt = Date.now();
-        }, { passive: true });
-
-        document.addEventListener('wheel', cancelScrollAnimation, { passive: true });
     }
 
     registerTouchGuards();
@@ -123,91 +78,80 @@
         }
     }
 
-    function readScrollTop() {
-        return window.pageYOffset
-            || document.documentElement.scrollTop
-            || document.body.scrollTop
-            || 0;
-    }
-
-    function setScrollTop(y) {
-        var top = Math.max(0, Math.round(y));
-        window.scrollTo(0, top);
-        document.documentElement.scrollTop = top;
-        document.body.scrollTop = top;
-    }
-
-    function computeTargetY(el) {
-        var styles = window.getComputedStyle(el);
-        var marginTop = parseFloat(styles.scrollMarginTop) || 0;
-        if (!marginTop) {
-            marginTop = document.querySelector('.countdown-banner') ? 162 : 94;
-        }
-        return el.getBoundingClientRect().top + readScrollTop() - marginTop;
-    }
-
-    function easeInOutQuad(t) {
-        return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-    }
-
-    function durationForDistance(px) {
-        var timing = scrollTiming();
-        return Math.min(timing.max, Math.max(timing.min, Math.round(Math.abs(px) * timing.perPx)));
-    }
-
-    function cancelScrollAnimation() {
-        if (scrollAnimId) {
-            cancelAnimationFrame(scrollAnimId);
-            scrollAnimId = null;
+    function setScrollActive(active) {
+        window.__PRODUCTS_SCROLL_ACTIVE__ = !!active;
+        if (document.body) {
+            document.body.classList.toggle('is-products-scrolling', !!active);
         }
     }
 
-    function animateScrollTo(targetY, done) {
-        cancelScrollAnimation();
+    function waitForScrollEnd(done, maxWaitMs) {
+        var finished = false;
+        var maxWait = maxWaitMs || SCROLL_MAX_WAIT_MS;
 
-        if (!shouldAnimateSmooth()) {
-            setScrollTop(targetY);
+        function finish() {
+            if (finished) {
+                return;
+            }
+            finished = true;
+            window.removeEventListener('scroll', onScroll);
+            setScrollActive(false);
+            if (done) {
+                done();
+            }
+        }
+
+        if ('onscrollend' in window) {
+            var onEnd = function() {
+                window.removeEventListener('scrollend', onEnd);
+                finish();
+            };
+            window.addEventListener('scrollend', onEnd, { once: true });
+            window.setTimeout(finish, maxWait);
+            return;
+        }
+
+        var quietTimer = null;
+        function onScroll() {
+            window.clearTimeout(quietTimer);
+            quietTimer = window.setTimeout(finish, SCROLL_QUIET_MS);
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.setTimeout(finish, maxWait);
+        onScroll();
+    }
+
+    function scrollTargetIntoView(el, smooth, done) {
+        if (!el) {
             if (done) {
                 done();
             }
             return;
         }
 
-        var startY = readScrollTop();
-        var delta = targetY - startY;
+        var behavior = smooth && shouldAnimateSmooth() ? 'smooth' : 'auto';
 
-        if (Math.abs(delta) < 2) {
-            setScrollTop(targetY);
-            if (done) {
-                done();
-            }
-            return;
-        }
-
-        var duration = durationForDistance(delta);
-        var startTime = null;
-
-        function step(now) {
-            if (startTime === null) {
-                startTime = now;
-            }
-            var elapsed = now - startTime;
-            var t = Math.min(1, elapsed / duration);
-            var y = Math.round(startY + delta * easeInOutQuad(t));
-            setScrollTop(y);
-
-            if (t < 1) {
-                scrollAnimId = requestAnimationFrame(step);
-            } else {
-                scrollAnimId = null;
-                setScrollTop(targetY);
+        if (behavior === 'smooth') {
+            setScrollActive(true);
+            try {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (err) {
+                el.scrollIntoView(true);
+                setScrollActive(false);
                 if (done) {
                     done();
                 }
+                return;
             }
+            waitForScrollEnd(done);
+            return;
         }
 
-        scrollAnimId = requestAnimationFrame(step);
+        el.scrollIntoView({ behavior: 'auto', block: 'start' });
+        if (done) {
+            done();
+        }
     }
 
     function updateProductsHash() {
@@ -239,27 +183,14 @@
 
         closeMenuIfOpen();
 
-        function runScroll() {
-            var targetY = computeTargetY(el);
-
-            if (!smooth) {
-                cancelScrollAnimation();
-                setScrollTop(targetY);
-                if (updateHash) {
-                    updateProductsHash();
-                }
-                return;
-            }
-
-            animateScrollTo(targetY, function() {
-                if (updateHash) {
-                    updateProductsHash();
-                }
-            });
-        }
-
         window.requestAnimationFrame(function() {
-            window.setTimeout(runScroll, isMobileLike() ? 16 : 72);
+            window.requestAnimationFrame(function() {
+                scrollTargetIntoView(el, smooth, function() {
+                    if (updateHash) {
+                        updateProductsHash();
+                    }
+                });
+            });
         });
 
         return true;
@@ -305,17 +236,8 @@
             || /#products-heading(?:[?#]|$)/i.test(href);
     }
 
-    function shouldIgnoreTap(event) {
-        if (touchMoved) {
-            return true;
-        }
-        if (event.pointerType === 'touch' && touchMoved) {
-            return true;
-        }
-        if (isMobileLike() && lastTouchEndedAt && (Date.now() - lastTouchEndedAt) > 500) {
-            return false;
-        }
-        return false;
+    function shouldIgnoreTap() {
+        return touchMoved;
     }
 
     document.addEventListener('click', function(e) {
@@ -331,7 +253,7 @@
             return;
         }
 
-        if (shouldIgnoreTap(e)) {
+        if (shouldIgnoreTap()) {
             return;
         }
 
