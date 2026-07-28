@@ -113,10 +113,12 @@ try {
     }
 
     $existing = [];
+    $hadTelBefore = false;
     if ($rid) {
         $exStmt = $pdo->prepare('SELECT ad, tel, urun, fiyat, product_id FROM yarim_kalanlar WHERE id = ? LIMIT 1');
         $exStmt->execute([(int) $rid]);
         $existing = $exStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        $hadTelBefore = trim((string) ($existing['tel'] ?? '')) !== '';
     }
 
     if ($ad === '' && ! empty($existing['ad'])) {
@@ -206,7 +208,8 @@ try {
     }
 
     $savedId = $rid ? (int) $rid : 0;
-    if ($savedId > 0 && $tel !== '') {
+    // SMS yalnızca telefon ilk kez yakalandığında (form her güncellemede tekrar gitmez).
+    if ($savedId > 0 && $tel !== '' && ! $hadTelBefore) {
         try {
             abandoned_recovery_send_sms($pdo, $savedId);
         } catch (Throwable $smsEx) {

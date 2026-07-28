@@ -93,6 +93,33 @@ function abandoned_recovery_sms_body(int $yarimId, string $ad, string $urun, ?PD
 }
 
 /**
+ * Bu telefona son X gün içinde yarım kalan SMS gitti mi?
+ */
+function abandoned_recovery_phone_recently_sent(PDO $pdo, string $telDigits10): bool
+{
+    if (strlen($telDigits10) !== 10) {
+        return true;
+    }
+
+    try {
+        $st = $pdo->prepare(
+            "SELECT id FROM yarim_kalanlar
+             WHERE recovery_sms_sent_at IS NOT NULL
+               AND recovery_sms_sent_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+               AND tel IS NOT NULL
+               AND TRIM(tel) != ''
+               AND RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tel), ' ', ''), '(', ''), ')', ''), '-', ''), '+', ''), 10) = ?
+             LIMIT 1"
+        );
+        $st->execute([$telDigits10]);
+
+        return $st->fetchColumn() !== false;
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+/**
  * Yarım kalan kaydı için bir kez SMS gönder (WhatsApp linki ile).
  */
 function abandoned_recovery_send_sms(PDO $pdo, int $yarimId): bool
@@ -131,6 +158,15 @@ function abandoned_recovery_send_sms(PDO $pdo, int $yarimId): bool
         $tel = substr($tel, 1);
     }
     if (strlen($tel) !== 10 || $tel[0] !== '5') {
+        return false;
+    }
+
+    if (abandoned_recovery_phone_recently_sent($pdo, $tel)) {
+        if (empty($row['recovery_sms_sent_at'])) {
+            $pdo->prepare('UPDATE yarim_kalanlar SET recovery_sms_sent_at = NOW() WHERE id = ? AND recovery_sms_sent_at IS NULL')
+                ->execute([$yarimId]);
+        }
+
         return false;
     }
 
