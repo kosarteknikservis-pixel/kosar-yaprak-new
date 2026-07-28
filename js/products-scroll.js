@@ -1,5 +1,5 @@
 /**
- * Ürünler bölümüne git — yalnızca menü CTA ve açık bağlantılar (ana sayfa).
+ * Ürünler bölümüne git — slider, menü CTA, hash (ana sayfa).
  */
 (function() {
     if (window.__PRODUCTS_SCROLL_INIT__) {
@@ -272,14 +272,14 @@
     window.scrollToProductsHeading = scrollToProducts;
     window.scrollToProducts = scrollToProducts;
 
-    function isExplicitProductsTrigger(node) {
+    function isGoProductsTrigger(node) {
         if (!node || !node.closest) {
             return null;
         }
-        if (node.closest('.js-hp-product-popup, .slider-image')) {
+        if (node.closest('.js-hp-product-popup')) {
             return null;
         }
-        return node.closest('.custom-menu-cta[data-go-products], .custom-menu-link[data-go-products], .js-scroll-to-products');
+        return node.closest('[data-go-products], .js-scroll-to-products');
     }
 
     function hrefPointsToProducts(href) {
@@ -308,7 +308,7 @@
 
     document.addEventListener('click', function(e) {
         var target = e.target;
-        var trigger = isExplicitProductsTrigger(target);
+        var trigger = isGoProductsTrigger(target);
         var link = target && target.closest ? target.closest('a[href]') : null;
 
         if (!trigger && link && (link.classList.contains('js-scroll-to-products') || hrefPointsToProducts((link.getAttribute('href') || '').trim()))) {
@@ -337,7 +337,7 @@
         if (e.key !== 'Enter' && e.key !== ' ') {
             return;
         }
-        var trigger = isExplicitProductsTrigger(e.target);
+        var trigger = isGoProductsTrigger(e.target);
         if (!trigger || !isOnIndex()) {
             return;
         }

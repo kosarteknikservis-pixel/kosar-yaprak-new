@@ -308,8 +308,11 @@ $hpNormalizeUploadPath = static function (string $path): string {
             $sliderIsVideo = $hpVideoPopupMatches($sliderImgPath, $sliderIndex, 'trigger_slider_position');
             ?>
             <div class="slider-image<?= $sliderIsVideo ? ' js-hp-product-popup' : '' ?>"
+                 <?= $sliderIsVideo ? '' : 'data-go-products' ?>
                  <?= $sliderIsVideo ? 'data-hp-popup="video" data-hp-src="' . htmlspecialchars($sliderImgPath, ENT_QUOTES, 'UTF-8') . '"' : '' ?>
-                 <?= $sliderIsVideo ? 'role="button" tabindex="0" aria-label="Ürün videosunu oynat"' : '' ?>>
+                 role="button"
+                 tabindex="0"
+                 aria-label="<?= $sliderIsVideo ? 'Ürün videosunu oynat' : 'Ürünlere git' ?>">
                 <img src="<?= htmlspecialchars($sliderImgPath) ?>" alt="">
             </div>
         <?php endforeach; ?>
