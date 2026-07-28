@@ -123,7 +123,8 @@ function abandoned_capture_js_config(array $settings, array $product = [], strin
 }
 
 /**
- * Sipariş formu — PHP ile önceki yarım kalan kaydından ad/telefon (IP veya çerez).
+ * Sipariş formu — yalnızca bu tarayıcıdaki yarım kalan çerezinden ad/telefon.
+ * IP ile eşleştirme yapılmaz (aynı IP’de başka müşteri bilgisi forma yazılmaması için).
  *
  * @return array{ad: string, tel: string, source: string}
  */
@@ -138,43 +139,29 @@ function abandoned_prefill_contact(PDO $pdo): array
             $cols[(string) ($row['Field'] ?? '')] = true;
         }
 
+        if (! isset($cols['session_id'])) {
+            return $result;
+        }
+
         $activeClause = isset($cols['is_converted']) ? ' AND IFNULL(is_converted, 0) = 0' : '';
-        $ip = app_client_ip();
 
         $sess = $_COOKIE['yarim_kalan_sid'] ?? null;
-        if ($sess !== null && ! preg_match('/^[a-zA-Z0-9_-]{16,96}$/', (string) $sess)) {
-            $sess = null;
+        if ($sess === null || ! preg_match('/^[a-zA-Z0-9_-]{16,96}$/', (string) $sess)) {
+            return $result;
         }
 
-        $row = null;
-        if ($sess !== null && isset($cols['session_id'])) {
-            $st = $pdo->prepare(
-                'SELECT ad, tel FROM yarim_kalanlar WHERE session_id = ?' . $activeClause . ' ORDER BY id DESC LIMIT 1'
-            );
-            $st->execute([$sess]);
-            $row = $st->fetch(PDO::FETCH_ASSOC) ?: null;
-            if ($row) {
-                $result['source'] = 'session';
-            }
-        }
-
-        if (! $row) {
-            $st = $pdo->prepare(
-                'SELECT ad, tel FROM yarim_kalanlar WHERE ip = ?' . $activeClause . ' ORDER BY id DESC LIMIT 1'
-            );
-            $st->execute([$ip]);
-            $row = $st->fetch(PDO::FETCH_ASSOC) ?: null;
-            if ($row) {
-                $result['source'] = 'ip';
-            }
-        }
-
+        $st = $pdo->prepare(
+            'SELECT ad, tel FROM yarim_kalanlar WHERE session_id = ?' . $activeClause . ' ORDER BY id DESC LIMIT 1'
+        );
+        $st->execute([$sess]);
+        $row = $st->fetch(PDO::FETCH_ASSOC) ?: null;
         if (! $row) {
             return $result;
         }
 
         $result['ad'] = trim((string) ($row['ad'] ?? ''));
         $result['tel'] = trim((string) ($row['tel'] ?? ''));
+        $result['source'] = 'session';
 
         return $result;
     } catch (Throwable $e) {

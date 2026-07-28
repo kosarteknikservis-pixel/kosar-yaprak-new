@@ -110,7 +110,7 @@ include 'admin_header.php';
     <h1 class="h4 mb-2"><i class="fas fa-hourglass-half text-warning"></i> Yarım kalan yakalama</h1>
     <p class="text-muted small mb-4">
         Kayıtlar <a href="abandoned_orders.php">Yarım kalan satışlar</a> listesinde görünür.
-        <strong>Sipariş sayfasında</strong> PHP ile daha önceki kayıt (IP/çerez) forma yazılır; tarayıcı kayıtlı autofill algılanıp kaydedilir — bu her zaman açıktır.
+        <strong>Sipariş sayfasında</strong> forma yalnızca aynı tarayıcı çereziyle daha önce yazılan ad/telefon geri gelir (IP ile başka müşteri bilgisi yazılmaz).
         Aşağıdaki gelişmiş mod ise ana sayfa kaydırma / ürün etkileşimi içindir.
     </p>
 
