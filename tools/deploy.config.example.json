@@ -1,0 +1,13 @@
+{
+  "branch": "develop",
+  "remote": "origin",
+  "server": {
+    "host": "SUNUCU_IP_VEYA_HOST",
+    "user": "root",
+    "port": 22,
+    "path": "/home/admin/domains/SITE_ADINIZ.com/public_html"
+  },
+  "post_pull_commands": [
+    "cd phx && composer install --no-dev --quiet 2>/dev/null || true"
+  ]
+}
