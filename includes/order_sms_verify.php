@@ -109,10 +109,39 @@ function order_sms_verify_approved_status_id(PDO $pdo): int
     return $id;
 }
 
+function order_front_otp_is_active(): bool
+{
+    return isset($_SESSION['front_order_verify']) && is_array($_SESSION['front_order_verify']);
+}
+
+function order_front_otp_is_resend_request(array $post): bool
+{
+    return isset($post['otp_stage_resend_submit']) || (string) ($post['otp_stage_action'] ?? '') === 'resend';
+}
+
+function order_front_otp_is_verify_request(array $post): bool
+{
+    if (isset($post['otp_stage_verify_submit'])) {
+        return true;
+    }
+    if ((string) ($post['otp_stage_action'] ?? '') === 'verify') {
+        return true;
+    }
+    if (order_front_otp_is_resend_request($post)) {
+        return false;
+    }
+    $code = preg_replace('/\D+/', '', (string) ($post['otp_code_front'] ?? ''));
+    if (strlen($code) === 6 && order_front_otp_is_active()) {
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * Form öncesi OTP işleyicisi.
  *
- * @return 'skipped'|'passed'|'pending'|'invalid'
+ * @return 'skipped'|'passed'|'pending'|'invalid'|'expired'|'sms_fail'
  */
 function order_front_otp_handle_post(PDO $pdo, array $post, string $customerPhone, int $paymentMethodId): string
 {
@@ -134,7 +163,26 @@ function order_front_otp_handle_post(PDO $pdo, array $post, string $customerPhon
         return 'passed';
     }
 
-    if (isset($post['otp_stage_verify_submit'])) {
+    if (order_front_otp_is_resend_request($post)) {
+        $pending = $_SESSION['front_order_verify'] ?? null;
+        if (! is_array($pending)) {
+            $pending = ['post_data' => $post];
+        }
+        $otp = ov_generate_otp();
+        if (! ov_send_front_otp_sms($telDigits, $otp)) {
+            return 'sms_fail';
+        }
+        $_SESSION['front_order_verify'] = [
+            'otp_hash' => hash('sha256', $otp),
+            'expires_at' => time() + 300,
+            'sent_to' => $telDigits,
+            'post_data' => $pending['post_data'] ?? $post,
+        ];
+
+        return 'pending';
+    }
+
+    if (order_front_otp_is_verify_request($post)) {
         $pending = $_SESSION['front_order_verify'] ?? null;
         if (! is_array($pending)) {
             return 'pending';
@@ -158,22 +206,7 @@ function order_front_otp_handle_post(PDO $pdo, array $post, string $customerPhon
         return 'passed';
     }
 
-    if (isset($post['otp_stage_resend_submit'])) {
-        $pending = $_SESSION['front_order_verify'] ?? null;
-        if (! is_array($pending)) {
-            $pending = ['post_data' => $post];
-        }
-        $otp = ov_generate_otp();
-        if (! ov_send_front_otp_sms($telDigits, $otp)) {
-            return 'sms_fail';
-        }
-        $_SESSION['front_order_verify'] = [
-            'otp_hash' => hash('sha256', $otp),
-            'expires_at' => time() + 300,
-            'sent_to' => $telDigits,
-            'post_data' => $pending['post_data'] ?? $post,
-        ];
-
+    if (order_front_otp_is_active()) {
         return 'pending';
     }
 
@@ -193,9 +226,4 @@ function order_front_otp_handle_post(PDO $pdo, array $post, string $customerPhon
     }
 
     return 'passed';
-}
-
-function order_front_otp_is_active(): bool
-{
-    return isset($_SESSION['front_order_verify']) && is_array($_SESSION['front_order_verify']);
 }

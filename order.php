@@ -652,6 +652,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <?php if ($showFrontOtpStep): ?>
+        <input type="hidden" name="otp_stage_action" id="otp_stage_action" value="">
         <div class="modal fade order-otp-modal" id="orderOtpModal" tabindex="-1" role="dialog" aria-labelledby="orderOtpModalTitle" aria-hidden="true" data-backdrop="static" data-keyboard="false">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content order-otp-modal__content">
@@ -673,8 +674,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     </div>
                     <div class="modal-footer order-otp-modal__footer flex-column">
-                        <button type="submit" name="otp_stage_verify_submit" value="1" class="btn-custom order-form__submit order-otp-modal__btn-verify w-100">Kodu doğrula ve siparişi onayla</button>
-                        <button type="submit" name="otp_stage_resend_submit" value="1" class="btn btn-link order-otp-modal__btn-resend">Kodu yeniden gönder</button>
+                        <button type="submit" name="otp_stage_verify_submit" value="1" class="btn-custom order-form__submit order-otp-modal__btn-verify w-100" data-otp-action="verify">Kodu doğrula ve siparişi onayla</button>
+                        <button type="submit" name="otp_stage_resend_submit" value="1" class="btn btn-link order-otp-modal__btn-resend" data-otp-action="resend">Kodu yeniden gönder</button>
                     </div>
                 </div>
             </div>
@@ -931,10 +932,23 @@ $__abOrderPayload = abandoned_capture_order_payload(is_array($product) ? $produc
 
     form.addEventListener('submit', function (e) {
         var submitter = e.submitter;
-        var isOtpAction = submitter && (
-            submitter.name === 'otp_stage_verify_submit' ||
-            submitter.name === 'otp_stage_resend_submit'
-        );
+        var actionInput = document.getElementById('otp_stage_action');
+        var isOtpAction = false;
+
+        if (otpPending && actionInput) {
+            if (submitter && submitter.getAttribute('data-otp-action')) {
+                actionInput.value = submitter.getAttribute('data-otp-action');
+            } else if (!actionInput.value) {
+                var otpInput = document.getElementById('otp_code_front');
+                var otpLen = otpInput ? otpInput.value.replace(/\D/g, '').length : 0;
+                actionInput.value = otpLen === 6 ? 'verify' : '';
+            }
+        }
+
+        isOtpAction = actionInput && (actionInput.value === 'verify' || actionInput.value === 'resend');
+        if (!isOtpAction && submitter) {
+            isOtpAction = submitter.name === 'otp_stage_verify_submit' || submitter.name === 'otp_stage_resend_submit';
+        }
 
         if (!isOtpAction && !otpPending) {
             var citySelect = document.getElementById('customer_city');
@@ -955,7 +969,9 @@ $__abOrderPayload = abandoned_capture_order_payload(is_array($product) ? $produc
 
         if (isOtpAction) {
             var otpInput = document.getElementById('otp_code_front');
-            if (submitter.name === 'otp_stage_verify_submit' && otpInput && otpInput.value.replace(/\D/g, '').length !== 6) {
+            var verifyClicked = (actionInput && actionInput.value === 'verify') ||
+                (submitter && submitter.name === 'otp_stage_verify_submit');
+            if (verifyClicked && otpInput && otpInput.value.replace(/\D/g, '').length !== 6) {
                 e.preventDefault();
                 alert('Lütfen 6 haneli doğrulama kodunu girin.');
                 otpInput.focus();
@@ -968,7 +984,7 @@ $__abOrderPayload = abandoned_capture_order_payload(is_array($product) ? $produc
             return false;
         }
         submitting = true;
-        var busyBtn = isOtpAction ? submitter : form.querySelector('.order-form__submit:not([hidden])');
+        var busyBtn = (submitter && isOtpAction) ? submitter : form.querySelector('.order-form__submit:not([hidden])');
         if (busyBtn) {
             busyBtn.disabled = true;
             busyBtn.setAttribute('aria-busy', 'true');
@@ -1026,6 +1042,14 @@ $__abOrderPayload = abandoned_capture_order_payload(is_array($product) ? $produc
 <script>
 (function () {
     var $modal = $('#orderOtpModal');
+    var actionInput = document.getElementById('otp_stage_action');
+    document.querySelectorAll('[data-otp-action]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            if (actionInput) {
+                actionInput.value = btn.getAttribute('data-otp-action') || '';
+            }
+        });
+    });
     if (!$modal.length) return;
     $modal.modal({ backdrop: 'static', keyboard: false, show: true });
     setTimeout(function () {
