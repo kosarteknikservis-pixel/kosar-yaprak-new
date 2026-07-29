@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require '../db.php';
 require 'auth.php';
+require_once dirname(__DIR__) . '/includes/netgsm_customer_sms.php';
 
 $stmt = $pdo->query('SELECT * FROM netgsm_settings WHERE id = 1');
 /** @var array<string, mixed>|false $settings */
@@ -319,16 +320,16 @@ if (! in_array($currentProvider, ['mutlucell', 'netgsm'], true)) {
 
                 <div class="col-12">
                     <label for="message" class="form-label">Yeni sipariş mesaj şablonu</label>
-                    <textarea class="form-control" id="message" name="message" rows="4"><?= htmlspecialchars((string) $s('message')) ?></textarea>
+                    <textarea class="form-control" id="message" name="message" rows="4" placeholder="<?= htmlspecialchars(netgsm_default_new_order_message(), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) $s('message')) ?></textarea>
                     <div class="form-text">
-                        Boş bırakırsanız sabit sipariş alındı metni kullanılır.
+                        Test için kısa metin (ör. «123») yazmayın; boş veya geçersiz şablonda varsayılan metin kullanılır.
                         Değişkenler: <code>{customer_name}</code> <code>{order_id}</code> <code>{tracking_number}</code> <code>{products}</code> <code>{total_price}</code>
                     </div>
                 </div>
 
                 <div class="col-12">
-                    <label for="message_on_status" class="form-label">Durum tetik SMS şablonu</label>
-                    <textarea class="form-control" id="message_on_status" name="message_on_status" rows="3"><?= htmlspecialchars((string) $s('message_on_status')) ?></textarea>
+                    <label for="message_on_status" class="form-label">Durum tetik SMS şablonu (kargoya verildi)</label>
+                    <textarea class="form-control" id="message_on_status" name="message_on_status" rows="3" placeholder="<?= htmlspecialchars(netgsm_default_status_message(), ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) $s('message_on_status')) ?></textarea>
                     <div class="form-text">“Durum SMS” açıkken zorunlu. Aynı değişkenler + boş bırakılırsa ön yüzde kısa varsayılan metin kullanılır.</div>
                 </div>
 

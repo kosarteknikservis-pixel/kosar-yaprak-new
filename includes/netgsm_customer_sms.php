@@ -39,6 +39,92 @@ function netgsm_credentials_usable(array $cfg): bool
 }
 
 /**
+ * @return array<string, mixed>|null
+ */
+function netgsm_load_settings(PDO $pdo): ?array
+{
+    $stmt = $pdo->query('SELECT * FROM netgsm_settings WHERE id = 1 LIMIT 1');
+    $row = $stmt instanceof PDOStatement ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
+
+    return is_array($row) ? $row : null;
+}
+
+function netgsm_default_new_order_message(): string
+{
+    return 'Sayın {customer_name}, siparişiniz alınmıştır. Ürün: {products}. Siparişiniz 1-3 iş günü içinde kargoya verilecektir. Kargoya verildiğinde SMS ile bilgilendirileceksiniz. Teşekkür ederiz.';
+}
+
+function netgsm_default_status_message(): string
+{
+    return 'Sayın {customer_name}, siparişiniz (No:{order_id}) kargoya verildi. Takip no: {tracking_number}. Teşekkür ederiz.';
+}
+
+function netgsm_is_placeholder_sms_template(string $template): bool
+{
+    $t = trim($template);
+    if ($t === '') {
+        return true;
+    }
+    if (preg_match('/^\d{1,8}$/', $t)) {
+        return true;
+    }
+    if (mb_strlen($t) < 15) {
+        return true;
+    }
+
+    return false;
+}
+
+function netgsm_order_product_names(PDO $pdo, int $orderId): string
+{
+    if ($orderId <= 0) {
+        return '';
+    }
+
+    try {
+        $st = $pdo->prepare(
+            'SELECT GROUP_CONCAT(p.product_name ORDER BY oi.order_item_id SEPARATOR ", ") AS names
+             FROM order_items oi
+             INNER JOIN products p ON p.product_id = oi.product_id
+             WHERE oi.order_id = ?'
+        );
+        $st->execute([$orderId]);
+
+        return trim((string) ($st->fetchColumn() ?: ''));
+    } catch (Throwable $e) {
+        return '';
+    }
+}
+
+/**
+ * @param  array<string, mixed>  $order
+ */
+function netgsm_prepare_order_for_sms(PDO $pdo, array $order, string $orderIdStr): array
+{
+    $orderId = (int) ($order['order_id'] ?? $orderIdStr);
+    $names = netgsm_order_product_names($pdo, $orderId);
+    if ($names !== '') {
+        $order['products'] = $names;
+    }
+
+    return $order;
+}
+
+function netgsm_resolve_new_order_message(string $template, array $order, string $orderIdStr): string
+{
+    $tpl = trim($template);
+    if (netgsm_is_placeholder_sms_template($tpl)) {
+        $tpl = netgsm_default_new_order_message();
+    }
+
+    return html_entity_decode(
+        strip_tags(netgsm_customer_message_fill($tpl, $order, $orderIdStr)),
+        ENT_QUOTES | ENT_HTML5,
+        'UTF-8'
+    );
+}
+
+/**
  * @param  array<string, mixed>  $order
  */
 function netgsm_customer_message_fill(string $template, array $order, string $orderIdStr): string
@@ -146,8 +232,7 @@ function netgsm_api_send_get(
 function netgsm_send_new_order_sms_if_enabled(PDO $pdo, array $order, string $orderIdStr): void
 {
     try {
-        $stmt = $pdo->query('SELECT * FROM netgsm_settings WHERE id = 1 LIMIT 1');
-        $cfg = $stmt instanceof PDOStatement ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
+        $cfg = netgsm_load_settings($pdo);
 
         if (
             !is_array($cfg)
@@ -168,19 +253,8 @@ function netgsm_send_new_order_sms_if_enabled(PDO $pdo, array $order, string $or
             return;
         }
 
-        $smsTpl = trim((string) ($cfg['message'] ?? ''));
-        if ($smsTpl !== '') {
-            $message = html_entity_decode(
-                strip_tags(netgsm_customer_message_fill($smsTpl, $order, $orderIdStr)),
-                ENT_QUOTES | ENT_HTML5,
-                'UTF-8'
-            );
-        } else {
-            $message = 'Sayın ' . ($order['customer_name'] ?? '') . ', Siparişinizi başarıyla aldık. Siparişinizdeki ürünler: '
-                . ($order['products'] ?? '') . '. Toplam tutar: '
-                . number_format((float) ($order['total_price'] ?? 0), 2, ',', '.')
-                . ' TL. Teşekkür eder, iyi günler dileriz.';
-        }
+        $order = netgsm_prepare_order_for_sms($pdo, $order, $orderIdStr);
+        $message = netgsm_resolve_new_order_message((string) ($cfg['message'] ?? ''), $order, $orderIdStr);
 
         require_once __DIR__ . '/transactional_sms.php';
         $ok = sendTransactionalSms($gsmno, $message, $cfg);
@@ -248,9 +322,10 @@ function netgsm_try_send_customer_sms_on_status_transition(
         }
 
         $orderIdStr = (string) $orderPk;
+        $order = netgsm_prepare_order_for_sms($pdo, $order, $orderIdStr);
         $tpl = trim((string) ($cfg['message_on_status'] ?? ''));
-        if ($tpl === '') {
-            $tpl = 'Sayın {customer_name}, siparişiniz (No:{order_id}) onay sürecindedir / güncellenmiştir. Teşekkür ederiz.';
+        if (netgsm_is_placeholder_sms_template($tpl)) {
+            $tpl = netgsm_default_status_message();
         }
 
         $message = html_entity_decode(

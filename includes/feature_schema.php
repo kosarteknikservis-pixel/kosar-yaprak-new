@@ -887,6 +887,14 @@ function ensure_feature_schema(PDO $pdo): void
                 $ncol($pdo, 'netgsm_settings', 'sms_status_trigger_id', 'INT NOT NULL DEFAULT 16');
                 $ncol($pdo, 'netgsm_settings', 'message_on_status', 'TEXT NULL');
                 $ncol($pdo, 'netgsm_settings', 'sms_provider', "VARCHAR(20) NOT NULL DEFAULT 'mutlucell'");
+                require_once __DIR__ . '/netgsm_customer_sms.php';
+                $defaultNewOrderSms = netgsm_default_new_order_message();
+                $pdo->prepare(
+                    'UPDATE netgsm_settings SET message = ?
+                     WHERE id = 1 AND (
+                         message IS NULL OR TRIM(message) = \'\' OR TRIM(message) REGEXP \'^[0-9]{1,8}$\' OR CHAR_LENGTH(TRIM(message)) < 15
+                     )'
+                )->execute([$defaultNewOrderSms]);
             }
             $ttel = $pdo->query("SHOW TABLES LIKE 'telegram_settings'");
             if ($ttel instanceof PDOStatement && $ttel->fetch()) {

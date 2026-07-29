@@ -100,7 +100,7 @@ final class PaytrGateway
             'user_name' => mb_substr((string) ($order['customer_name'] ?? 'Müşteri'), 0, 60),
             'user_address' => mb_substr((string) ($order['customer_address'] ?? '-'), 0, 400),
             'user_phone' => mb_substr(preg_replace('/\D+/', '', (string) ($order['customer_phone'] ?? '')) ?: '5000000000', 0, 20),
-            'merchant_ok_url' => app_url('payment/paytr_ok', [], $this->db),
+            'merchant_ok_url' => app_url('payment/paytr_ok', ['order_id' => $orderId], $this->db),
             'merchant_fail_url' => app_url('payment/paytr_fail', [], $this->db),
             'timeout_limit' => (int) ($this->cfg['timeout_limit'] ?? 30),
             'currency' => $currency,
