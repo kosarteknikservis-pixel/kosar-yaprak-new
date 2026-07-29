@@ -11,9 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mid = trim((string) ($_POST['merchant_id'] ?? $cfg['merchant_id'] ?? ''));
         $mkey = (string) ($_POST['merchant_key'] ?? $cfg['merchant_key'] ?? '');
         $msalt = (string) ($_POST['merchant_salt'] ?? $cfg['merchant_salt'] ?? '');
+        $callbackHint = app_url('payment/paytr_callback', [], $pdo);
         $ok = $mid !== '' && $mkey !== '' && $msalt !== '';
         $_SESSION['message'] = $ok
-            ? 'PayTR kimlik bilgileri formda mevcut. Canlı test için mağaza panelinde Bildirim URL: ' . htmlspecialchars(dirname(__DIR__) . '/payment/paytr_callback.php')
+            ? 'PayTR kimlik bilgileri formda mevcut. Canlı test için mağaza panelinde Bildirim URL: ' . htmlspecialchars($callbackHint)
             : 'PayTR test: merchant_id, key ve salt zorunlu.';
         $_SESSION['message_type'] = $ok ? 'success' : 'danger';
         header('Location: paytr_settings.php');
