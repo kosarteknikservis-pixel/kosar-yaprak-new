@@ -1,0 +1,394 @@
+/**
+ * Panel okunabilirlik + karanlık tema düzeltmeleri.
+ * Sabit açık renkleri tema değişkenlerine bağlar; formlar ve tablolar her modda okunur kalır.
+ */
+
+/* —— Genel okunabilirlik (aydınlık + karanlık) —— */
+body.admin-app {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+body.admin-app .form-label,
+body.admin-app label:not(.form-check-label) {
+    color: var(--text);
+}
+
+body.admin-app .card,
+body.admin-app .card-body,
+body.admin-app .card-header {
+    color: var(--text);
+}
+
+body.admin-app .table tbody td {
+    font-size: 0.875rem;
+    line-height: 1.45;
+}
+
+body.admin-app .table thead th {
+    font-size: 0.72rem;
+}
+
+body.admin-app .form-control,
+body.admin-app .form-select,
+body.admin-app textarea.form-control {
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+body.admin-app .form-control::placeholder {
+    color: var(--text-muted);
+    opacity: 0.9;
+}
+
+body.admin-app .form-control:focus,
+body.admin-app .form-select:focus,
+body.admin-app textarea.form-control:focus {
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: var(--accent-border);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+body.admin-app .input-group-text {
+    background: var(--surface-2);
+    color: var(--text-muted);
+    border-color: var(--border);
+}
+
+body.admin-app .text-muted,
+body.admin-app .form-text {
+    color: var(--text-muted) !important;
+}
+
+/* Aydınlık: soluk gri biraz koyulaştır */
+:root {
+    --text-muted: #5c6b7f;
+}
+
+/* Karanlık: metin ve ikincil metin daha parlak */
+[data-theme="dark"] {
+    --text-muted: #a8b4c8;
+}
+
+[data-theme="dark"] body.admin-app {
+    color: var(--text);
+}
+
+[data-theme="dark"] body.admin-app .form-control,
+[data-theme="dark"] body.admin-app .form-select,
+[data-theme="dark"] body.admin-app textarea.form-control {
+    background-color: var(--surface-2);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] body.admin-app .form-control:focus,
+[data-theme="dark"] body.admin-app .form-select:focus,
+[data-theme="dark"] body.admin-app textarea.form-control:focus {
+    background-color: var(--surface);
+    color: var(--text);
+}
+
+[data-theme="dark"] body.admin-app .form-control:disabled,
+[data-theme="dark"] body.admin-app .form-select:disabled {
+    background-color: rgba(15, 23, 42, 0.5);
+    color: var(--text-muted);
+}
+
+/* Bootstrap yardımcı sınıflar */
+[data-theme="dark"] body.admin-app .text-dark,
+[data-theme="dark"] body.admin-app .text-body {
+    color: var(--text) !important;
+}
+
+[data-theme="dark"] body.admin-app .bg-light {
+    background-color: var(--surface-2) !important;
+    color: var(--text) !important;
+}
+
+[data-theme="dark"] body.admin-app .bg-white {
+    background-color: var(--surface) !important;
+    color: var(--text) !important;
+}
+
+[data-theme="dark"] body.admin-app .border,
+[data-theme="dark"] body.admin-app .border-top,
+[data-theme="dark"] body.admin-app .border-bottom {
+    border-color: var(--border) !important;
+}
+
+/* Tablolar */
+[data-theme="dark"] body.admin-app .table {
+    color: var(--text);
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--text);
+    --bs-table-border-color: var(--border);
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.03);
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] body.admin-app .table thead th {
+    background: var(--surface-2);
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] body.admin-app .table tbody tr.duplicate {
+    background: rgba(239, 68, 68, 0.12) !important;
+}
+
+/* Liste, modal, dropdown */
+[data-theme="dark"] body.admin-app .list-group-item {
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] body.admin-app .list-group-item.active {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+[data-theme="dark"] body.admin-app .modal-content {
+    background-color: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] body.admin-app .modal-header,
+[data-theme="dark"] body.admin-app .modal-footer {
+    border-color: var(--border);
+    background-color: var(--surface);
+}
+
+[data-theme="dark"] body.admin-app .dropdown-menu {
+    background-color: var(--surface);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] body.admin-app .dropdown-item {
+    color: var(--text);
+}
+
+[data-theme="dark"] body.admin-app .dropdown-item:hover,
+[data-theme="dark"] body.admin-app .dropdown-item:focus {
+    background-color: var(--surface-2);
+    color: var(--text);
+}
+
+[data-theme="dark"] body.admin-app h1,
+[data-theme="dark"] body.admin-app h2,
+[data-theme="dark"] body.admin-app h3,
+[data-theme="dark"] body.admin-app h4,
+[data-theme="dark"] body.admin-app h5,
+[data-theme="dark"] body.admin-app h6,
+[data-theme="dark"] body.admin-app .h1,
+[data-theme="dark"] body.admin-app .h2,
+[data-theme="dark"] body.admin-app .h3,
+[data-theme="dark"] body.admin-app .h4,
+[data-theme="dark"] body.admin-app .h5,
+[data-theme="dark"] body.admin-app .h6 {
+    color: var(--text);
+}
+
+[data-theme="dark"] body.admin-app small,
+[data-theme="dark"] body.admin-app .small {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] body.admin-app code {
+    color: #c7d2fe;
+}
+
+[data-theme="dark"] body.admin-app .btn-outline-secondary {
+    color: var(--text);
+    border-color: var(--border);
+    background: transparent;
+}
+
+[data-theme="dark"] body.admin-app .btn-outline-secondary:hover {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] body.admin-app .btn-close {
+    filter: invert(1) grayscale(1) brightness(1.4);
+}
+
+/* cc-workspace — sabit açık renkler */
+[data-theme="dark"] .cc-toolbar {
+    background: linear-gradient(135deg, rgba(22, 101, 52, 0.18) 0%, rgba(15, 23, 42, 0.85) 100%);
+    border-color: rgba(34, 197, 94, 0.28);
+}
+
+[data-theme="dark"] .cc-toolbar__label {
+    color: #86efac;
+}
+
+[data-theme="dark"] .cc-stat__val {
+    color: var(--text);
+}
+
+[data-theme="dark"] .cc-chip--primary {
+    background: rgba(34, 197, 94, 0.12);
+    color: #bbf7d0;
+    border-color: rgba(34, 197, 94, 0.35);
+}
+
+[data-theme="dark"] .cc-chip--primary:hover {
+    background: rgba(34, 197, 94, 0.2);
+    color: #dcfce7;
+}
+
+[data-theme="dark"] .cc-chip--warn {
+    background: rgba(245, 158, 11, 0.14);
+    color: #fcd34d;
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+[data-theme="dark"] .cc-chip--danger {
+    background: rgba(239, 68, 68, 0.14);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+[data-theme="dark"] .cc-table-compact tbody tr:hover {
+    background: rgba(34, 197, 94, 0.08);
+}
+
+[data-theme="dark"] .cc-row-fresh {
+    background: rgba(245, 158, 11, 0.1) !important;
+}
+
+[data-theme="dark"] .cc-row-blocked {
+    background: rgba(239, 68, 68, 0.1) !important;
+}
+
+[data-theme="dark"] .cc-row-converted {
+    background: rgba(239, 68, 68, 0.14) !important;
+}
+
+[data-theme="dark"] .cc-dash-action strong {
+    color: var(--text);
+}
+
+[data-theme="dark"] .cc-entry-kv td {
+    border-top-color: var(--border);
+}
+
+[data-theme="dark"] .topbar-site-link {
+    color: #86efac;
+}
+
+[data-theme="dark"] .topbar-site-link:hover {
+    background: rgba(34, 197, 94, 0.12);
+    color: #bbf7d0;
+}
+
+[data-theme="dark"] .topbar-menu-search__icon {
+    color: var(--text-muted);
+}
+
+/* admin-panel-ui — sabit açık renkler */
+[data-theme="dark"] .order-mobile-card__name {
+    color: var(--text);
+}
+
+[data-theme="dark"] .orders-admin-page .date-badge {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+[data-theme="dark"] .orders-admin-page .product-item {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+[data-theme="dark"] .orders-admin-page .duplicate {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+[data-theme="dark"] .admin-locale-note {
+    background: rgba(56, 189, 248, 0.12);
+    border-color: rgba(56, 189, 248, 0.35);
+    color: #7dd3fc;
+}
+
+[data-theme="dark"] .admin-table-readable tbody tr:hover {
+    background: rgba(34, 197, 94, 0.08);
+}
+
+[data-theme="dark"] .admin-section-card__title i {
+    color: #86efac;
+}
+
+[data-theme="dark"] .admin-badge-tr {
+    background: rgba(34, 197, 94, 0.14);
+    color: #86efac;
+    border-color: rgba(34, 197, 94, 0.35);
+}
+
+[data-theme="dark"] .admin-cms-card:hover {
+    border-color: rgba(34, 197, 94, 0.4);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="dark"] .cloaker-section {
+    background: var(--surface-2);
+}
+
+[data-theme="dark"] .cloaker-traffic-card__reason {
+    background: rgba(245, 158, 11, 0.12);
+    color: #fcd34d;
+}
+
+/* Slider yönetimi (inline stat kartları) */
+[data-theme="dark"] .stat-card::before {
+    background: var(--accent-border);
+}
+
+[data-theme="dark"] .stat-card:hover {
+    border-color: var(--accent-border);
+}
+
+[data-theme="dark"] .slider-actions {
+    background: var(--surface-2);
+}
+
+/* Rozetler — karanlıkta okunur tonlar */
+[data-theme="dark"] .cc-badge--ok {
+    background: rgba(34, 197, 94, 0.18);
+    color: #86efac;
+}
+
+[data-theme="dark"] .cc-badge--ship {
+    background: rgba(59, 130, 246, 0.18);
+    color: #93c5fd;
+}
+
+[data-theme="dark"] .cc-badge--wait {
+    background: rgba(245, 158, 11, 0.18);
+    color: #fcd34d;
+}
+
+[data-theme="dark"] .cc-badge--call {
+    background: rgba(99, 102, 241, 0.2);
+    color: #c7d2fe;
+}
+
+[data-theme="dark"] .cc-badge--bad {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+}
+
+[data-theme="dark"] .cc-badge--muted {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-muted);
+}

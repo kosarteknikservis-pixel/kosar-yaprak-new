@@ -60,6 +60,7 @@ $admin_quick_nav_active = static function (array $files) use ($admin_cur): bool 
     <link rel="stylesheet" href="<?= htmlspecialchars($admin_css_href, ENT_QUOTES, 'UTF-8') ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars(admin_asset('css/cc-workspace.css'), ENT_QUOTES, 'UTF-8') ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars(admin_asset('css/admin-panel-ui.css'), ENT_QUOTES, 'UTF-8') ?>">
+    <link rel="stylesheet" href="<?= htmlspecialchars(admin_asset('css/admin-theme-readability.css'), ENT_QUOTES, 'UTF-8') ?>">
     <script>window.ADMIN_WEB_ROOT=<?= json_encode(ADMIN_WEB_ROOT, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>;</script>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
