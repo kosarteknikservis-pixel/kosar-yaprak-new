@@ -127,7 +127,7 @@ include 'admin_header.php';
                         <div class="col-md-6">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="notify_new_order" id="notify_new_order" <?= !empty($g('notify_new_order', 1)) ? 'checked' : '' ?>>
-                                <label class="form-check-label" for="notify_new_order">order.php — yeni sipariş</label>
+                                <label class="form-check-label" for="notify_new_order">Yeni sipariş (vitrin + manuel)</label>
                             </div>
                         </div>
                         <div class="col-md-6">

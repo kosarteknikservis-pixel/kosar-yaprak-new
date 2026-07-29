@@ -142,6 +142,63 @@ function sendTelegramNotification(PDO $pdo, string $event, string $message_text)
 }
 
 /**
+ * Sipariş kaydından Telegram yeni sipariş bildirimi (vitrin + panel manuel).
+ */
+function telegram_notify_new_order(PDO $pdo, int $orderId, string $heading = 'Yeni Sipariş'): void
+{
+    try {
+        $st = $pdo->prepare(
+            'SELECT o.*, c.city_name AS customer_city_name, d.district_name AS customer_district_name,
+                    p.product_name, oi.price
+             FROM orders o
+             LEFT JOIN cities c ON o.customer_city = c.city_id
+             LEFT JOIN districts d ON o.customer_district = d.district_id
+             LEFT JOIN order_items oi ON oi.order_id = o.order_id
+             LEFT JOIN products p ON p.product_id = oi.product_id
+             WHERE o.order_id = ?
+             LIMIT 1'
+        );
+        $st->execute([$orderId]);
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+        if (!is_array($row)) {
+            return;
+        }
+
+        $customer_name = (string) ($row['customer_name'] ?? '');
+        $customer_phone = (string) ($row['customer_phone'] ?? '');
+        $customer_address = (string) ($row['customer_address'] ?? '');
+        $city = (string) ($row['customer_city_name'] ?? '');
+        $district = (string) ($row['customer_district_name'] ?? '');
+        $order_notes = (string) ($row['order_notes'] ?? '');
+        $source = (string) ($row['source'] ?? '');
+        $price = (string) ($row['price'] ?? '');
+
+        $message = $heading . ': '
+            . "\nMüşteri: {$customer_name}\nTelefon: {$customer_phone}\nAdres: {$customer_address}, {$district}, {$city}"
+            . "\nTutar: {$price} TL\nSipariş ID: {$orderId}\nNotlar: {$order_notes}\nKaynak: {$source}";
+
+        $product_name = trim((string) ($row['product_name'] ?? ''));
+        if ($product_name !== '') {
+            $message .= "\nÜrün: {$product_name}";
+        }
+
+        $invoice_vkn = trim((string) ($row['invoice_vkn'] ?? ''));
+        $invoice_tax_office = trim((string) ($row['invoice_tax_office'] ?? ''));
+        $invoice_company_name = trim((string) ($row['invoice_company_name'] ?? ''));
+        $invoice_address = trim((string) ($row['invoice_address'] ?? ''));
+        if ($invoice_vkn !== '' || $invoice_tax_office !== '' || $invoice_company_name !== '' || $invoice_address !== '') {
+            $message .= "\n--- Kurumsal fatura ---\nVKN: {$invoice_vkn}\nVergi D.: {$invoice_tax_office}\nÜnvan: {$invoice_company_name}\nFatura adr.: {$invoice_address}";
+        }
+
+        sendTelegramNotification($pdo, 'new_order', $message);
+    } catch (Throwable $e) {
+        if (isset($_SERVER['HTTP_HOST'])) {
+            error_log('telegram_notify_new_order: ' . $e->getMessage());
+        }
+    }
+}
+
+/**
  * Panelde sipariş durumu değişince (isteğe bağlı) yöneticiye bildirim.
  */
 function telegram_notify_admin_status_change(PDO $pdo, int $orderId, int $oldStatusId, int $newStatusId): void

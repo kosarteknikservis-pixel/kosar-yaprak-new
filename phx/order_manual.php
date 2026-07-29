@@ -78,6 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once __DIR__ . '/../includes/laravel4_sync.php';
         laravel4_sync_admin_order($newId, $pdo);
 
+        require_once __DIR__ . '/../telegram.php';
+        telegram_notify_new_order($pdo, $newId, 'Manuel Sipariş');
+
         $_SESSION['message'] = 'Manuel sipariş oluşturuldu #' . $newId;
         header('Location: order_manage.php?order_id=' . $newId);
         exit;
