@@ -56,12 +56,9 @@ if (($verified['status'] ?? '') === 'success') {
         'invoice_address' => $order['invoice_address'] ?? '',
         'ip_address' => $order['customer_ip'] ?? '',
         'cookie_lifetime' => 60,
-        'telegram_heading' => 'Yeni Sipariş (ödeme alındı — PayTR)',
     ]);
 } else {
     OrderPaymentFinalize::markPaymentFailed($pdo, $orderId);
-    require_once dirname(__DIR__) . '/telegram.php';
-    telegram_notify_new_order($pdo, $orderId, 'Ödeme başarısız (PayTR)');
     app_log('payment', 'PayTR callback failed for order #' . $orderId);
 }
 
