@@ -155,6 +155,9 @@ $payment_methods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 require_once __DIR__ . '/includes/order_page_ui.php';
 $orderPageUi = order_page_ui_get($pdo);
 
+require_once __DIR__ . '/includes/payment_trust_badges.php';
+$orderPaymentTrustBadges = payment_trust_badges_collect($pdo);
+
 $abandonedPrefill = abandoned_prefill_contact($pdo);
 
 $showFrontOtpStep = order_front_otp_is_active() || (isset($_GET['otp']) && (string) $_GET['otp'] === '1');
@@ -460,6 +463,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/korp.css">
+    <link rel="stylesheet" href="css/payment-trust.css">
     <link rel="stylesheet" href="css/site-footer.css">
 </head>
 <body class="site-shell-app order-page-view">
@@ -637,6 +641,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <h2 class="order-form__section-title"><?= te('order.payment_title', 'Ödeme Yöntemi Seçiniz') ?></h2>
+        <?php if ($orderPaymentTrustBadges !== []): ?>
+            <?php payment_trust_render($orderPaymentTrustBadges, 'payment-trust payment-trust--order'); ?>
+        <?php endif; ?>
         <div class="form-group">
             <select class="form-control" id="payment_method_id" name="payment_method_id" required>
                 <option value=""><?= te('order.payment_select', 'Seçiniz...') ?></option>

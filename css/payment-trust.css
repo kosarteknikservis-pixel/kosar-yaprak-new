@@ -1,0 +1,79 @@
+.payment-trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin: 10px 0 6px;
+}
+
+.payment-trust--section {
+    max-width: 36rem;
+    margin: 0 auto 14px;
+    padding: 0 10px;
+}
+
+.payment-trust--card {
+    margin: 12px 0 6px;
+    max-width: 20rem;
+}
+
+.payment-trust--order {
+    margin: 0 0 12px;
+    justify-content: flex-start;
+}
+
+.payment-trust__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.25;
+    border: 1px solid transparent;
+    text-align: left;
+}
+
+.payment-trust__pill i {
+    font-size: 0.9em;
+    flex-shrink: 0;
+    opacity: 0.92;
+}
+
+.payment-trust__pill--green {
+    background: #ecfdf5;
+    color: #047857;
+    border-color: #a7f3d0;
+}
+
+.payment-trust__pill--teal {
+    background: #f0fdfa;
+    color: #0f766e;
+    border-color: #99f6e4;
+}
+
+.payment-trust__pill--blue {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #bfdbfe;
+}
+
+.payment-trust__pill--orange {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: #fed7aa;
+}
+
+.payment-trust__pill--slate {
+    background: #f8fafc;
+    color: #475569;
+    border-color: #e2e8f0;
+}
+
+@media (max-width: 480px) {
+    .payment-trust__pill {
+        font-size: 0.72rem;
+        padding: 4px 8px;
+    }
+}

@@ -101,8 +101,9 @@ include 'admin_header.php';
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label">Max taksit (0=panel limiti)</label>
+                <label class="form-label">Max taksit (0 = PayTR panel limiti)</label>
                 <input type="number" name="max_installment" class="form-control" min="0" max="12" value="<?= (int) ($r['max_installment'] ?? 0) ?>">
+                <div class="form-text">Örn. <strong>3</strong> yazarsanız vitrinde “3 taksit imkânı” rozeti görünür. Peşin fiyatına taksit için PayTR mağaza panelindeki taksit kampanyalarını da açmanız gerekir.</div>
             </div>
             <div class="col-md-3">
                 <label class="form-label">Zaman aşımı (dk)</label>
@@ -116,7 +117,7 @@ include 'admin_header.php';
                 </select>
             </div>
         </div>
-        <p class="text-muted small mt-3 mb-2">Ödeme yöntemlerinde <strong>Kredi Kartı (PayTR)</strong> satırını aktif edin (<a href="manage_payment_methods.php">Ödeme yöntemleri</a>).</p>
+        <p class="text-muted small mt-3 mb-2">Online kart seçeneği PayTR açık olduğunda sipariş formuna otomatik eklenir. İsteğe bağlı: <a href="manage_payment_methods.php">Ödeme yöntemleri</a> sayfasından adı düzenleyebilirsiniz.</p>
         <div class="d-flex gap-2 mt-3">
             <button type="submit" name="save_paytr" value="1" class="btn btn-primary"><i class="fas fa-save"></i> Kaydet</button>
             <button type="submit" name="paytr_test" value="1" class="btn btn-outline-secondary"><i class="fas fa-plug"></i> Bilgileri kontrol et</button>

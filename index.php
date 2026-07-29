@@ -166,6 +166,7 @@ $hpNormalizeUploadPath = static function (string $path): string {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/index-1.css">
+    <link rel="stylesheet" href="css/payment-trust.css">
     <link rel="stylesheet" href="css/site-footer.css">
 <?php if ($fayansHomeVideo !== null): ?>
     <link rel="stylesheet" href="css/fayans-home-video.css">
@@ -617,6 +618,9 @@ if ($tf2 !== '') {
 
 }
 
+require_once __DIR__ . '/includes/payment_trust_badges.php';
+$hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
+
 ?>
 <section id="products" class="homepage-products-scope" style="margin-top:10px;">
 <?php if (!empty((int) ($hpSec['show_heading'] ?? 1))): ?>
@@ -631,6 +635,9 @@ if ($tf2 !== '') {
             <span style="<?= $hsf ?>color: <?= $hsc ?>;"><?= htmlspecialchars((string) ($hpSec['heading_sub'] ?? '')) ?></span>
         <?php endif; ?>
     </h1>
+<?php if ($hpPaymentTrustBadges !== []): ?>
+    <?php payment_trust_render($hpPaymentTrustBadges, 'payment-trust payment-trust--section'); ?>
+<?php endif; ?>
 <?php endif; ?>
 
 <div class="container-fluid" style="margin-top:20px;padding-left:0;padding-right:0;">
@@ -718,6 +725,10 @@ if ($tf2 !== '') {
                     <span class="hp-product-card__discount-label">indirim</span>
                 </span>
 <?php endif; ?>
+<?php endif; ?>
+
+<?php if ($hpPaymentTrustBadges !== []): ?>
+                <?php payment_trust_render($hpPaymentTrustBadges, 'payment-trust payment-trust--card'); ?>
 <?php endif; ?>
 
                 <a href="<?= htmlspecialchars(app_url('order', ['product_id' => $product['product_id']], $pdo)) ?>"
