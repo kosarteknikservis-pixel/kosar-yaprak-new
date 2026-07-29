@@ -127,7 +127,10 @@ function sendTelegramNotification(PDO $pdo, string $event, string $message_text)
     }
 
     if (!empty($response_data['ok'])) {
-        return 'Mesaj başarıyla gönderildi.';
+        $result = 'Mesaj başarıyla gönderildi.';
+        telegram_log_send_result($event, $result);
+
+        return $result;
     }
 
     $desc = is_string($response_data['description'] ?? null)
@@ -138,7 +141,23 @@ function sendTelegramNotification(PDO $pdo, string $event, string $message_text)
         error_log('Telegram API: ' . $desc);
     }
 
-    return 'Telegram API: ' . $desc;
+    $result = 'Telegram API: ' . $desc;
+    telegram_log_send_result($event, $result);
+
+    return $result;
+}
+
+function telegram_log_send_result(string $event, string $result): void
+{
+    if (! is_file(__DIR__ . '/includes/app_log.php')) {
+        return;
+    }
+    require_once __DIR__ . '/includes/app_log.php';
+    $ok = str_starts_with($result, 'Mesaj başarıyla');
+    app_log('telegram', $ok ? 'sent' : 'fail', [
+        'event' => $event,
+        'result' => $result,
+    ]);
 }
 
 /**

@@ -426,10 +426,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
 
         if ($gwCode === 'paytr') {
+            telegram_notify_new_order($pdo, $order_id, 'Yeni Sipariş (ödeme bekleniyor — PayTR)');
             header('Location: ' . app_url('payment/paytr', ['order_id' => $order_id], $pdo));
             exit;
         }
         if ($gwCode === 'iyzico') {
+            telegram_notify_new_order($pdo, $order_id, 'Yeni Sipariş (ödeme bekleniyor — iyzico)');
             header('Location: ' . app_url('payment/iyzico', ['order_id' => $order_id], $pdo));
             exit;
         }

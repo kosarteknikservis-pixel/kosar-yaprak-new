@@ -61,11 +61,11 @@ final class OrderPaymentFinalize
         order_guard_set_browser_cookie($cookie_lifetime);
 
         require_once dirname(__DIR__, 2) . '/telegram.php';
-        $message = "Yeni Sipariş: \nMüşteri: {$customer_name}\nTelefon: {$customer_phone}\nAdres: {$customer_address}, {$customer_district}, {$customer_city}\nTutar: {$price} TL\nSipariş ID: {$orderId}\nNotlar: {$order_notes}\nKaynak: {$source}";
-        if ($invoice_vkn !== '' || $invoice_tax_office !== '' || $invoice_company_name !== '' || $invoice_address !== '') {
-            $message .= "\n--- Kurumsal fatura ---\nVKN: {$invoice_vkn}\nVergi D.: {$invoice_tax_office}\nÜnvan: {$invoice_company_name}\nFatura adr.: {$invoice_address}";
+        $heading = trim((string) ($ctx['telegram_heading'] ?? 'Yeni Sipariş'));
+        if ($heading === '') {
+            $heading = 'Yeni Sipariş';
         }
-        sendTelegramNotification($pdo, 'new_order', $message);
+        telegram_notify_new_order($pdo, $orderId, $heading);
 
         try {
             $abYarim = (int) $pdo->query('SELECT COALESCE(abandoned_yarim_id, 0) FROM orders WHERE order_id = ' . (int) $orderId . ' LIMIT 1')->fetchColumn();

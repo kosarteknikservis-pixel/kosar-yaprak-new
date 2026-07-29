@@ -63,6 +63,7 @@ if (!empty($result['paid'])) {
             'invoice_address' => $order['invoice_address'] ?? '',
             'ip_address' => $order['customer_ip'] ?? '',
             'cookie_lifetime' => 60,
+            'telegram_heading' => 'Yeni Sipariş (ödeme alındı — iyzico)',
         ]);
     }
     header('Location: ' . app_url('thankyou', ['order_id' => $orderId], $pdo));
@@ -70,5 +71,8 @@ if (!empty($result['paid'])) {
 }
 
 OrderPaymentFinalize::markPaymentFailed($pdo, $orderId);
+require_once dirname(__DIR__) . '/telegram.php';
+telegram_notify_new_order($pdo, $orderId, 'Ödeme başarısız (iyzico)');
+app_log('payment', 'iyzico callback failed for order #' . $orderId);
 header('Location: ' . app_url('payment/iyzico_fail', ['order_id' => $orderId], $pdo));
 exit;
