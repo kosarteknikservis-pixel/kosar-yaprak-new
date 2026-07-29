@@ -146,6 +146,9 @@ if (!$product) {
     exit;
 }
 
+require_once __DIR__ . '/includes/payment_methods_sync.php';
+payment_methods_sync_online_gateways($pdo);
+
 $stmt = $pdo->query('SELECT payment_method_id, method_name FROM payment_methods WHERE is_active = 1 ORDER BY sort_order, method_name');
 $payment_methods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

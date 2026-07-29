@@ -38,6 +38,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         $_SESSION['message'] = 'PayTR ayarları kaydedildi.';
         $_SESSION['message_type'] = 'success';
+        require_once dirname(__DIR__) . '/includes/payment_methods_sync.php';
+        payment_methods_sync_online_gateways($pdo);
+        if (!empty($_POST['is_enabled'])) {
+            $_SESSION['message'] .= ' Sipariş formunda online kart seçeneği otomatik güncellendi.';
+        }
         header('Location: paytr_settings.php');
         exit;
     }
