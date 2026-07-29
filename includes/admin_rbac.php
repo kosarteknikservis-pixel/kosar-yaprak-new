@@ -102,7 +102,7 @@ if (!function_exists('admin_rbac_menu_by_exact_basename_rules')) {
             'edit_product.php' => 'menu_urun',
             'delete_product.php' => 'menu_urun',
             'toggle_product_status.php' => 'menu_urun',
-            'bulk_update.php' => 'menu_urun',
+            'bulk_update.php' => 'menu_siparis',
             'add_variation.php' => 'menu_urun',
             'edit_variation.php' => 'menu_urun',
             'edit_variant.php' => 'menu_urun',

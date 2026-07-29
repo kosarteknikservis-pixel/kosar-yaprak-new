@@ -281,6 +281,10 @@ document.addEventListener('DOMContentLoaded', function () { checkNewOrders(); se
                     <?php endforeach; ?>
                 </select>
                 <button type="submit" class="btn btn-warning btn-sm"><i class="fas fa-sync-alt me-1"></i> Uygula</button>
+                <button type="submit" name="bulk_delete" value="1" class="btn btn-danger btn-sm"
+                        onclick="return confirm('Seçili siparişler kalıcı olarak silinecek. Bu işlem geri alınamaz. Devam edilsin mi?');">
+                    <i class="fas fa-trash me-1"></i> Toplu Sil
+                </button>
                 <?php if (admin_user_can('menu_yz')): ?>
                 <button type="button" class="btn btn-info btn-sm" id="btnBulkFactory" disabled title="Seçili siparişler için görsel fabrikasını aç">
                     <i class="fas fa-industry me-1"></i> Fabrikada üret

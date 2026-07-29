@@ -1,11 +1,34 @@
 <?php
 require 'auth.php';
 require '../db.php';
+require_once __DIR__ . '/../includes/orders/order_delete_service.php';
 
 // Güncellenecek siparişler ve yeni durum
 $selected_orders = isset($_POST['selected_orders']) ? $_POST['selected_orders'] : [];
 $bulk_status = isset($_POST['bulk_status']) ? $_POST['bulk_status'] : '';
+$bulk_delete = isset($_POST['bulk_delete']) && (string) $_POST['bulk_delete'] === '1';
 $current_user = $_SESSION['admin_username'] ?? ($_SESSION['username'] ?? 'admin');
+
+if ($bulk_delete) {
+    if (empty($selected_orders)) {
+        $_SESSION['message'] = 'Silmek için en az bir sipariş seçin.';
+        header('Location: orders.php');
+        exit;
+    }
+
+    try {
+        $deleted = order_delete_ids($pdo, $selected_orders);
+        $_SESSION['message'] = $deleted > 0
+            ? $deleted . ' sipariş kalıcı olarak silindi.'
+            : 'Seçili siparişler silinemedi (bulunamadı).';
+    } catch (Throwable $e) {
+        error_log('bulk_delete_orders: ' . $e->getMessage());
+        $_SESSION['message'] = 'Silme hatası: ' . $e->getMessage();
+    }
+
+    header('Location: orders.php');
+    exit;
+}
 
 // Eğer sipariş seçilmişse ve durum belirtilmişse, güncelleme işlemini yap
 if (!empty($selected_orders) && !empty($bulk_status)) {
