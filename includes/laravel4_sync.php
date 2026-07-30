@@ -235,6 +235,82 @@ function laravel4_mark_order_synced(string $externalOrderId): void
 }
 
 /**
+ * @param  array<string, mixed>  $orderRow
+ */
+function laravel4_gateway_code_for_order(PDO $pdo, array $orderRow): string
+{
+    $code = trim((string) ($orderRow['gateway_code'] ?? ''));
+    if ($code !== '') {
+        return $code;
+    }
+
+    $paymentMethodId = (int) ($orderRow['payment_method_id'] ?? 0);
+    if ($paymentMethodId > 0) {
+        $st = $pdo->prepare('SELECT gateway_code FROM payment_methods WHERE payment_method_id = ? LIMIT 1');
+        $st->execute([$paymentMethodId]);
+        $code = trim((string) ($st->fetchColumn() ?: ''));
+        if ($code !== '') {
+            return $code;
+        }
+    }
+
+    return 'cod';
+}
+
+/**
+ * PayTR / iyzico: ortak panel ödemesiz (pending) sipariş kabul etmez; yalnızca paid sonrası gönder.
+ */
+function laravel4_should_skip_online_unpaid_sync(PDO $pdo, int $orderId): bool
+{
+    $st = $pdo->prepare('SELECT payment_status, payment_method_id, gateway_code FROM orders WHERE order_id = ? LIMIT 1');
+    $st->execute([$orderId]);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    if (! is_array($row)) {
+        return true;
+    }
+
+    $gateway = laravel4_gateway_code_for_order($pdo, $row);
+    if (! in_array($gateway, ['paytr', 'iyzico'], true)) {
+        return false;
+    }
+
+    return ($row['payment_status'] ?? '') !== 'paid';
+}
+
+/**
+ * @return array{total: float, items: list<array<string, mixed>>}
+ */
+function laravel4_order_items_payload(PDO $pdo, int $orderId, string $variantText = ''): array
+{
+    $items = [];
+    $total = 0.0;
+
+    $st = $pdo->prepare(
+        'SELECT oi.quantity, oi.price, p.product_id, p.product_name, p.sku
+         FROM order_items oi
+         INNER JOIN products p ON p.product_id = oi.product_id
+         WHERE oi.order_id = ?'
+    );
+    $st->execute([$orderId]);
+
+    foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $qty = max(1, (int) ($row['quantity'] ?? 1));
+        $price = (float) ($row['price'] ?? 0);
+        $total += $price * $qty;
+        $items[] = [
+            'product_id' => (string) ($row['product_id'] ?? ''),
+            'product_sku' => $row['sku'] ?? null,
+            'product_name' => (string) ($row['product_name'] ?? 'Ürün'),
+            'product_price' => $price,
+            'quantity' => $qty,
+            'variants' => $variantText !== '' ? $variantText : null,
+        ];
+    }
+
+    return ['total' => $total, 'items' => $items];
+}
+
+/**
  * @param  array<string, scalar|null>  $fields
  * @param  array<string, mixed>  $extra
  */
@@ -250,6 +326,12 @@ function laravel4_sync_checkout_order(array $ctx): void
         $pdo = $ctx['pdo'];
         $orderId = (int) ($ctx['order_id'] ?? 0);
         if ($orderId <= 0) {
+            return;
+        }
+
+        if (laravel4_should_skip_online_unpaid_sync($pdo, $orderId)) {
+            laravel4_sync_log('Ortak panel sync SKIPPED: Order #'.$orderId.' online ödeme henüz onaylanmadı');
+
             return;
         }
 
@@ -352,6 +434,30 @@ function laravel4_sync_checkout_order(array $ctx): void
 
         $integrationSourceKey = laravel4_sync_config()['order_source_key'];
 
+        $itemsPayload = laravel4_order_items_payload($pdo, $orderId, $variantText);
+        $syncItems = $itemsPayload['items'];
+        $totalAmount = $itemsPayload['total'];
+
+        if ($syncItems === []) {
+            $syncItems = [
+                [
+                    'product_id' => (string) $productId,
+                    'product_sku' => $productSku,
+                    'product_name' => (string) ($product['product_name'] ?? 'Ürün'),
+                    'product_price' => (float) ($product['product_price'] ?? 0),
+                    'quantity' => 1,
+                    'variants' => $variantText !== '' ? $variantText : null,
+                ],
+            ];
+            $totalAmount = (float) ($product['product_price'] ?? 0);
+        }
+
+        if ($totalAmount <= 0) {
+            laravel4_sync_log('Ortak panel sync SKIPPED: Order #'.$orderId.' tutar 0 TL (panel kabul etmiyor)');
+
+            return;
+        }
+
         $attribution = [];
         if (is_file(__DIR__.'/attribution_helpers.php')) {
             require_once __DIR__.'/attribution_helpers.php';
@@ -372,7 +478,7 @@ function laravel4_sync_checkout_order(array $ctx): void
             'customer_address' => (string) ($ctx['customer_address'] ?? ''),
             'customer_city' => $cityName,
             'customer_district' => $districtName,
-            'total_amount' => (float) ($product['product_price'] ?? 0),
+            'total_amount' => $totalAmount,
             'payment_method' => $paymentMethodName !== '' ? $paymentMethodName : 'Belirtilmemiş',
             'order_notes' => $orderNotes !== '' ? $orderNotes : null,
             'customer_notes' => $customerNotes !== '' ? $customerNotes : null,
@@ -384,16 +490,7 @@ function laravel4_sync_checkout_order(array $ctx): void
             'invoice_tax_office' => $invoiceTaxOffice !== '' ? $invoiceTaxOffice : null,
             'invoice_company_name' => $invoiceCompany !== '' ? $invoiceCompany : null,
             'invoice_address' => $invoiceAddress !== '' ? $invoiceAddress : null,
-            'items' => [
-                [
-                    'product_id' => (string) $productId,
-                    'product_sku' => $productSku,
-                    'product_name' => (string) ($product['product_name'] ?? 'Ürün'),
-                    'product_price' => (float) ($product['product_price'] ?? 0),
-                    'quantity' => 1,
-                    'variants' => $variantText !== '' ? $variantText : null,
-                ],
-            ],
+            'items' => $syncItems,
         ], $attribution);
 
         laravel4_sync_order($orderData);
@@ -764,6 +861,10 @@ function laravel4_sync_pending_order(int $orderId, PDO $pdo): bool
             return false;
         }
 
+        if (laravel4_should_skip_online_unpaid_sync($pdo, $orderId)) {
+            return false;
+        }
+
         $cityName = '';
         $districtName = '';
         $cityId = (int) ($order['customer_city'] ?? 0);
@@ -834,6 +935,12 @@ function laravel4_sync_pending_order(int $orderId, PDO $pdo): bool
 
         if ($items === []) {
             laravel4_sync_log("Laravel4 pending order SKIPPED: #{$orderId} — kalem yok");
+
+            return false;
+        }
+
+        if ($totalAmount <= 0) {
+            laravel4_sync_log("Laravel4 pending order SKIPPED: #{$orderId} — tutar 0 TL (panel kabul etmiyor)");
 
             return false;
         }
@@ -916,6 +1023,14 @@ function laravel4_retry_unsynced_orders(PDO $pdo, int $limit = 100, int $lookbac
             'SELECT order_id FROM orders
              WHERE (panel_synced = 0 OR panel_synced IS NULL)
                AND COALESCE(order_date, NOW()) >= ?
+               AND (
+                 payment_status = \'paid\'
+                 OR gateway_code IS NULL
+                 OR gateway_code NOT IN (\'paytr\', \'iyzico\')
+                 OR payment_method_id NOT IN (
+                   SELECT payment_method_id FROM payment_methods WHERE gateway_code IN (\'paytr\', \'iyzico\')
+                 )
+               )
              ORDER BY order_id ASC
              LIMIT ?'
         );
