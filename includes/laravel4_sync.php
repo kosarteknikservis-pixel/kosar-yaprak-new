@@ -311,6 +311,27 @@ function laravel4_order_items_payload(PDO $pdo, int $orderId, string $variantTex
 }
 
 /**
+ * Ortak panel: kredi kartı (PayTR/iyzico) ödemesi onaylandıysa sipariş tutarı her zaman 1 TL gönderilir.
+ * Panel order_total=0 kabul etmez; online ödeme = paid + 1 TL işareti.
+ */
+function laravel4_ortak_panel_order_total(PDO $pdo, int $orderId, float $computedTotal): float
+{
+    $st = $pdo->prepare('SELECT payment_status, payment_method_id, gateway_code FROM orders WHERE order_id = ? LIMIT 1');
+    $st->execute([$orderId]);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    if (! is_array($row)) {
+        return $computedTotal > 0 ? $computedTotal : 0.0;
+    }
+
+    $gateway = laravel4_gateway_code_for_order($pdo, $row);
+    if (in_array($gateway, ['paytr', 'iyzico'], true) && ($row['payment_status'] ?? '') === 'paid') {
+        return 1.0;
+    }
+
+    return $computedTotal;
+}
+
+/**
  * @param  array<string, scalar|null>  $fields
  * @param  array<string, mixed>  $extra
  */
@@ -451,6 +472,8 @@ function laravel4_sync_checkout_order(array $ctx): void
             ];
             $totalAmount = (float) ($product['product_price'] ?? 0);
         }
+
+        $totalAmount = laravel4_ortak_panel_order_total($pdo, $orderId, $totalAmount);
 
         if ($totalAmount <= 0) {
             laravel4_sync_log('Ortak panel sync SKIPPED: Order #'.$orderId.' tutar 0 TL (panel kabul etmiyor)');
@@ -944,6 +967,8 @@ function laravel4_sync_pending_order(int $orderId, PDO $pdo): bool
 
             return false;
         }
+
+        $totalAmount = laravel4_ortak_panel_order_total($pdo, $orderId, $totalAmount);
 
         $siteStmt = $pdo->query('SELECT site_url, site_name FROM settings WHERE id = 1 LIMIT 1');
         $siteInfo = $siteStmt->fetch(PDO::FETCH_ASSOC) ?: [];
