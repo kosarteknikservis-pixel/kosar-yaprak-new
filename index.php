@@ -727,10 +727,6 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
 <?php endif; ?>
 <?php endif; ?>
 
-<?php if ($hpPaymentTrustBadges !== []): ?>
-                <?php payment_trust_render($hpPaymentTrustBadges, 'payment-trust payment-trust--card'); ?>
-<?php endif; ?>
-
                 <a href="<?= htmlspecialchars(app_url('order', ['product_id' => $product['product_id']], $pdo)) ?>"
                    class="hp-product-card__cta btn btn-primary"
                    style="background-color: <?= $cta ?>;">
