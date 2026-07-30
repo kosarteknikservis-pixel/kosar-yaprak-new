@@ -352,6 +352,14 @@ function laravel4_sync_checkout_order(array $ctx): void
 
         $integrationSourceKey = laravel4_sync_config()['order_source_key'];
 
+        $attribution = [];
+        if (is_file(__DIR__.'/attribution_helpers.php')) {
+            require_once __DIR__.'/attribution_helpers.php';
+            if (function_exists('attribution_api_payload_slice')) {
+                $attribution = attribution_api_payload_slice($utmCaptureOn, $orderAttrRow);
+            }
+        }
+
         $orderData = array_merge([
             'external_order_id' => (string) $orderId,
             'integration_source_key' => $integrationSourceKey,
@@ -386,7 +394,7 @@ function laravel4_sync_checkout_order(array $ctx): void
                     'variants' => $variantText !== '' ? $variantText : null,
                 ],
             ],
-        ], attribution_api_payload_slice($utmCaptureOn, $orderAttrRow));
+        ], $attribution);
 
         laravel4_sync_order($orderData);
     } catch (Throwable $e) {

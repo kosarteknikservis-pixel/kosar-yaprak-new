@@ -87,6 +87,18 @@ final class OrderPaymentFinalize
             ]);
         }
 
+        $gatewayCode = self::gatewayCodeForMethod($pdo, $payment_method_id);
+        if (in_array($gatewayCode, ['paytr', 'iyzico'], true)) {
+            require_once dirname(__DIR__) . '/order_sms_verify.php';
+            if (! ov_order_is_pending($pdo, $orderId)) {
+                require_once dirname(__DIR__) . '/netgsm_customer_sms.php';
+                $smsOrder = self::loadOrderContext($pdo, $orderId);
+                if ($smsOrder) {
+                    netgsm_send_new_order_sms_if_enabled($pdo, $smsOrder, (string) $orderId);
+                }
+            }
+        }
+
         try {
             self::markYarimKalanConverted($pdo, $orderId, $customer_phone, $ip_address);
             setcookie('yarim_kalan_sid', '', [

@@ -279,7 +279,26 @@ $purchaseSignalsJson = json_encode(
 );
 
 require_once __DIR__ . '/includes/netgsm_customer_sms.php';
-if (! $orderSmsPending) {
+$skipThankyouOrderSms = false;
+try {
+    $smsGwStmt = $pdo->prepare(
+        'SELECT o.payment_status, pm.gateway_code
+         FROM orders o
+         LEFT JOIN payment_methods pm ON pm.payment_method_id = o.payment_method_id
+         WHERE o.order_id = ?
+         LIMIT 1'
+    );
+    $smsGwStmt->execute([(int) $order_id]);
+    $smsGwRow = $smsGwStmt->fetch(PDO::FETCH_ASSOC);
+    if (is_array($smsGwRow)) {
+        $gw = trim((string) ($smsGwRow['gateway_code'] ?? ''));
+        $skipThankyouOrderSms = ($smsGwRow['payment_status'] ?? '') === 'paid'
+            && in_array($gw, ['paytr', 'iyzico'], true);
+    }
+} catch (Throwable $e) {
+    $skipThankyouOrderSms = false;
+}
+if (! $orderSmsPending && ! $skipThankyouOrderSms) {
     netgsm_send_new_order_sms_if_enabled($pdo, $order, (string) $order_id);
 }
 

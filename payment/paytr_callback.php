@@ -45,7 +45,10 @@ if (($verified['status'] ?? '') === 'success') {
         'order_notes' => $order['order_notes'] ?? '',
         'payment_method_id' => $order['payment_method_id'],
         'product_id' => $order['product_id'],
-        'product' => ['product_price' => $order['product_price']],
+        'product' => [
+            'product_name' => $order['product_name'] ?? 'Ürün',
+            'product_price' => $order['product_price'],
+        ],
         'selected_variants' => [],
         'reklam' => $order['reklam'] ?? '',
         'source' => $order['source'] ?? '',
