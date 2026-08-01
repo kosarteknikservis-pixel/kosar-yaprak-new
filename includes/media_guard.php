@@ -118,16 +118,12 @@ function media_guard_collect_referenced_paths(PDO $pdo): array
 {
     $paths = [];
 
-    $add = static function (string $p): void {
-        $paths[] = $p;
-    };
-
     try {
         if ($pdo->query("SHOW TABLES LIKE 'product_images'")->fetch()) {
             foreach ($pdo->query('SELECT image_path FROM product_images') as $row) {
                 $p = trim((string) ($row['image_path'] ?? ''));
                 if ($p !== '') {
-                    $add($p);
+                    $paths[] = $p;
                 }
             }
         }
@@ -135,7 +131,7 @@ function media_guard_collect_referenced_paths(PDO $pdo): array
             foreach ($pdo->query("SELECT product_image FROM products WHERE product_image IS NOT NULL AND TRIM(product_image) != ''") as $row) {
                 $p = trim((string) ($row['product_image'] ?? ''));
                 if ($p !== '') {
-                    $add($p);
+                    $paths[] = $p;
                 }
             }
         }
@@ -143,7 +139,7 @@ function media_guard_collect_referenced_paths(PDO $pdo): array
             foreach ($pdo->query('SELECT image_path FROM slider_images') as $row) {
                 $p = trim((string) ($row['image_path'] ?? ''));
                 if ($p !== '') {
-                    $add($p);
+                    $paths[] = $p;
                 }
             }
         }
@@ -152,7 +148,7 @@ function media_guard_collect_referenced_paths(PDO $pdo): array
                 foreach (['image_path', 'logo_image'] as $col) {
                     $p = trim((string) ($row[$col] ?? ''));
                     if ($p !== '') {
-                        $add($p);
+                        $paths[] = $p;
                     }
                 }
             }
@@ -162,7 +158,7 @@ function media_guard_collect_referenced_paths(PDO $pdo): array
                 foreach ($pdo->query("SELECT image FROM `{$tbl}`") as $row) {
                     $p = trim((string) ($row['image'] ?? ''));
                     if ($p !== '') {
-                        $add($p);
+                        $paths[] = $p;
                     }
                 }
             }
