@@ -2,6 +2,7 @@
 require '../db.php';
 require 'auth.php';
 require_once __DIR__ . '/../includes/catalog_reset.php';
+require_once __DIR__ . '/../includes/media_guard.php';
 
 $message = '';
 
@@ -80,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $target_file = $upload_dir . $new_filename;
 
                     if (move_uploaded_file($files["tmp_name"][$i], $target_file)) {
+                        media_guard_archive_file($target_file);
                         $stmt = $pdo->prepare('INSERT INTO product_images (product_id, image_path) VALUES (?, ?)');
                         $stmt->execute([$product_id, $target_file]);
                             $uploaded_count++;

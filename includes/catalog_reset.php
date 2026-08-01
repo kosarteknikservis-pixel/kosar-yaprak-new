@@ -96,6 +96,11 @@ function catalog_reset_all(PDO $pdo): array
     $projectRoot = dirname(__DIR__);
     $imagePaths = catalog_collect_product_image_paths($pdo);
 
+    if (is_file(__DIR__ . '/media_guard.php')) {
+        require_once __DIR__ . '/media_guard.php';
+        media_guard_log('catalog_reset_wipe', ['paths' => count($imagePaths)]);
+    }
+
     $tables = [
         'product_review_images',
         'product_reviews',

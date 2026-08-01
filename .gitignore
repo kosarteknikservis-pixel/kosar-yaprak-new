@@ -7,6 +7,7 @@ includes/laravel4_config.php
 # Kullanıcı yüklemeleri ve yedekler
 uploads/**
 !uploads/.htaccess
+uploads_media_archive/**
 theme_backups/
 storage/cache/
 

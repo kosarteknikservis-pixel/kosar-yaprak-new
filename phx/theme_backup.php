@@ -472,20 +472,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             }
 
-            /** uploads */
+            /** uploads — mevcut dosyaları SİLME; yedekten kopyala (merge) */
 
             $upRoot = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads';
 
             if (is_dir($ex . DIRECTORY_SEPARATOR . 'uploads')) {
-
-                foreach (glob($upRoot . DIRECTORY_SEPARATOR . '*') ?: [] as $exist) {
-
-                    if (basename($exist) !== '.gitkeep') {
-                        theme_rm_tree((string) $exist);
-
-                    }
-
-                }
 
                 $itCopy = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($ex . DIRECTORY_SEPARATOR . 'uploads', FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
                 foreach ($itCopy as $file) {
@@ -512,6 +503,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->exec('SET FOREIGN_KEY_CHECKS=1');
 
             theme_rm_tree($ex);
+
+            require_once dirname(__DIR__) . '/includes/media_guard.php';
+            media_guard_sync_uploads_to_archive();
+            media_guard_verify_and_restore($pdo);
 
             $_SESSION['theme_flash'] = 'Tema / içerik geri yüklendi. Sipariş geçmişi korunmuş olabilir; ürün ID’leri yenilendiyse eski sipariş satırı uyumsuz görünebilir.';
 

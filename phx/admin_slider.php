@@ -1,6 +1,7 @@
 <?php
 require '../db.php';
 require 'auth.php';
+require_once __DIR__ . '/../includes/media_guard.php';
 
 $page_title = 'Slider Yönetimi';
 
@@ -16,9 +17,7 @@ if (isset($_GET['delete'])) {
     $image = $stmt->fetch();
 
     if ($image) {
-        if (file_exists($image['image_path'])) {
-            unlink($image['image_path']);
-        }
+        media_guard_safe_unlink((string) ($image['image_path'] ?? ''), 'slider_delete');
 
         $stmt = $pdo->prepare("DELETE FROM slider_images WHERE id = ?");
         $stmt->execute([$image_id]);
@@ -48,9 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['bulk_delete'])) {
             $image = $stmt->fetch();
 
             if ($image) {
-                if (file_exists($image['image_path'])) {
-                    unlink($image['image_path']);
-                }
+                media_guard_safe_unlink((string) ($image['image_path'] ?? ''), 'slider_bulk_delete');
 
                 $stmt = $pdo->prepare("DELETE FROM slider_images WHERE id = ?");
                 if ($stmt->execute([$image_id])) {
@@ -117,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && !isset($_POST['bulk_delete'])) {
         $allowed_types = array('jpg', 'jpeg', 'png', 'gif');
         if (in_array($imageFileType, $allowed_types)) {
             if (move_uploaded_file($_FILES['slider_image']['tmp_name'], $upload_file)) {
+                media_guard_archive_file($upload_file);
                 $stmt = $pdo->query("SELECT MAX(display_order) as max_order FROM slider_images");
                 $max_row = $stmt->fetch(PDO::FETCH_ASSOC);
                 $max_order = (int)($max_row['max_order'] ?? 0) + 1;

@@ -1,6 +1,7 @@
 <?php
 require '../db.php';
 require 'auth.php';
+require_once __DIR__ . '/../includes/media_guard.php';
 
 $product_id = $_GET['product_id'] ?? null;
 
@@ -50,8 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $existing_images = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
             foreach ($existing_images as $image_path) {
-                if ($image_path && file_exists($image_path)) {
-                    @unlink($image_path);
+                if ($image_path) {
+                    media_guard_safe_unlink((string) $image_path, 'edit_product_replace');
                 }
             }
 
@@ -82,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $target_file = $upload_dir . $new_filename;
 
                         if (move_uploaded_file($files["tmp_name"][$key], $target_file)) {
+                            media_guard_archive_file($target_file);
                             $stmt = $pdo->prepare('INSERT INTO product_images (product_id, image_path) VALUES (?, ?)');
                             $stmt->execute([$product_id, $target_file]);
                             $uploaded_count++;

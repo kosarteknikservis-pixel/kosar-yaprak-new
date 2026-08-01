@@ -8,6 +8,7 @@
     "path": "/home/admin/domains/SITE_ADINIZ.com/public_html"
   },
   "post_pull_commands": [
-    "cd phx && composer install --no-dev --quiet 2>/dev/null || true"
+    "cd phx && composer install --no-dev --quiet 2>/dev/null || true",
+    "php cron/media_integrity.php 2>/dev/null || true"
   ]
 }
