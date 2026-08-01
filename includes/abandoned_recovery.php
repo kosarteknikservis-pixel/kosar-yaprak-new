@@ -137,6 +137,63 @@ function abandoned_recovery_sms_body(int $yarimId, string $ad, string $urun, ?PD
         . $product . ' siparisiniz yarım kaldi. WhatsApp ile tamamlayin: ' . $link;
 }
 
+function abandoned_recovery_normalize_phone10(string $tel): string
+{
+    $digits = preg_replace('/\D+/', '', $tel) ?? '';
+    if (strlen($digits) === 11 && str_starts_with($digits, '0')) {
+        $digits = substr($digits, 1);
+    }
+    if (strlen($digits) > 10) {
+        $digits = substr($digits, -10);
+    }
+
+    return strlen($digits) === 10 ? $digits : '';
+}
+
+function abandoned_recovery_phone_tail_sql(string $column = 'tel'): string
+{
+    return 'RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM('.$column.'), \' \', \'\'), \'(\', \'\'), \')\', \'\'), \'-\', \'\'), \'+\', \'\'), 10)';
+}
+
+/**
+ * Telefon daha önce siparişe döndü (yarım kalan converted) veya orders tablosunda kayıt var mı?
+ */
+function abandoned_recovery_should_skip_for_phone(PDO $pdo, string $telDigits10): bool
+{
+    if (strlen($telDigits10) !== 10) {
+        return false;
+    }
+
+    try {
+        $tail = abandoned_recovery_phone_tail_sql('tel');
+        $yk = $pdo->prepare(
+            "SELECT id FROM yarim_kalanlar
+             WHERE IFNULL(is_converted, 0) = 1
+               AND tel IS NOT NULL AND TRIM(tel) != ''
+               AND {$tail} = ?
+             LIMIT 1"
+        );
+        $yk->execute([$telDigits10]);
+        if ($yk->fetchColumn() !== false) {
+            return true;
+        }
+
+        $orderTail = abandoned_recovery_phone_tail_sql('customer_phone');
+        $ord = $pdo->prepare(
+            "SELECT order_id FROM orders
+             WHERE customer_phone IS NOT NULL AND TRIM(customer_phone) != ''
+               AND {$orderTail} = ?
+             ORDER BY order_id DESC
+             LIMIT 1"
+        );
+        $ord->execute([$telDigits10]);
+
+        return $ord->fetchColumn() !== false;
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
 /**
  * Bu telefona daha önce yarım kalan SMS gitti mi? (kalıcı — tekrar gönderilmez)
  */
@@ -147,12 +204,13 @@ function abandoned_recovery_phone_already_sent(PDO $pdo, string $telDigits10): b
     }
 
     try {
+        $tail = abandoned_recovery_phone_tail_sql('tel');
         $st = $pdo->prepare(
             "SELECT id FROM yarim_kalanlar
              WHERE recovery_sms_sent_at IS NOT NULL
                AND tel IS NOT NULL
                AND TRIM(tel) != ''
-               AND RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tel), ' ', ''), '(', ''), ')', ''), '-', ''), '+', ''), 10) = ?
+               AND {$tail} = ?
              LIMIT 1"
         );
         $st->execute([$telDigits10]);
@@ -198,18 +256,31 @@ function abandoned_recovery_send_sms(PDO $pdo, int $yarimId): bool
         return false;
     }
 
-    $st = $pdo->prepare('SELECT ad, tel, urun, recovery_sms_sent_at FROM yarim_kalanlar WHERE id = ? LIMIT 1');
+    $st = $pdo->prepare(
+        'SELECT ad, tel, urun, recovery_sms_sent_at, IFNULL(is_converted, 0) AS is_converted
+         FROM yarim_kalanlar WHERE id = ? LIMIT 1'
+    );
     $st->execute([$yarimId]);
     $row = $st->fetch(PDO::FETCH_ASSOC);
     if (! $row || ! empty($row['recovery_sms_sent_at'])) {
         return false;
     }
 
-    $tel = preg_replace('/\D+/', '', (string) ($row['tel'] ?? '')) ?? '';
-    if (strlen($tel) === 11 && str_starts_with($tel, '0')) {
-        $tel = substr($tel, 1);
+    if ((int) ($row['is_converted'] ?? 0) === 1) {
+        return false;
     }
-    if (strlen($tel) !== 10 || $tel[0] !== '5') {
+
+    $tel = abandoned_recovery_normalize_phone10((string) ($row['tel'] ?? ''));
+    if ($tel === '' || $tel[0] !== '5') {
+        return false;
+    }
+
+    if (abandoned_recovery_should_skip_for_phone($pdo, $tel)) {
+        $pdo->prepare(
+            "UPDATE yarim_kalanlar SET recovery_sms_sent_at = NOW()
+             WHERE id = ? AND recovery_sms_sent_at IS NULL"
+        )->execute([$yarimId]);
+
         return false;
     }
 
@@ -245,11 +316,12 @@ function abandoned_recovery_send_sms(PDO $pdo, int $yarimId): bool
         ->execute([$yarimId]);
 
     try {
+        $tail = abandoned_recovery_phone_tail_sql('tel');
         $pdo->prepare(
             "UPDATE yarim_kalanlar SET recovery_sms_sent_at = NOW()
              WHERE recovery_sms_sent_at IS NULL
                AND tel IS NOT NULL AND TRIM(tel) != ''
-               AND RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(TRIM(tel), ' ', ''), '(', ''), ')', ''), '-', ''), '+', ''), 10) = ?"
+               AND {$tail} = ?"
         )->execute([$tel]);
     } catch (Throwable $e) {
         /* ignore */

@@ -76,8 +76,12 @@ try {
     $telNorm = preg_replace('/\D+/', '', $tel);
     $telEnd = mb_strlen((string)$telNorm) >= 10 ? mb_substr($telNorm, -10) : $telNorm;
 
-    // Not: aynı gün sipariş verilmiş olsa bile yarım kalan kaydı tutulur.
-    // Dönüşüm sonrası kayıtlar is_converted ile işaretlenir.
+    if ($telEnd !== '' && strlen($telEnd) === 10 && abandoned_recovery_should_skip_for_phone($pdo, $telEnd)) {
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+
+    // Siparişe dönmüş veya orders’da kayıtlı telefonlar için yeni yarım kalan + SMS yok.
 
     $sess = $_COOKIE['yarim_kalan_sid'] ?? null;
     if ($sess !== null && !preg_match('/^[a-zA-Z0-9_-]{16,96}$/', (string)$sess)) {
