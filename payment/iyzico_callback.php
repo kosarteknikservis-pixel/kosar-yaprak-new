@@ -69,7 +69,11 @@ if (!empty($result['paid'])) {
     exit;
 }
 
-OrderPaymentFinalize::markPaymentFailed($pdo, $orderId);
+$markedFailed = OrderPaymentFinalize::markPaymentFailed($pdo, $orderId);
 app_log('payment', 'iyzico callback failed for order #' . $orderId);
+if ($markedFailed) {
+    require_once dirname(__DIR__) . '/telegram.php';
+    telegram_notify_payment_failed($pdo, $orderId, 'iyzico');
+}
 header('Location: ' . app_url('payment/iyzico_fail', ['order_id' => $orderId], $pdo));
 exit;

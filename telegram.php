@@ -218,6 +218,74 @@ function telegram_notify_new_order(PDO $pdo, int $orderId, string $heading = 'Ye
 }
 
 /**
+ * Online ödeme (PayTR / iyzico) tamamlanmadığında — farklı başlık ve uyarı metni.
+ */
+function telegram_notify_payment_failed(PDO $pdo, int $orderId, string $gatewayLabel = 'Online ödeme'): void
+{
+    try {
+        $st = $pdo->prepare(
+            'SELECT o.*, c.city_name AS customer_city_name, d.district_name AS customer_district_name,
+                    p.product_name, oi.price, pm.method_name AS payment_method_name
+             FROM orders o
+             LEFT JOIN cities c ON o.customer_city = c.city_id
+             LEFT JOIN districts d ON o.customer_district = d.district_id
+             LEFT JOIN order_items oi ON oi.order_id = o.order_id
+             LEFT JOIN products p ON p.product_id = oi.product_id
+             LEFT JOIN payment_methods pm ON pm.payment_method_id = o.payment_method_id
+             WHERE o.order_id = ?
+             LIMIT 1'
+        );
+        $st->execute([$orderId]);
+        $row = $st->fetch(PDO::FETCH_ASSOC);
+        if (! is_array($row)) {
+            return;
+        }
+
+        $customer_name = (string) ($row['customer_name'] ?? '');
+        $customer_phone = (string) ($row['customer_phone'] ?? '');
+        $customer_address = (string) ($row['customer_address'] ?? '');
+        $city = (string) ($row['customer_city_name'] ?? '');
+        $district = (string) ($row['customer_district_name'] ?? '');
+        $order_notes = (string) ($row['order_notes'] ?? '');
+        $source = (string) ($row['reklam'] ?? '');
+        if ($source === '' || $source === 'Reklam Olmayabilir') {
+            $source = (string) ($row['source'] ?? '');
+        }
+        $price = (string) ($row['price'] ?? '');
+        $paymentMethod = trim((string) ($row['payment_method_name'] ?? ''));
+        $product_name = trim((string) ($row['product_name'] ?? ''));
+
+        $message = '⚠️ ÖDEME TAMAMLANMADI (' . $gatewayLabel . ')'
+            . "\n━━━━━━━━━━━━━━━━"
+            . "\nMüşteri: {$customer_name}"
+            . "\nTelefon: {$customer_phone}"
+            . "\nAdres: {$customer_address}, {$district}, {$city}"
+            . "\nTutar: {$price} TL"
+            . "\nSipariş #: {$orderId}";
+        if ($paymentMethod !== '') {
+            $message .= "\nÖdeme yöntemi: {$paymentMethod}";
+        }
+        if ($product_name !== '') {
+            $message .= "\nÜrün: {$product_name}";
+        }
+        if ($order_notes !== '') {
+            $message .= "\nNot: {$order_notes}";
+        }
+        if ($source !== '') {
+            $message .= "\nKaynak: {$source}";
+        }
+        $message .= "\n━━━━━━━━━━━━━━━━"
+            . "\n→ Kart ödemesi tamamlanmadı. Müşteriyi arayın.";
+
+        sendTelegramNotification($pdo, 'new_order', $message);
+    } catch (Throwable $e) {
+        if (isset($_SERVER['HTTP_HOST'])) {
+            error_log('telegram_notify_payment_failed: ' . $e->getMessage());
+        }
+    }
+}
+
+/**
  * Panelde sipariş durumu değişince (isteğe bağlı) yöneticiye bildirim.
  */
 function telegram_notify_admin_status_change(PDO $pdo, int $orderId, int $oldStatusId, int $newStatusId): void

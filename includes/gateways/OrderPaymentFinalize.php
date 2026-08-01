@@ -269,10 +269,45 @@ final class OrderPaymentFinalize
         $st->execute(['paid', $gateway, mb_substr($gatewayRef, 0, 190), $orderId]);
     }
 
-    public static function markPaymentFailed(PDO $pdo, int $orderId): void
+    public static function markPaymentFailed(PDO $pdo, int $orderId): bool
     {
-        $pdo->prepare("UPDATE orders SET payment_status = 'failed' WHERE order_id = ? AND payment_status = 'pending'")
-            ->execute([$orderId]);
+        $failedStatusId = self::paymentFailedStatusId($pdo);
+        $st = $pdo->prepare(
+            'UPDATE orders SET payment_status = ?, order_status_id = ?
+             WHERE order_id = ? AND payment_status = ?'
+        );
+        $st->execute(['failed', $failedStatusId, $orderId, 'pending']);
+
+        return $st->rowCount() > 0;
+    }
+
+    public static function paymentFailedStatusId(PDO $pdo): int
+    {
+        static $cache = [];
+
+        $key = spl_object_id($pdo);
+        if (isset($cache[$key])) {
+            return $cache[$key];
+        }
+
+        $statusName = 'Ödeme Başarısız';
+        try {
+            $st = $pdo->prepare('SELECT order_status_id FROM order_status WHERE status_name = ? LIMIT 1');
+            $st->execute([$statusName]);
+            $found = (int) ($st->fetchColumn() ?: 0);
+            if ($found > 0) {
+                return $cache[$key] = $found;
+            }
+            $pdo->prepare('INSERT INTO order_status (status_name) VALUES (?)')->execute([$statusName]);
+            $found = (int) $pdo->lastInsertId();
+            if ($found > 0) {
+                return $cache[$key] = $found;
+            }
+        } catch (Throwable $e) {
+            /* ignore */
+        }
+
+        return $cache[$key] = 1;
     }
 
     public static function gatewayCodeForMethod(PDO $pdo, int $paymentMethodId): string

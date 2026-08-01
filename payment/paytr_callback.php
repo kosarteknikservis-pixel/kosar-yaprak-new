@@ -61,8 +61,12 @@ if (($verified['status'] ?? '') === 'success') {
         'cookie_lifetime' => 60,
     ]);
 } else {
-    OrderPaymentFinalize::markPaymentFailed($pdo, $orderId);
+    $markedFailed = OrderPaymentFinalize::markPaymentFailed($pdo, $orderId);
     app_log('payment', 'PayTR callback failed for order #' . $orderId);
+    if ($markedFailed) {
+        require_once dirname(__DIR__) . '/telegram.php';
+        telegram_notify_payment_failed($pdo, $orderId, 'PayTR');
+    }
 }
 
 echo 'OK';
