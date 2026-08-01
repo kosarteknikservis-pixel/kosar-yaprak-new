@@ -148,6 +148,42 @@ $hpNormalizeUploadPath = static function (string $path): string {
     return 'uploads/' . $path;
 };
 
+$hpProductImageSrc = static function (int $productId, ?string $productImageCol, PDO $pdo, callable $normalize): string {
+    $placeholder = 'uploads/txrik.gif';
+    $candidates = [];
+
+    $imageStmt = $pdo->prepare('SELECT image_path FROM product_images WHERE product_id = ? ORDER BY image_id ASC');
+    $imageStmt->execute([$productId]);
+    foreach ($imageStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $norm = $normalize((string) ($row['image_path'] ?? ''));
+        if ($norm !== '') {
+            $candidates[] = $norm;
+        }
+    }
+
+    $legacy = trim((string) $productImageCol);
+    if ($legacy !== '') {
+        $norm = $normalize($legacy);
+        if ($norm !== '' && ! in_array($norm, $candidates, true)) {
+            $candidates[] = $norm;
+        }
+    }
+
+    $root = __DIR__;
+    foreach ($candidates as $rel) {
+        $full = $root . '/' . $rel;
+        if (is_file($full)) {
+            return $rel;
+        }
+    }
+
+    if (is_file($root . '/' . $placeholder)) {
+        return $placeholder;
+    }
+
+    return $candidates[0] ?? $placeholder;
+};
+
 ?>
 
 <!DOCTYPE html>
@@ -656,12 +692,12 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
         <article class="hp-product-card product">
 
             <?php
-            $imageStmt = $pdo->prepare('SELECT image_path FROM product_images WHERE product_id = ?');
-            $imageStmt->execute([$product['product_id']]);
-            $images = $imageStmt->fetchAll(PDO::FETCH_ASSOC);
-            $hpImgPath = count($images) > 0
-                ? $hpNormalizeUploadPath((string) $images[0]['image_path'])
-                : '';
+            $hpImgPath = $hpProductImageSrc(
+                (int) $product['product_id'],
+                isset($product['product_image']) ? (string) $product['product_image'] : '',
+                $pdo,
+                $hpNormalizeUploadPath
+            );
             $hpPopupMode = 'image';
             if ($fayansHomeVideo !== null && $hpImgPath !== '' && $hpVideoPopupMatches($hpImgPath, $hpProductIndex, 'trigger_product_position')) {
                 $hpPopupMode = 'video';
@@ -674,14 +710,10 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
                  role="button"
                  tabindex="0"
                  aria-label="<?= $hpPopupMode === 'video' ? 'Ürün videosunu oynat' : 'Görseli büyüt' ?>">
-<?php if (count($images) > 0): ?>
                 <img src="<?= htmlspecialchars($hpImgPath) ?>"
                      class="hp-product-card__img product-image"
                      alt="<?= htmlspecialchars($product['product_name']) ?>"
-                     onerror="this.style.display='none'">
-<?php else: ?>
-                <img src="uploads/txrik.gif" alt="Varsayılan Görsel" class="hp-product-card__img">
-<?php endif; ?>
+                     onerror="this.onerror=null;this.src='uploads/txrik.gif';">
             </div>
 
             <div class="hp-product-card__body">
