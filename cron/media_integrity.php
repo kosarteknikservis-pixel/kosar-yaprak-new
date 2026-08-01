@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /**
  * Görseller: arşiv senkronu + eksik dosya onarımı.
- * Öneri: */15 * * * * php /path/public_html/cron/media_integrity.php
+ * Cron örneği: her 15 dk — php cron/media_integrity.php
  */
 
 define('INSTALL_GUARD_SKIP', true);
