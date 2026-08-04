@@ -9,7 +9,7 @@
     window.__PRODUCTS_SCROLL_INIT__ = true;
 
     var INDEX_PRODUCTS_URL = 'index.php#products-heading';
-    var TAP_MOVE_PX = 12;
+    var TAP_MOVE_PX = 10;
     var SCROLL_QUIET_MS = 90;
     var SCROLL_MAX_WAIT_MS = 1400;
 
@@ -248,10 +248,7 @@
             || /#products-heading(?:[?#]|$)/i.test(href);
     }
 
-    function shouldIgnoreTap(trigger) {
-        if (trigger && trigger.closest && trigger.closest('.slider-image[data-go-products], [data-go-products]')) {
-            return false;
-        }
+    function shouldIgnoreTap() {
         return touchMoved;
     }
 
@@ -261,7 +258,7 @@
         if (!trigger || !isOnIndex()) {
             return;
         }
-        if (shouldIgnoreTap(trigger)) {
+        if (shouldIgnoreTap()) {
             return;
         }
         var now = Date.now();
@@ -285,6 +282,10 @@
             return;
         }
 
+        if (shouldIgnoreTap()) {
+            return;
+        }
+
         if (link && link.getAttribute('href') && !isOnIndex()) {
             return;
         }
@@ -292,20 +293,7 @@
         e.preventDefault();
         e.stopPropagation();
         handleGoProducts(trigger);
-    }, true);
-
-    document.addEventListener('touchend', function(e) {
-        var target = e.target;
-        var trigger = isGoProductsTrigger(target);
-        if (!trigger || !trigger.closest('.slider-image[data-go-products]')) {
-            return;
-        }
-        if (!isOnIndex() || shouldIgnoreTap(trigger)) {
-            return;
-        }
-        e.preventDefault();
-        handleGoProducts(trigger);
-    }, { passive: false });
+    }, false);
 
     document.addEventListener('keydown', function(e) {
         if (e.key !== 'Enter' && e.key !== ' ') {
