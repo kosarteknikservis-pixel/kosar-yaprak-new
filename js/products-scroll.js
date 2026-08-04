@@ -37,36 +37,18 @@
         return !!(window.matchMedia && window.matchMedia('(max-width: 480px)').matches);
     }
 
-    function scrollBlockMode(el) {
-        if (el && el.classList && el.classList.contains('hp-product-card__cta')) {
-            return isMobileViewport() ? 'end' : 'center';
-        }
-        return 'start';
-    }
-
     function scrollElement(el, smooth) {
         var behavior = smooth && shouldAnimateSmooth() ? 'smooth' : 'auto';
-        var block = scrollBlockMode(el);
+        var block = 'start';
 
-        if (el.classList.contains('hp-product-card__cta') && isMobileViewport()) {
-            var rect = el.getBoundingClientRect();
-            var bottomGap = 20;
-            var maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
-            var targetY = window.pageYOffset + rect.bottom - window.innerHeight + bottomGap;
-            targetY = Math.max(0, Math.min(targetY, maxScroll));
-
-            try {
-                window.scrollTo({ top: targetY, behavior: behavior });
-            } catch (err) {
-                window.scrollTo(0, targetY);
-            }
-            return;
+        if (el.classList && el.classList.contains('hp-product-card__cta')) {
+            block = isMobileViewport() ? 'end' : 'center';
         }
 
         try {
             el.scrollIntoView({ behavior: behavior, block: block });
         } catch (err) {
-            el.scrollIntoView(block === 'start');
+            el.scrollIntoView(block !== 'start');
         }
     }
 
@@ -270,8 +252,28 @@
             || /#products-heading(?:[?#]|$)/i.test(href);
     }
 
-    function shouldIgnoreTap() {
+    function shouldIgnoreTap(trigger) {
+        if (trigger && trigger.closest && trigger.closest('.slider-image[data-go-products], [data-go-products]')) {
+            return false;
+        }
         return touchMoved;
+    }
+
+    var lastGoProductsMs = 0;
+
+    function handleGoProducts(trigger) {
+        if (!trigger || !isOnIndex()) {
+            return;
+        }
+        if (shouldIgnoreTap(trigger)) {
+            return;
+        }
+        var now = Date.now();
+        if (now - lastGoProductsMs < 400) {
+            return;
+        }
+        lastGoProductsMs = now;
+        goToProductsSection({ updateHash: true });
     }
 
     document.addEventListener('click', function(e) {
@@ -287,19 +289,27 @@
             return;
         }
 
-        if (shouldIgnoreTap()) {
-            return;
-        }
-
         if (link && link.getAttribute('href') && !isOnIndex()) {
             return;
         }
 
         e.preventDefault();
         e.stopPropagation();
+        handleGoProducts(trigger);
+    }, true);
 
-        goToProductsSection({ updateHash: true });
-    }, false);
+    document.addEventListener('touchend', function(e) {
+        var target = e.target;
+        var trigger = isGoProductsTrigger(target);
+        if (!trigger || !trigger.closest('.slider-image[data-go-products]')) {
+            return;
+        }
+        if (!isOnIndex() || shouldIgnoreTap(trigger)) {
+            return;
+        }
+        e.preventDefault();
+        handleGoProducts(trigger);
+    }, { passive: false });
 
     document.addEventListener('keydown', function(e) {
         if (e.key !== 'Enter' && e.key !== ' ') {
