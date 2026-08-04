@@ -27,6 +27,49 @@
             || document.getElementById('products');
     }
 
+    /** Slider / menü tıklaması — ilk sipariş butonuna kaydır */
+    function getScrollTarget() {
+        return document.querySelector('.homepage-products-scope .hp-product-card__cta')
+            || getTarget();
+    }
+
+    function isMobileViewport() {
+        return !!(window.matchMedia && window.matchMedia('(max-width: 480px)').matches);
+    }
+
+    function scrollBlockMode(el) {
+        if (el && el.classList && el.classList.contains('hp-product-card__cta')) {
+            return isMobileViewport() ? 'end' : 'center';
+        }
+        return 'start';
+    }
+
+    function scrollElement(el, smooth) {
+        var behavior = smooth && shouldAnimateSmooth() ? 'smooth' : 'auto';
+        var block = scrollBlockMode(el);
+
+        if (el.classList.contains('hp-product-card__cta') && isMobileViewport()) {
+            var rect = el.getBoundingClientRect();
+            var bottomGap = 20;
+            var maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            var targetY = window.pageYOffset + rect.bottom - window.innerHeight + bottomGap;
+            targetY = Math.max(0, Math.min(targetY, maxScroll));
+
+            try {
+                window.scrollTo({ top: targetY, behavior: behavior });
+            } catch (err) {
+                window.scrollTo(0, targetY);
+            }
+            return;
+        }
+
+        try {
+            el.scrollIntoView({ behavior: behavior, block: block });
+        } catch (err) {
+            el.scrollIntoView(block === 'start');
+        }
+    }
+
     function isOnIndex() {
         return !!(document.body && (
             document.body.classList.contains('homepage-view')
@@ -134,21 +177,12 @@
 
         if (behavior === 'smooth') {
             setScrollActive(true);
-            try {
-                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } catch (err) {
-                el.scrollIntoView(true);
-                setScrollActive(false);
-                if (done) {
-                    done();
-                }
-                return;
-            }
+            scrollElement(el, true);
             waitForScrollEnd(done);
             return;
         }
 
-        el.scrollIntoView({ behavior: 'auto', block: 'start' });
+        scrollElement(el, false);
         if (done) {
             done();
         }
@@ -175,7 +209,7 @@
             return false;
         }
 
-        var el = getTarget();
+        var el = getScrollTarget();
         if (!el) {
             window.location.href = INDEX_PRODUCTS_URL;
             return false;
@@ -199,7 +233,7 @@
     /** Eski API uyumluluğu */
     function scrollToProducts(attempt, options) {
         var n = typeof attempt === 'number' ? attempt : 0;
-        if (!getTarget() && n < 15) {
+        if (!getScrollTarget() && n < 15) {
             window.setTimeout(function() {
                 scrollToProducts(n + 1, options);
             }, 100);
