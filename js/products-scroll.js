@@ -33,16 +33,12 @@
             || getTarget();
     }
 
-    function isMobileViewport() {
-        return !!(window.matchMedia && window.matchMedia('(max-width: 480px)').matches);
-    }
-
     function scrollElement(el, smooth) {
         var behavior = smooth && shouldAnimateSmooth() ? 'smooth' : 'auto';
         var block = 'start';
 
         if (el.classList && el.classList.contains('hp-product-card__cta')) {
-            block = isMobileViewport() ? 'end' : 'center';
+            block = 'end';
         }
 
         try {
