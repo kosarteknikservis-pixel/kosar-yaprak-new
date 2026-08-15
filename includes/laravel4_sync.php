@@ -109,14 +109,48 @@ function laravel4_order_payload_for_ortak_panel(array $orderData, array $cfg): a
         'items' => $items,
     ];
 
-    foreach (['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'referrer'] as $key) {
+    foreach (['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as $key) {
         if (! empty($orderData[$key])) {
             $payload[$key] = $orderData[$key];
         }
     }
 
-    if (! empty($orderData['ad_source']) && empty($payload['ref'])) {
-        $payload['ref'] = $orderData['ad_source'];
+    // Ortak panel: ref = kampanya kodu (?ref= / orders.referrer). ad_source (Meta/Google) ref'e yazılmaz.
+    $campaignRef = '';
+    if (is_file(__DIR__.'/attribution_helpers.php')) {
+        require_once __DIR__.'/attribution_helpers.php';
+        if (function_exists('attribution_campaign_ref')) {
+            $campaignRef = (string) (attribution_campaign_ref($orderData) ?? '');
+        }
+    }
+    if ($campaignRef === '') {
+        foreach (['ref', 'referrer'] as $key) {
+            $cand = trim((string) ($orderData[$key] ?? ''));
+            if ($cand !== '' && ! preg_match('#^https?://#i', $cand)) {
+                $campaignRef = mb_substr($cand, 0, 128);
+                break;
+            }
+        }
+    }
+    if ($campaignRef !== '') {
+        $payload['ref'] = $campaignRef;
+    }
+
+    if (! empty($orderData['ad_source'])) {
+        $payload['ad_source'] = $orderData['ad_source'];
+    }
+
+    // referrer / referrer_url = HTTP sayfa referrer (kampanya kodu değil)
+    $pageReferrer = trim((string) ($orderData['referrer_url'] ?? ''));
+    if ($pageReferrer === '') {
+        $cand = trim((string) ($orderData['referrer'] ?? ''));
+        if ($cand !== '' && preg_match('#^https?://#i', $cand)) {
+            $pageReferrer = $cand;
+        }
+    }
+    if ($pageReferrer !== '') {
+        $payload['referrer'] = $pageReferrer;
+        $payload['referrer_url'] = $pageReferrer;
     }
 
     return $payload;
@@ -495,6 +529,7 @@ function laravel4_sync_checkout_order(array $ctx): void
             'source' => $siteName,
             'platform' => 'website',
             'ad_source' => $adSourceText !== '' ? $adSourceText : null,
+            'ref' => $refLink !== '' ? $refLink : null,
             'referrer' => $refLink !== '' ? $refLink : null,
             'customer_name' => (string) ($ctx['customer_name'] ?? ''),
             'customer_phone' => (string) ($ctx['customer_phone'] ?? ''),
@@ -515,6 +550,11 @@ function laravel4_sync_checkout_order(array $ctx): void
             'invoice_address' => $invoiceAddress !== '' ? $invoiceAddress : null,
             'items' => $syncItems,
         ], $attribution);
+
+        if ($refLink !== '') {
+            $orderData['ref'] = $refLink;
+            $orderData['referrer'] = $refLink;
+        }
 
         laravel4_sync_order($orderData);
     } catch (Throwable $e) {
@@ -999,6 +1039,7 @@ function laravel4_sync_pending_order(int $orderId, PDO $pdo): bool
             'source' => $siteName,
             'platform' => 'website',
             'ad_source' => $adSource,
+            'ref' => $referrer !== '' ? $referrer : null,
             'referrer' => $referrer !== '' ? $referrer : null,
             'customer_name' => (string) ($order['customer_name'] ?? ''),
             'customer_phone' => (string) ($order['customer_phone'] ?? ''),
@@ -1019,6 +1060,11 @@ function laravel4_sync_pending_order(int $orderId, PDO $pdo): bool
             'invoice_address' => trim((string) ($order['invoice_address'] ?? '')) !== '' ? trim((string) $order['invoice_address']) : null,
             'items' => $items,
         ], is_array($attribution) ? $attribution : []);
+
+        if ($referrer !== '') {
+            $orderData['ref'] = $referrer;
+            $orderData['referrer'] = $referrer;
+        }
 
         return laravel4_sync_order($orderData);
     } catch (Throwable $e) {

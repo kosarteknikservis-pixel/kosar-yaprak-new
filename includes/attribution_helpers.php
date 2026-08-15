@@ -78,6 +78,52 @@ function attribution_order_values_from_row(array $orderRow): array
 }
 
 /**
+ * Ortak panel `ref` alanı — kampanya kodu (?ref= / orders.referrer / SESSION).
+ * HTTP URL’si kampanya kodu sayılmaz (panelde referrer_url için ayrı).
+ *
+ * @param  array<string, mixed>|null  $orderRow
+ */
+function attribution_campaign_ref(?array $orderRow = null): ?string
+{
+    $trimCode = static function (mixed $v): ?string {
+        if ($v === null || $v === '') {
+            return null;
+        }
+        $s = trim((string) $v);
+        if ($s === '' || preg_match('#^https?://#i', $s)) {
+            return null;
+        }
+
+        return mb_substr($s, 0, 128);
+    };
+
+    if ($orderRow !== null) {
+        foreach (['ref', 'referrer'] as $key) {
+            $code = $trimCode($orderRow[$key] ?? null);
+            if ($code !== null) {
+                return $code;
+            }
+        }
+    }
+
+    if (session_status() !== PHP_SESSION_NONE) {
+        $code = $trimCode($_SESSION['referral_code'] ?? null);
+        if ($code !== null) {
+            return $code;
+        }
+    }
+
+    if (! empty($_COOKIE['referrer'])) {
+        $code = $trimCode($_COOKIE['referrer']);
+        if ($code !== null) {
+            return $code;
+        }
+    }
+
+    return null;
+}
+
+/**
  * Laravel API gövdesi için (assoc). Oturum boşsa isteğe bağlı orders satırından okur.
  *
  * @param  array<string, mixed>|null  $orderRow
@@ -85,8 +131,11 @@ function attribution_order_values_from_row(array $orderRow): array
  */
 function attribution_api_payload_slice(bool $captureEnabled, ?array $orderRow = null): array
 {
+    $ref = attribution_campaign_ref($orderRow);
+
     if (! $captureEnabled) {
         return [
+            'ref' => $ref,
             'utm_source' => null,
             'utm_medium' => null,
             'utm_campaign' => null,
@@ -117,6 +166,7 @@ function attribution_api_payload_slice(bool $captureEnabled, ?array $orderRow = 
     }
 
     return [
+        'ref' => $ref,
         'utm_source' => $a,
         'utm_medium' => $b,
         'utm_campaign' => $c,
