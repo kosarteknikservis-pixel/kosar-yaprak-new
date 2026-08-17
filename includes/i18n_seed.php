@@ -282,7 +282,7 @@ function i18n_seed_default_translations(PDO $pdo): void
     }
 }
 
-/** Eksik katalog anahtarlarını her istekte bir kez tamamla (INSERT IGNORE). */
+/** Eksik katalog anahtarlarını bir kez tamamla (kalıcı sürüm damgası). */
 function i18n_ensure_catalog(?PDO $pdo = null): void
 {
     static $done = false;
@@ -293,6 +293,15 @@ function i18n_ensure_catalog(?PDO $pdo = null): void
     if (!($pdo instanceof PDO)) {
         return;
     }
+    $seedVer = '2026-08-17-ui3';
+    try {
+        $cur = $pdo->query("SELECT meta_value FROM schema_meta WHERE meta_key = 'i18n_seed_ver'")->fetchColumn();
+        if ($cur === $seedVer) {
+            return;
+        }
+    } catch (Throwable $e) {
+        /* schema_meta yoksa seed çalışsın */
+    }
     i18n_seed_default_translations($pdo);
     if (function_exists('content_t_load_lang') && function_exists('content_t_save')) {
         $hpEn = content_t_load_lang($pdo, 'homepage_section', 1, 'en');
@@ -302,5 +311,16 @@ function i18n_ensure_catalog(?PDO $pdo = null): void
         if (trim((string) ($hpEn['heading_sub'] ?? '')) === '') {
             content_t_save($pdo, 'homepage_section', 1, 'heading_sub', 'en', 'Early summer discount');
         }
+    }
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS schema_meta (
+            meta_key VARCHAR(64) NOT NULL PRIMARY KEY,
+            meta_value VARCHAR(64) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $st = $pdo->prepare("INSERT INTO schema_meta (meta_key, meta_value) VALUES ('i18n_seed_ver', ?)
+            ON DUPLICATE KEY UPDATE meta_value = VALUES(meta_value)");
+        $st->execute([$seedVer]);
+    } catch (Throwable $e) {
+        /* damga yazılamazsa sonraki istekte tekrar dener */
     }
 }

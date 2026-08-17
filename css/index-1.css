@@ -212,6 +212,12 @@ html {
             text-transform: none !important;
             box-shadow: 0 4px 14px rgba(95, 189, 15, 0.28);
             transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+            position: relative;
+            z-index: 1055;
+            scroll-margin-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+            scroll-margin-top: 88px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .homepage-products-scope .hp-product-card__cta:hover {
@@ -219,6 +225,13 @@ html {
             filter: brightness(1.03);
             box-shadow: 0 6px 18px rgba(95, 189, 15, 0.34);
             color: #fff !important;
+        }
+
+        html body.homepage-view .social-buttons.is-cta-cover,
+        html body.homepage-view .scroll-to-top.is-cta-cover {
+            visibility: hidden !important;
+            pointer-events: none !important;
+            opacity: 0 !important;
         }
 
         .product img {

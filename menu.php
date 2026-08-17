@@ -302,4 +302,4 @@ $__has_switcher = count($__curs) > 1;
 
 })();
 </script>
-<script src="js/products-scroll.js?v=202604045"></script>
+<script src="js/products-scroll.js?v=20260817cta2"></script>

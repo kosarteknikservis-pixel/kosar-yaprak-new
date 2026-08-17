@@ -27,9 +27,9 @@
             || document.getElementById('products');
     }
 
-    /** Slider / menü tıklaması — ilk sipariş butonuna kaydır */
+    /** Slider / menü — ürün kartına kaydır (buton sticky altında kalmasın) */
     function getScrollTarget() {
-        return document.querySelector('.homepage-products-scope .hp-product-card__cta')
+        return document.querySelector('.homepage-products-scope .hp-product-card')
             || getTarget();
     }
 
@@ -37,14 +37,23 @@
         var behavior = smooth && shouldAnimateSmooth() ? 'smooth' : 'auto';
         var block = 'start';
 
-        if (el.classList && el.classList.contains('hp-product-card__cta')) {
-            block = 'end';
+        if (el.classList && el.classList.contains('hp-product-card')) {
+            block = 'nearest';
         }
 
         try {
             el.scrollIntoView({ behavior: behavior, block: block });
         } catch (err) {
-            el.scrollIntoView(block !== 'start');
+            el.scrollIntoView(true);
+        }
+
+        var cta = el.querySelector ? el.querySelector('.hp-product-card__cta') : null;
+        if (cta && typeof cta.scrollIntoView === 'function') {
+            try {
+                cta.scrollIntoView({ behavior: behavior, block: 'end' });
+            } catch (err2) {
+                cta.scrollIntoView(false);
+            }
         }
     }
 
@@ -227,11 +236,18 @@
     window.scrollToProductsHeading = scrollToProducts;
     window.scrollToProducts = scrollToProducts;
 
+    function isOrderCta(node) {
+        if (!node || !node.closest) {
+            return false;
+        }
+        return !!node.closest('.hp-product-card__cta, .cv-sticky__cta, .cv-offer__cta, a[href*="order"]');
+    }
+
     function isGoProductsTrigger(node) {
         if (!node || !node.closest) {
             return null;
         }
-        if (node.closest('.js-hp-product-popup')) {
+        if (isOrderCta(node) || node.closest('.js-hp-product-popup')) {
             return null;
         }
         return node.closest('[data-go-products], .js-scroll-to-products');
@@ -271,8 +287,15 @@
 
     document.addEventListener('click', function(e) {
         var target = e.target;
+        if (isOrderCta(target)) {
+            return;
+        }
         var trigger = isGoProductsTrigger(target);
         var link = target && target.closest ? target.closest('a[href]') : null;
+
+        if (link && isOrderCta(link)) {
+            return;
+        }
 
         if (!trigger && link && (link.classList.contains('js-scroll-to-products') || hrefPointsToProducts((link.getAttribute('href') || '').trim()))) {
             trigger = link;

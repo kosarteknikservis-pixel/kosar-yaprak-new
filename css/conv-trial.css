@@ -152,6 +152,13 @@ html body.homepage-view.cv-trial-on .social-buttons {
   bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
+html body.homepage-view .social-buttons.is-cta-cover,
+html body.homepage-view .scroll-to-top.is-cta-cover {
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
 html body.homepage-view.cv-trial-on .scroll-to-top {
   bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }

@@ -218,11 +218,11 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/index-1.css?v=20260817au">
+    <link rel="stylesheet" href="css/index-1.css?v=20260817cta2">
     <link rel="stylesheet" href="css/payment-trust.css">
     <link rel="stylesheet" href="css/site-footer.css?v=20260817au2">
 <?php if (conv_trial_on() && $cvOffer): ?>
-    <link rel="stylesheet" href="css/conv-trial.css?v=20260817a">
+    <link rel="stylesheet" href="css/conv-trial.css?v=20260817cta2">
 <?php endif; ?>
 <?php if ($fayansHomeVideo !== null): ?>
     <link rel="stylesheet" href="css/fayans-home-video.css">
@@ -1092,6 +1092,11 @@ function openHomeProductPopupFromTrigger(trigger) {
 }
 
 document.addEventListener('click', function (event) {
+    var orderCta = event.target.closest('.hp-product-card__cta, .cv-sticky__cta, .cv-offer__cta');
+    if (orderCta) {
+        event.stopPropagation();
+        return;
+    }
     var trigger = event.target.closest('.js-hp-product-popup');
     if (!trigger) {
         return;
@@ -1239,19 +1244,31 @@ window.__abandonedConfig = <?= json_encode(
         <?= te('shop.order_now', 'Hemen Sipariş Ver') ?>
     </a>
 </div>
+<?php endif; ?>
 <script>
 (function () {
-    var bar = document.getElementById('cv-sticky-bar');
     var cta = document.querySelector('.homepage-products-scope .hp-product-card__cta');
-    if (!bar || !cta || !('IntersectionObserver' in window)) return;
+    if (!cta || !('IntersectionObserver' in window)) {
+        return;
+    }
+    var bar = document.getElementById('cv-sticky-bar');
+    var social = document.querySelector('.social-buttons');
+    var toTop = document.querySelector('.scroll-to-top');
     var io = new IntersectionObserver(function (entries) {
-        var vis = entries[0] && entries[0].isIntersecting;
-        bar.classList.toggle('is-hidden', !!vis);
-    }, { threshold: 0.6 });
+        var vis = !!(entries[0] && entries[0].isIntersecting);
+        if (bar) {
+            bar.classList.toggle('is-hidden', vis);
+        }
+        if (social) {
+            social.classList.toggle('is-cta-cover', vis);
+        }
+        if (toTop) {
+            toTop.classList.toggle('is-cta-cover', vis);
+        }
+    }, { threshold: 0.05, rootMargin: '0px 0px -72px 0px' });
     io.observe(cta);
 })();
 </script>
-<?php endif; ?>
 
 <?php include __DIR__ . '/includes/carkifelek_public.php'; ?>
 

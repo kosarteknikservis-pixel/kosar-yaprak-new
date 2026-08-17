@@ -469,7 +469,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="css/payment-trust.css">
     <link rel="stylesheet" href="css/site-footer.css?v=20260817au2">
 <?php if (conv_trial_on()): ?>
-    <link rel="stylesheet" href="css/conv-trial.css?v=20260817a">
+    <link rel="stylesheet" href="css/conv-trial.css?v=20260817cta2">
 <?php endif; ?>
 </head>
 <body class="site-shell-app order-page-view<?= conv_trial_on() ? ' cv-trial-on' : '' ?>">
