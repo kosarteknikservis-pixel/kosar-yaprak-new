@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require '../db.php';
 require 'auth.php';
+require_once __DIR__ . '/../includes/i18n.php';
 
 $page_title = 'Ana sayfa ürün bölümü';
 
@@ -67,6 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             hp_normalize_color(trim($_POST['cta_bg_color'] ?? ''), '#5fbd0f'),
         ]);
 
+        foreach (['en', 'ar'] as $langCode) {
+            content_t_save($pdo, 'homepage_section', 1, 'heading_main', $langCode, (string) ($_POST['heading_main_' . $langCode] ?? ''));
+            content_t_save($pdo, 'homepage_section', 1, 'heading_sub', $langCode, (string) ($_POST['heading_sub_' . $langCode] ?? ''));
+        }
+
         $_SESSION['message'] = 'Ana sayfa ürün bölümü kaydedildi.';
         $_SESSION['message_type'] = 'success';
     } catch (Throwable $e) {
@@ -79,6 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $r = $pdo->query('SELECT * FROM homepage_product_section WHERE id = 1')->fetch(PDO::FETCH_ASSOC) ?: [];
+$hpTrEn = content_t_load_lang($pdo, 'homepage_section', 1, 'en');
+$hpTrAr = content_t_load_lang($pdo, 'homepage_section', 1, 'ar');
 
 include 'admin_header.php';
 ?>
@@ -146,6 +154,27 @@ include 'admin_header.php';
                 <div class="col-md-6">
                     <label class="form-label small">Alt satır font (isteğe bağlı)</label>
                     <input type="text" name="heading_sub_font" class="form-control" value="<?= htmlspecialchars((string) ($r['heading_sub_font'] ?? '')) ?>">
+                </div>
+            </div>
+
+            <h2 class="h6 border-bottom pb-2 mt-4">Yurtdışı dil (müşteri vitrini)</h2>
+            <p class="text-muted small mb-3">İngilizce veya Arapça varsayılan dil seçildiğinde bu başlıklar kullanılır. Boş bırakılırsa Türkçe metin gösterilir. <a href="languages.php">Diller &amp; Para</a></p>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label small">Üst satır (EN)</label>
+                    <input type="text" name="heading_main_en" class="form-control" value="<?= htmlspecialchars((string) ($hpTrEn['heading_main'] ?? '')) ?>" placeholder="Featured Products">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Alt satır (EN)</label>
+                    <input type="text" name="heading_sub_en" class="form-control" value="<?= htmlspecialchars((string) ($hpTrEn['heading_sub'] ?? '')) ?>" placeholder="Discounted Prices">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Üst satır (AR)</label>
+                    <input type="text" name="heading_main_ar" class="form-control" value="<?= htmlspecialchars((string) ($hpTrAr['heading_main'] ?? '')) ?>" dir="rtl">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small">Alt satır (AR)</label>
+                    <input type="text" name="heading_sub_ar" class="form-control" value="<?= htmlspecialchars((string) ($hpTrAr['heading_sub'] ?? '')) ?>" dir="rtl">
                 </div>
             </div>
 

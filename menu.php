@@ -1,6 +1,8 @@
 <?php
 require 'db.php';
 require_once __DIR__ . '/includes/app_url.php';
+require_once __DIR__ . '/includes/i18n.php';
+i18n_boot($pdo);
 
 $menu_home = app_url('', [], $pdo);
 

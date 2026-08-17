@@ -68,6 +68,12 @@ function i18n_default_lang(?PDO $pdo = null): string
     return $langs ? (string) $langs[0]['code'] : 'tr';
 }
 
+/** Paneldeki kaynak dil (ürün adı, başlık vb. TR olarak saklanır). */
+function i18n_source_lang(): string
+{
+    return 'tr';
+}
+
 /** Dil çözümle ve durum kur. Çıktıdan önce çağrılmalı (çerez yazabilir). */
 function i18n_boot(?PDO $pdo = null): string
 {
@@ -77,6 +83,13 @@ function i18n_boot(?PDO $pdo = null): string
         return $st['lang'];
     }
     $st['booted'] = true;
+
+    if (is_file(__DIR__ . '/i18n_seed.php')) {
+        require_once __DIR__ . '/i18n_seed.php';
+        if (function_exists('i18n_ensure_catalog')) {
+            i18n_ensure_catalog($pdo);
+        }
+    }
 
     $langs = i18n_active_languages($pdo);
     $default = i18n_default_lang($pdo);
@@ -168,7 +181,7 @@ function te(string $key, string $fallback = ''): string
 function content_t(string $entityType, int $entityId, string $field, string $original, ?PDO $pdo = null): string
 {
     $lang = current_lang($pdo);
-    if ($lang === i18n_default_lang($pdo)) {
+    if ($lang === i18n_source_lang()) {
         return $original;
     }
     $pdo = i18n_pdo($pdo);

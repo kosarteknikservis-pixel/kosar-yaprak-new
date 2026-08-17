@@ -22,6 +22,10 @@ try {
         require_once __DIR__ . '/includes/cloaker_bootstrap.php';
         cloaker_bootstrap($pdo);
     }
+    if (is_file(__DIR__ . '/includes/i18n.php')) {
+        require_once __DIR__ . '/includes/i18n.php';
+        i18n_boot($pdo);
+    }
 } catch (\PDOException $e) {
     throw new \PDOException($e->getMessage(), (int)$e->getCode());
 }

@@ -3,6 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 require 'db.php';
+require_once __DIR__ . '/includes/i18n.php';
+i18n_boot($pdo);
 require 'telegram.php';
 require_once 'tracking.php';
 require_once __DIR__ . '/includes/promo_banner_render.php';

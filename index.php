@@ -5,6 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require 'db.php';
 require_once __DIR__ . '/includes/app_url.php';
+require_once __DIR__ . '/includes/i18n.php';
+i18n_boot($pdo);
 $__iru = (string) ($_SERVER['REQUEST_URI'] ?? '');
 $carkifelek_return_url = ($__iru !== '' && $__iru[0] === '/') ? $__iru : app_url('', [], $pdo);
 require_once 'tracking.php';
@@ -95,10 +97,13 @@ if (trim((string) ($hpSec['heading_main'] ?? '')) === '' && trim((string) ($hpSe
     }
 
     if (trim((string) $hpSec['heading_main']) === '' && trim((string) $hpSec['heading_sub']) === '') {
-        $hpSec['heading_main'] = 'Ürünlerimiz';
-        $hpSec['heading_sub'] = 'Güvenli alışveriş';
+        $hpSec['heading_main'] = t('shop.default_heading_main', 'Ürünlerimiz');
+        $hpSec['heading_sub'] = t('shop.default_heading_sub', 'Güvenli alışveriş');
     }
 }
+
+$hpHeadingMain = content_t('homepage_section', 1, 'heading_main', (string) ($hpSec['heading_main'] ?? ''));
+$hpHeadingSub = content_t('homepage_section', 1, 'heading_sub', (string) ($hpSec['heading_sub'] ?? ''));
 
 $cvOffer = conv_trial_on() ? conv_trial_offer(is_array($products) ? $products : [], $hpSec, $pdo) : null;
 
@@ -691,13 +696,13 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
 <?php if (!empty((int) ($hpSec['show_heading'] ?? 1))): ?>
     <h1 id="products-heading" class="text-center my-5" style="font-weight: bold;">
         <?php if (!empty((int) ($hpSec['show_heading_main'] ?? 1))): ?>
-            <span style="<?= $hmf ?>color: <?= $hmc ?>;"><?= htmlspecialchars((string) ($hpSec['heading_main'] ?? '')) ?></span>
+            <span style="<?= $hmf ?>color: <?= $hmc ?>;"><?= htmlspecialchars($hpHeadingMain) ?></span>
         <?php endif; ?>
         <?php if (!empty((int) ($hpSec['show_heading_main'] ?? 1)) && !empty((int) ($hpSec['show_heading_sub'] ?? 1))): ?>
             <br>
         <?php endif; ?>
         <?php if (!empty((int) ($hpSec['show_heading_sub'] ?? 1))): ?>
-            <span style="<?= $hsf ?>color: <?= $hsc ?>;"><?= htmlspecialchars((string) ($hpSec['heading_sub'] ?? '')) ?></span>
+            <span style="<?= $hsf ?>color: <?= $hsc ?>;"><?= htmlspecialchars($hpHeadingSub) ?></span>
         <?php endif; ?>
     </h1>
 <?php if ($hpPaymentTrustBadges !== []): ?>
@@ -711,8 +716,8 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
     <div class="col-12">
         <div class="hp-empty-products text-center py-5 px-3" role="status">
             <i class="fas fa-box-open fa-2x mb-3" style="color:#94a3b8;" aria-hidden="true"></i>
-            <p class="mb-0" style="color:#64748b;font-size:1.05rem;">Şu an listelenecek ürün bulunmuyor.</p>
-            <p class="small text-muted mt-2 mb-0">Kısa süre içinde tekrar kontrol edebilirsiniz.</p>
+            <p class="mb-0" style="color:#64748b;font-size:1.05rem;"><?= te('shop.empty_products', 'Şu an listelenecek ürün bulunmuyor.') ?></p>
+            <p class="small text-muted mt-2 mb-0"><?= te('shop.empty_products_hint', 'Kısa süre içinde tekrar kontrol edebilirsiniz.') ?></p>
         </div>
     </div>
 <?php else: ?>

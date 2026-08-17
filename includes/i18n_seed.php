@@ -139,6 +139,11 @@ function i18n_translation_catalog(): array
         'shop.order_now' => ['shop', 'Hemen Sipariş Ver', 'Order Now', 'اطلب الآن'],
         'shop.order_short' => ['shop', 'Sipariş Ver', 'Order', 'اطلب'],
         'shop.discount' => ['shop', 'indirim', 'off', 'خصم'],
+        'shop.default_heading_main' => ['shop', 'Ürünlerimiz', 'Our Products', 'منتجاتنا'],
+        'shop.default_heading_sub' => ['shop', 'Güvenli alışveriş', 'Secure shopping', 'تسوق آمن'],
+        'shop.empty_products' => ['shop', 'Şu an listelenecek ürün bulunmuyor.', 'No products to display at the moment.', 'لا توجد منتجات للعرض حالياً.'],
+        'shop.empty_products_hint' => ['shop', 'Kısa süre içinde tekrar kontrol edebilirsiniz.', 'Please check back soon.', 'يرجى المحاولة لاحقاً.'],
+        'shop.payment_options' => ['shop', 'Ödeme seçenekleri', 'Payment options', 'خيارات الدفع'],
         'shop.sale_price' => ['shop', 'Kampanyalı fiyat', 'Sale price', 'سعر العرض'],
         'shop.offer_hint' => ['shop', 'Kapıda ödeme · Ücretsiz kargo · Kampanyalı fiyat', 'Cash on delivery · Free shipping · Sale price', 'الدفع عند الاستلام · شحن مجاني · سعر العرض'],
         'trust.cod_cash' => ['trust', 'Kapıda Nakit Ödeme', 'Cash on Delivery', 'الدفع نقداً عند الاستلام'],
@@ -183,4 +188,18 @@ function i18n_seed_default_translations(PDO $pdo): void
             error_log('i18n_seed: ' . $e->getMessage());
         }
     }
+}
+
+/** Eksik katalog anahtarlarını her istekte bir kez tamamla (INSERT IGNORE). */
+function i18n_ensure_catalog(?PDO $pdo = null): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+    if (!($pdo instanceof PDO)) {
+        return;
+    }
+    i18n_seed_default_translations($pdo);
 }

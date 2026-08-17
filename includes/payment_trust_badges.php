@@ -138,7 +138,7 @@ function payment_trust_render(array $badges, string $wrapperClass = 'payment-tru
         return;
     }
 
-    echo '<div class="' . htmlspecialchars($wrapperClass, ENT_QUOTES, 'UTF-8') . '" role="list" aria-label="Ödeme seçenekleri">';
+    echo '<div class="' . htmlspecialchars($wrapperClass, ENT_QUOTES, 'UTF-8') . '" role="list" aria-label="' . (function_exists('te') ? te('shop.payment_options', 'Ödeme seçenekleri') : 'Ödeme seçenekleri') . '">';
     foreach ($badges as $badge) {
         $tone = (string) ($badge['tone'] ?? 'slate');
         $icon = (string) ($badge['icon'] ?? 'fa-circle-check');
