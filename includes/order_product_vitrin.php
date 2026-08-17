@@ -100,6 +100,9 @@ order_page_ui_print_styles_extended($ui);
     if (!empty($p['show_strikethrough']) && $originalPrice > $salePrice && $originalPrice > 0) {
         $vitrinDiscountPct = (int) round((1 - $salePrice / $originalPrice) * 100);
     }
+    $vitrinSaveStyle = function_exists('shop_use_save_badge') && shop_use_save_badge();
+    $vitrinSavedTry = ($originalPrice > $salePrice) ? ($originalPrice - $salePrice) : 0;
+    $vitrinInstall = function_exists('shop_interest_free_label') ? shop_interest_free_label($salePrice) : '';
     ?>
     <div class="opui-price-block op-order-vitrin__prices">
         <?php if (!empty($p['show_strikethrough'])): ?>
@@ -107,10 +110,6 @@ order_page_ui_print_styles_extended($ui);
             <?= function_exists('money') ? htmlspecialchars(money($originalPrice)) : number_format($originalPrice, 2, ',', '.') . ' TL' ?>
         </span>
         <?php endif; ?>
-        $vitrinSaveStyle = function_exists('shop_use_save_badge') && shop_use_save_badge();
-        $vitrinSavedTry = ($originalPrice > $salePrice) ? ($originalPrice - $salePrice) : 0;
-        $vitrinInstall = function_exists('shop_interest_free_label') ? shop_interest_free_label($salePrice) : '';
-        ?>
         <span class="opui-price-current op-order-vitrin__price-sale price" data-meta-price="false"><?= function_exists('money') ? htmlspecialchars(money($salePrice)) : number_format($salePrice, 2, ',', '.') . ' TL' ?></span>
         <span style="display:none;" data-meta-price="true"><?= number_format($salePrice, 2, '.', '') ?></span>
         <?php if ($vitrinDiscountPct > 0 && (int) ($notification['show_discount_badge_order'] ?? 1) === 1): ?>
