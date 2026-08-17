@@ -367,10 +367,10 @@ include 'admin_header.php';
 
     <div class="admin-page-intro mb-3">
         <h1><i class="fas fa-globe"></i> Diller &amp; Para Birimleri</h1>
-        <p class="lead mb-2">Müşteri sipariş arayüzü (ana sayfa, sipariş formu, teşekkür) Türkçe / İngilizce / Arapça çalışır. Çeviri yoksa Türkçe gösterilir.</p>
+        <p class="lead mb-2">Vitrin dili sitede seçilmez. Panelde <strong>varsayılan dil</strong> hangisiyse müşteri onu görür (yıldız). Çeviriler yine Çeviriler / ürün / ödeme ekranlarından yazılır.</p>
         <ol class="mb-0 small text-muted">
-            <li><strong>Diller</strong> sekmesinde İngilizce ve Arapça’yı <em>Aktif</em> yapın (üst barda TR / EN / AR görünür).</li>
-            <li><strong>Çeviriler</strong> sekmesinde sipariş metinlerini düzenleyin (grup: <code>order</code>, <code>shop</code>, <code>thankyou</code>).</li>
+            <li><strong>Diller</strong> — İngilizce veya Arapça’yı varsayılan yapın; tüm sipariş arayüzü o dile geçer.</li>
+            <li><strong>Çeviriler</strong> — sipariş metinleri (grup: <code>order</code>, <code>shop</code>, <code>thankyou</code>).</li>
             <li>Ürün adı/açıklama: <a href="products.php">Ürünler</a> → düzenle → “Yurtdışı dil”.</li>
             <li>Ödeme yöntemi adları: <a href="manage_payment_methods.php">Ödeme yöntemleri</a> EN/AR sütunları.</li>
         </ol>

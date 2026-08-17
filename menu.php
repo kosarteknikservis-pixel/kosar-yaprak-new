@@ -31,7 +31,7 @@ $__dir = function_exists('i18n_dir') ? i18n_dir($pdo) : 'ltr';
 $__langs = function_exists('i18n_active_languages') ? i18n_active_languages($pdo) : [];
 $__curs = function_exists('currency_active_list') ? currency_active_list($pdo) : [];
 $__curCode = function_exists('current_currency_code') ? current_currency_code($pdo) : 'TRY';
-$__has_switcher = (count($__langs) > 1 || count($__curs) > 1);
+$__has_switcher = count($__curs) > 1;
 ?>
 
 <script>document.documentElement.setAttribute('lang','<?= htmlspecialchars($__lang, ENT_QUOTES) ?>');document.documentElement.setAttribute('dir','<?= htmlspecialchars($__dir, ENT_QUOTES) ?>');</script>
@@ -54,17 +54,6 @@ $__has_switcher = (count($__langs) > 1 || count($__curs) > 1);
     <?php endif; ?>
 
     <div class="custom-header-actions">
-    <?php if (count($__langs) > 1): ?>
-    <nav class="header-lang" aria-label="<?= te('switcher.language', 'Dil') ?>">
-        <?php foreach ($__langs as $lg):
-            $lc = (string) $lg['code'];
-            $la = ($lc === $__lang);
-        ?>
-        <a href="<?= htmlspecialchars(i18n_switch_url($lc)) ?>" class="header-lang__btn<?= $la ? ' is-active' : '' ?>"<?= $la ? ' aria-current="true"' : '' ?>><?= htmlspecialchars(strtoupper($lc)) ?></a>
-        <?php endforeach; ?>
-    </nav>
-    <?php endif; ?>
-
     <div class="custom-menu-toggle">
         <i class="fas fa-bars"></i>
         <span><?= te('menu.title', 'Menü') ?></span>
@@ -157,20 +146,7 @@ $__has_switcher = (count($__langs) > 1 || count($__curs) > 1);
     </div>
 
     <?php if ($__has_switcher): ?>
-    <div class="site-switcher" aria-label="Dil ve para birimi seçimi">
-        <?php if (count($__langs) > 1): ?>
-        <div class="site-switcher-group site-lang-switch">
-            <span class="site-switcher-label"><i class="fas fa-language" aria-hidden="true"></i> <?= te('switcher.language', 'Dil') ?></span>
-            <div class="site-switcher-opts">
-                <?php foreach ($__langs as $lg): $lc = (string) $lg['code']; $la = ($lc === $__lang); ?>
-                <a href="<?= htmlspecialchars(i18n_switch_url($lc)) ?>" class="site-switcher-pill<?= $la ? ' is-active' : '' ?>"<?= $la ? ' aria-current="true"' : '' ?>>
-                    <span><?= htmlspecialchars((string) ($lg['native_name'] ?: ($lg['name'] ?: $lc))) ?></span>
-                </a>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
-        <?php if (count($__curs) > 1): ?>
+    <div class="site-switcher" aria-label="Para birimi seçimi">
         <div class="site-switcher-group site-cur-switch">
             <span class="site-switcher-label"><i class="fas fa-coins" aria-hidden="true"></i> <?= te('switcher.currency', 'Para Birimi') ?></span>
             <div class="site-switcher-opts">
@@ -181,7 +157,6 @@ $__has_switcher = (count($__langs) > 1 || count($__curs) > 1);
                 <?php endforeach; ?>
             </div>
         </div>
-        <?php endif; ?>
     </div>
     <?php endif; ?>
 
@@ -193,7 +168,7 @@ $__has_switcher = (count($__langs) > 1 || count($__curs) > 1);
 </div>
 
 <style>
-@import url('css/site-shell.css?v=20260817i18n');
+@import url('css/site-shell.css?v=20260817i18n2');
 
 .site-switcher { margin: 14px 12px 4px; display: flex; flex-direction: column; gap: 12px; }
 .site-switcher-group { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 10px 12px; }

@@ -79,26 +79,8 @@ function i18n_boot(?PDO $pdo = null): string
     $st['booted'] = true;
 
     $langs = i18n_active_languages($pdo);
-    $codes = array_map(static fn ($l) => (string) $l['code'], $langs);
     $default = i18n_default_lang($pdo);
-
-    $chosen = null;
-    $req = isset($_GET['lang']) ? strtolower(preg_replace('/[^a-z]/i', '', (string) $_GET['lang'])) : '';
-    if ($req !== '' && in_array($req, $codes, true)) {
-        $chosen = $req;
-        if (!headers_sent()) {
-            setcookie('site_lang', $chosen, time() + 31536000, '/');
-        }
-        $_COOKIE['site_lang'] = $chosen;
-    } elseif (isset($_COOKIE['site_lang'])) {
-        $c = strtolower(preg_replace('/[^a-z]/i', '', (string) $_COOKIE['site_lang']));
-        if (in_array($c, $codes, true)) {
-            $chosen = $c;
-        }
-    }
-    if ($chosen === null) {
-        $chosen = $default;
-    }
+    $chosen = $default;
 
     $st['lang'] = $chosen;
     $st['rtl'] = false;
