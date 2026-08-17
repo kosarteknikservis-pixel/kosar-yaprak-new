@@ -18,6 +18,7 @@ require_once __DIR__ . '/includes/order_guard_helpers.php';
 require_once __DIR__ . '/includes/abandoned_capture.php';
 require_once __DIR__ . '/includes/order_sms_verify.php';
 require_once __DIR__ . '/includes/order_verification.php';
+require_once __DIR__ . '/includes/conv_trial.php';
 
 date_default_timezone_set('Europe/Istanbul');
 
@@ -465,8 +466,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="css/korp.css">
     <link rel="stylesheet" href="css/payment-trust.css">
     <link rel="stylesheet" href="css/site-footer.css">
+<?php if (conv_trial_on()): ?>
+    <link rel="stylesheet" href="css/conv-trial.css?v=20260817a">
+<?php endif; ?>
 </head>
-<body class="site-shell-app order-page-view">
+<body class="site-shell-app order-page-view<?= conv_trial_on() ? ' cv-trial-on' : '' ?>">
 <?php require'menu.php'; ?>
     <div class="order-page-shell" style="margin-top: 0;">
 
@@ -590,6 +594,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <?php if ($order_note['show_order_note'] == 1): ?>
+        <?php if (conv_trial_on()): ?>
+        <details class="cv-notes-details">
+            <summary>
+                <span><?= htmlspecialchars((string) $order_note['order_note_text']); ?></span>
+                <span class="cv-notes-details__hint">İsteğe bağlı</span>
+            </summary>
+            <div class="cv-notes-details__body">
+                <div class="form-group">
+                    <textarea class="form-control"
+                              id="order_notes"
+                              name="order_notes"
+                              maxlength="200"
+                              placeholder="Varsa notunuzu yazın"><?= htmlspecialchars($formPrefill('order_notes'), ENT_QUOTES, 'UTF-8') ?></textarea>
+                </div>
+            </div>
+        </details>
+        <?php else: ?>
         <div class="form-group">
             <label for="order_notes">
                 <?= htmlspecialchars($order_note['order_note_text']); ?>
@@ -598,6 +619,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                       id="order_notes"
                       name="order_notes" maxlength="200"><?= htmlspecialchars($formPrefill('order_notes'), ENT_QUOTES, 'UTF-8') ?></textarea>
         </div>
+        <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($checkoutCorporateOn): ?>
@@ -647,8 +669,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="form-group">
             <select class="form-control" id="payment_method_id" name="payment_method_id" required>
                 <option value=""><?= te('order.payment_select', 'Seçiniz...') ?></option>
-                <?php foreach ($payment_methods as $pm): ?>
-                    <option value="<?= htmlspecialchars($pm['payment_method_id']) ?>"<?= $formPrefill('payment_method_id') === (string) $pm['payment_method_id'] ? ' selected' : '' ?>>
+                <?php
+                $cvPayPrefill = $formPrefill('payment_method_id');
+                if ($cvPayPrefill === '' && conv_trial_on() && $payment_methods !== []) {
+                    $cvPayPrefill = (string) ($payment_methods[0]['payment_method_id'] ?? '');
+                }
+                foreach ($payment_methods as $pm):
+                    $pmId = (string) $pm['payment_method_id'];
+                ?>
+                    <option value="<?= htmlspecialchars($pmId) ?>"<?= $cvPayPrefill === $pmId ? ' selected' : '' ?>>
                         <?= htmlspecialchars($pm['method_name']) ?>
                     </option>
                 <?php endforeach; ?>

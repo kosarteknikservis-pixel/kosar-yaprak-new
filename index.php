@@ -13,6 +13,7 @@ require_once __DIR__ . '/includes/page_meta_load.php';
 require_once __DIR__ . '/includes/page_seo.php';
 require_once __DIR__ . '/includes/site_footer.php';
 require_once __DIR__ . '/includes/abandoned_capture.php';
+require_once __DIR__ . '/includes/conv_trial.php';
 
 date_default_timezone_set('Europe/Istanbul');
 
@@ -97,8 +98,9 @@ if (trim((string) ($hpSec['heading_main'] ?? '')) === '' && trim((string) ($hpSe
         $hpSec['heading_main'] = 'Ürünlerimiz';
         $hpSec['heading_sub'] = 'Güvenli alışveriş';
     }
-
 }
+
+$cvOffer = conv_trial_on() ? conv_trial_offer(is_array($products) ? $products : [], $hpSec, $pdo) : null;
 
 $fayansHomeVideo = null;
 $fayansHomeVideoConfigPath = __DIR__ . '/includes/fayans_home_video.php';
@@ -204,6 +206,9 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
     <link rel="stylesheet" href="css/index-1.css">
     <link rel="stylesheet" href="css/payment-trust.css">
     <link rel="stylesheet" href="css/site-footer.css">
+<?php if (conv_trial_on() && $cvOffer): ?>
+    <link rel="stylesheet" href="css/conv-trial.css?v=20260817a">
+<?php endif; ?>
 <?php if ($fayansHomeVideo !== null): ?>
     <link rel="stylesheet" href="css/fayans-home-video.css">
 <?php endif; ?>
@@ -306,7 +311,7 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
     }
     </style>
 </head>
-<body class="site-shell-app homepage-view" style="background-color: white;">
+<body class="site-shell-app homepage-view<?= (conv_trial_on() && $cvOffer) ? ' cv-trial-on' : '' ?>" style="background-color: white;">
 <div id="popup-modal" class="popup-modal" onclick="closeModalOnBackdrop(event)">
     <span class="close-btn" onclick="closeModal(event)" aria-label="Kapat">✖</span>
     <div class="popup-modal__panel" onclick="event.stopPropagation()">
@@ -354,6 +359,30 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
             </div>
         <?php endforeach; ?>
     </div>
+
+<?php if (conv_trial_on() && $cvOffer && ! empty($cvOffer['show_price'])): ?>
+    <aside class="cv-offer" aria-label="Kampanya fiyatı">
+        <div class="cv-offer__inner">
+            <div class="cv-offer__copy">
+                <p class="cv-offer__name"><?= htmlspecialchars((string) $cvOffer['name'], ENT_QUOTES, 'UTF-8') ?></p>
+                <div class="cv-offer__prices">
+<?php if (! empty($cvOffer['show_original'])): ?>
+                    <span class="cv-offer__old"><?= htmlspecialchars((string) $cvOffer['original_fmt'], ENT_QUOTES, 'UTF-8') ?></span>
+<?php endif; ?>
+                    <span class="cv-offer__sale"><?= htmlspecialchars((string) $cvOffer['sale_fmt'], ENT_QUOTES, 'UTF-8') ?></span>
+<?php if ((int) $cvOffer['discount_pct'] > 0): ?>
+                    <span class="cv-offer__off">%<?= (int) $cvOffer['discount_pct'] ?> indirim</span>
+<?php endif; ?>
+                </div>
+            </div>
+            <a class="cv-offer__cta" href="<?= htmlspecialchars((string) $cvOffer['order_url'], ENT_QUOTES, 'UTF-8') ?>" style="background-color: <?= htmlspecialchars((string) $cvOffer['cta_color'], ENT_QUOTES, 'UTF-8') ?>;">
+                <i class="fas fa-shopping-cart" aria-hidden="true"></i>
+                Sipariş Ver
+            </a>
+        </div>
+        <p class="cv-offer__hint">Kapıda ödeme · Ücretsiz kargo · Kampanyalı fiyat</p>
+    </aside>
+<?php endif; ?>
 
 <?php
 // Reviews section — manuel / YZ ayrı aç-kapa
@@ -1161,6 +1190,33 @@ window.__abandonedConfig = <?= json_encode(
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <?php include 'social_buttons.php'; ?>
+
+<?php if (conv_trial_on() && $cvOffer && ! empty($cvOffer['show_price'])): ?>
+<div class="cv-sticky" id="cv-sticky-bar" role="region" aria-label="Sabit sipariş çubuğu">
+    <div class="cv-sticky__price">
+        <span class="cv-sticky__label">Kampanyalı fiyat</span>
+        <span class="cv-sticky__sale"><?= htmlspecialchars((string) $cvOffer['sale_fmt'], ENT_QUOTES, 'UTF-8') ?></span>
+<?php if (! empty($cvOffer['show_original'])): ?>
+        <span class="cv-sticky__old"><?= htmlspecialchars((string) $cvOffer['original_fmt'], ENT_QUOTES, 'UTF-8') ?></span>
+<?php endif; ?>
+    </div>
+    <a class="cv-sticky__cta" href="<?= htmlspecialchars((string) $cvOffer['order_url'], ENT_QUOTES, 'UTF-8') ?>" style="background-color: <?= htmlspecialchars((string) $cvOffer['cta_color'], ENT_QUOTES, 'UTF-8') ?>;">
+        Hemen Sipariş Ver
+    </a>
+</div>
+<script>
+(function () {
+    var bar = document.getElementById('cv-sticky-bar');
+    var cta = document.querySelector('.homepage-products-scope .hp-product-card__cta');
+    if (!bar || !cta || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+        var vis = entries[0] && entries[0].isIntersecting;
+        bar.classList.toggle('is-hidden', !!vis);
+    }, { threshold: 0.6 });
+    io.observe(cta);
+})();
+</script>
+<?php endif; ?>
 
 <?php include __DIR__ . '/includes/carkifelek_public.php'; ?>
 
