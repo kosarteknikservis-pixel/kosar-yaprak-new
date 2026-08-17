@@ -220,7 +220,7 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/index-1.css?v=20260817au">
     <link rel="stylesheet" href="css/payment-trust.css">
-    <link rel="stylesheet" href="css/site-footer.css">
+    <link rel="stylesheet" href="css/site-footer.css?v=20260817au2">
 <?php if (conv_trial_on() && $cvOffer): ?>
     <link rel="stylesheet" href="css/conv-trial.css?v=20260817a">
 <?php endif; ?>
@@ -355,7 +355,7 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
     <?php endif; ?>
 
  <?php if ($notification['is_active']): ?>
-        <?= promo_banner_markup((string) ($notification['message'] ?? '')) ?>
+        <?= promo_banner_markup(function_exists('shop_panel_text') ? shop_panel_text((string) ($notification['message'] ?? ''), 'notification', 1, 'message') : (string) ($notification['message'] ?? '')) ?>
     <?php endif; ?>
 
     <div class="slider">

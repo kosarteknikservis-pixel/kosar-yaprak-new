@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__) . '/db.php';
 require __DIR__ . '/auth.php';
+require_once dirname(__DIR__) . '/includes/i18n.php';
 
 $page_title = 'Sipariş Sayfası Görünümü';
 
@@ -219,6 +220,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $up = $pdo->prepare('UPDATE order_page_ui SET config_json = ? WHERE id = 1');
         $up->execute([json_encode($cfg, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+        content_t_save($pdo, 'order_ui', 1, 'cart_title', 'en', (string) ($_POST['op_cart_title_en'] ?? ''));
+        content_t_save($pdo, 'order_ui', 1, 'cart_title', 'ar', (string) ($_POST['op_cart_title_ar'] ?? ''));
+        content_t_save($pdo, 'order_ui', 1, 'shipping_notice', 'en', (string) ($_POST['op_ship_txt_en'] ?? ''));
+        content_t_save($pdo, 'order_ui', 1, 'shipping_notice', 'ar', (string) ($_POST['op_ship_txt_ar'] ?? ''));
         $_SESSION['message'] = 'Sipariş sayfası görünümü kaydedildi.';
         $_SESSION['message_type'] = 'success';
     } catch (Throwable $e) {
@@ -243,6 +248,8 @@ $p = $u['product'] ?? [];
 $sn = $u['product']['shipping_notice'] ?? [];
 $pf = $u['post_footer_msg'] ?? [];
 $ns = $u['notification_strip'] ?? [];
+$opUiEn = content_t_load_lang($pdo, 'order_ui', 1, 'en');
+$opUiAr = content_t_load_lang($pdo, 'order_ui', 1, 'ar');
 
 include 'admin_header.php';
 
@@ -277,8 +284,16 @@ include 'admin_header.php';
                 </div>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label small" for="op_cart_title">Başlık</label>
+                        <label class="form-label small" for="op_cart_title">Başlık (TR)</label>
                         <input class="form-control form-control-sm" id="op_cart_title" name="op_cart_title" value="<?= htmlspecialchars((string) ($c['title'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small" for="op_cart_title_en">Başlık (EN)</label>
+                        <input class="form-control form-control-sm" id="op_cart_title_en" name="op_cart_title_en" value="<?= htmlspecialchars((string) ($opUiEn['cart_title'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" placeholder="YOUR CART">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small" for="op_cart_title_ar">Başlık (AR)</label>
+                        <input class="form-control form-control-sm" id="op_cart_title_ar" name="op_cart_title_ar" dir="rtl" value="<?= htmlspecialchars((string) ($opUiAr['cart_title'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small" for="op_cart_bg">Arka plan</label>
@@ -529,8 +544,16 @@ include 'admin_header.php';
                 </div>
                 <div class="row g-3">
                     <div class="col-12">
-                        <label class="form-label small" for="op_ship_txt">Metin</label>
+                        <label class="form-label small" for="op_ship_txt">Metin (TR)</label>
                         <textarea class="form-control form-control-sm" id="op_ship_txt" name="op_ship_txt" rows="3" maxlength="800"><?= htmlspecialchars((string) ($sn['text'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small" for="op_ship_txt_en">Metin (EN)</label>
+                        <textarea class="form-control form-control-sm" id="op_ship_txt_en" name="op_ship_txt_en" rows="2" maxlength="800" placeholder="Your order will be shipped on the first business day."><?= htmlspecialchars((string) ($opUiEn['shipping_notice'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small" for="op_ship_txt_ar">Metin (AR)</label>
+                        <textarea class="form-control form-control-sm" id="op_ship_txt_ar" name="op_ship_txt_ar" rows="2" maxlength="800" dir="rtl"><?= htmlspecialchars((string) ($opUiAr['shipping_notice'] ?? ''), ENT_QUOTES, 'UTF-8') ?></textarea>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label small" for="op_ship_c">Renk</label>

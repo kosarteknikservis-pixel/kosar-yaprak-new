@@ -59,7 +59,7 @@ order_page_ui_print_styles_extended($ui);
   <?php if (!empty($cartBar['show_arrows'])): ?>
   <span class="arrow-down">&#8595;</span>
   <?php endif; ?>
-  <?= htmlspecialchars((string) ($cartBar['title'] ?? 'SEPETİNİZ'), ENT_QUOTES, 'UTF-8') ?>
+  <?= htmlspecialchars(function_exists('shop_panel_text') ? shop_panel_text((string) ($cartBar['title'] ?? 'SEPETİNİZ'), 'order_ui', 1, 'cart_title') : (string) ($cartBar['title'] ?? 'SEPETİNİZ'), ENT_QUOTES, 'UTF-8') ?>
   <?php if (!empty($cartBar['show_arrows'])): ?>
   <span class="arrow-down">&#8595;</span>
   <?php endif; ?>
@@ -151,7 +151,7 @@ order_page_ui_print_styles_extended($ui);
 
                 <?php if (!empty($sn['show']) && trim((string) ($sn['text'] ?? '')) !== ''): ?>
 
-                <p class="opui-price-notice op-order-vitrin__notice op-order-vitrin__notice--shipping"><?= nl2br(htmlspecialchars((string) $sn['text'], ENT_QUOTES, 'UTF-8')) ?></p>
+                <p class="opui-price-notice op-order-vitrin__notice op-order-vitrin__notice--shipping"><?= nl2br(htmlspecialchars(function_exists('shop_panel_text') ? shop_panel_text((string) $sn['text'], 'order_ui', 1, 'shipping_notice') : (string) $sn['text'], ENT_QUOTES, 'UTF-8')) ?></p>
 
                 <?php endif; ?>
 

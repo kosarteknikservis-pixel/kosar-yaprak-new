@@ -132,8 +132,8 @@ if ($countdown && $countdown['is_active'] && $countdownAllowed) {
     <div class="<?= htmlspecialchars($countdownBannerClass, ENT_QUOTES, 'UTF-8') ?>">
         <div class="countdown-inner">
             <div class="countdown-msg">
-                <span class="countdown-badge"><i class="fas fa-bolt" aria-hidden="true"></i> Fırsat</span>
-                <span class="countdown-label"><?= htmlspecialchars($message) ?></span>
+                <span class="countdown-badge"><i class="fas fa-bolt" aria-hidden="true"></i> <?= htmlspecialchars(function_exists('t') ? t('cd.deal', 'FIRSAT') : 'Fırsat', ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="countdown-label"><?= htmlspecialchars(function_exists('shop_ui_text') ? shop_ui_text($message) : $message) ?></span>
             </div>
             <div class="countdown-timer" id="countdown-timer">
                 <div class="time-unit">
@@ -267,7 +267,7 @@ color: <?= $dc ?> !important;
 
             if (distance < 0) {
                 // Süre doldu
-                countdownTimer.innerHTML = '<div class="time-expired">Süre Dolmak Üzere!</div>';
+                countdownTimer.innerHTML = <?= json_encode('<div class="time-expired">' . (function_exists('t') ? t('cd.ending', 'Süre Dolmak Üzere!') : 'Süre Dolmak Üzere!') . '</div>', JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
                 setTimeout(() => {
                     location.reload();
                 }, 2000);

@@ -467,7 +467,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/korp.css">
     <link rel="stylesheet" href="css/payment-trust.css">
-    <link rel="stylesheet" href="css/site-footer.css">
+    <link rel="stylesheet" href="css/site-footer.css?v=20260817au2">
 <?php if (conv_trial_on()): ?>
     <link rel="stylesheet" href="css/conv-trial.css?v=20260817a">
 <?php endif; ?>
@@ -491,7 +491,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     <?php if ($notification['is_active']): ?>
-        <?= promo_banner_markup((string) ($notification['message'] ?? '')) ?>
+        <?= promo_banner_markup(function_exists('shop_panel_text') ? shop_panel_text((string) ($notification['message'] ?? ''), 'notification', 1, 'message') : (string) ($notification['message'] ?? '')) ?>
     <?php endif; ?>
 
 
@@ -599,7 +599,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php if (conv_trial_on()): ?>
         <details class="cv-notes-details">
             <summary>
-                <span><?= htmlspecialchars((string) $order_note['order_note_text']); ?></span>
+                <span><?= htmlspecialchars(function_exists('shop_panel_text') ? shop_panel_text((string) $order_note['order_note_text'], 'footer_note', 5, 'text') : (string) $order_note['order_note_text']); ?></span>
                 <span class="cv-notes-details__hint"><?= te('order.note_optional', 'İsteğe bağlı') ?></span>
             </summary>
             <div class="cv-notes-details__body">
@@ -615,7 +615,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php else: ?>
         <div class="form-group">
             <label for="order_notes">
-                <?= htmlspecialchars($order_note['order_note_text']); ?>
+                <?= htmlspecialchars(function_exists('shop_panel_text') ? shop_panel_text((string) $order_note['order_note_text'], 'footer_note', 5, 'text') : (string) $order_note['order_note_text']); ?>
             </label>
             <textarea class="form-control"
                       id="order_notes"
@@ -680,7 +680,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pmId = (string) $pm['payment_method_id'];
                 ?>
                     <option value="<?= htmlspecialchars($pmId) ?>"<?= $cvPayPrefill === $pmId ? ' selected' : '' ?>>
-                        <?= htmlspecialchars(function_exists('content_t') ? content_t('payment_method', (int) $pmId, 'name', (string) $pm['method_name']) : (string) $pm['method_name']) ?>
+                        <?= htmlspecialchars(function_exists('payment_method_label') ? payment_method_label((int) $pmId, (string) $pm['method_name']) : (function_exists('content_t') ? content_t('payment_method', (int) $pmId, 'name', (string) $pm['method_name']) : (string) $pm['method_name'])) ?>
                     </option>
                 <?php endforeach; ?>
             </select>

@@ -1,6 +1,7 @@
 <?php
 require '../db.php';
 require 'auth.php';
+require_once __DIR__ . '/../includes/i18n.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $notification_message = trim($_POST['notification_message'] ?? '');
@@ -14,6 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $stmt->execute([$notification_message, $is_active, '', $show_discount_badge_index, $show_discount_badge_order]);
+        content_t_save($pdo, 'notification', 1, 'message', 'en', (string) ($_POST['notification_message_en'] ?? ''));
+        content_t_save($pdo, 'notification', 1, 'message', 'ar', (string) ($_POST['notification_message_ar'] ?? ''));
         $_SESSION['message'] = 'Bildirim ayarları başarıyla güncellendi!';
         $_SESSION['message_type'] = 'success';
     } catch (PDOException $e) {
@@ -27,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $stmt = $pdo->query('SELECT * FROM notification_settings WHERE id = 1');
 $notification = $stmt->fetch(PDO::FETCH_ASSOC);
+$nsEn = content_t_load_lang($pdo, 'notification', 1, 'en');
+$nsAr = content_t_load_lang($pdo, 'notification', 1, 'ar');
 
 if (!$notification) {
     $notification = [
@@ -68,6 +73,17 @@ include 'admin_header.php';
                     <div class="form-text">
                         Ana sayfa ve sipariş sayfasının en üstündeki şerit. İki satır için ortada <strong>|</strong> kullanın.
                     </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="notification_message_en" class="form-label">Bildirim (EN)</label>
+                    <input type="text" class="form-control" id="notification_message_en" name="notification_message_en"
+                           value="<?= htmlspecialchars((string) ($nsEn['message'] ?? '')) ?>"
+                           placeholder="AUGUST SINGLE PRICE | LAST SUMMER DISCOUNT TODAY">
+                </div>
+                <div class="col-md-6">
+                    <label for="notification_message_ar" class="form-label">Bildirim (AR)</label>
+                    <input type="text" class="form-control" id="notification_message_ar" name="notification_message_ar" dir="rtl"
+                           value="<?= htmlspecialchars((string) ($nsAr['message'] ?? '')) ?>">
                 </div>
 
                 <div class="col-md-6">

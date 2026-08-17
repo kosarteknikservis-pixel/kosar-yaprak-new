@@ -83,10 +83,122 @@ function shop_time_label_localized(string $raw): string
     return $raw;
 }
 
+function shop_ui_norm(string $s): string
+{
+    $s = trim(preg_replace('/\s+/u', ' ', $s) ?? $s);
+    $s = str_replace(['İ', 'I'], ['i', 'ı'], $s);
+
+    return mb_strtolower($s, 'UTF-8');
+}
+
+function shop_ui_text(string $original): string
+{
+    $original = trim($original);
+    if ($original === '' || !function_exists('current_lang') || current_lang() === 'tr' || !function_exists('t')) {
+        return $original;
+    }
+    if (str_contains($original, '|')) {
+        $parts = array_map('trim', explode('|', $original, 2));
+
+        return implode(' | ', array_map('shop_ui_text', $parts));
+    }
+    static $map = null;
+    if ($map === null) {
+        $map = [
+            'sepetiniz' => ['shop.your_cart', 'YOUR CART'],
+            'kargonuz ilk iş günü içerisinde kargoya verilecektir.' => ['shop.ship_first_day', 'Your order will be shipped on the first business day.'],
+            'kargonuz 1–3 iş günü içinde kargoya verilir.' => ['shop.ship_1_3', 'Your order will be shipped within 1–3 business days.'],
+            'kargonuz 1-3 iş günü içinde kargoya verilir.' => ['shop.ship_1_3', 'Your order will be shipped within 1–3 business days.'],
+            'siparişinizle ilgili notlarınızı buraya ekleyebilirsiniz.' => ['order.note_placeholder', 'Add a note about your order if needed.'],
+            'ağustos ayı tek fiyat' => ['shop.promo_august', 'AUGUST SINGLE PRICE'],
+            'yaz için son indirim bugün' => ['shop.promo_summer', 'LAST SUMMER DISCOUNT TODAY'],
+            'ekim ayı tek fiyat' => ['shop.promo_month', 'THIS MONTH SINGLE PRICE'],
+            'tek fiyat' => ['shop.promo_single', 'SINGLE PRICE'],
+            'kapıda nakit ödeme' => ['trust.cod_cash', 'Cash on Delivery'],
+            'kapıda kredi/banka kartı ile ödeme' => ['trust.cod_card', 'Card on Delivery'],
+            'kapıda kredi kartı ile ödeme' => ['trust.cod_card', 'Card on Delivery'],
+            'kredi kartı (paytr)' => ['trust.online_card', 'Online Credit Card'],
+            'online kredi kartı' => ['trust.online_card', 'Online Credit Card'],
+            'havale / eft' => ['trust.bank', 'Bank Transfer'],
+            'bu web sitesi sertifikalı güvenlidir' => ['shop.certified_secure', 'This website is certified secure'],
+            'bilgileriniz saklanmaz ve 3. kişiler ile kesinlikle paylaşılmaz' => ['shop.privacy_note', 'Your information is not stored and is never shared with third parties'],
+            'indirim süresi dolmak üzere!' => ['cd.soon', 'Sale ending soon!'],
+            'süre dolmak üzere!' => ['cd.ending', 'Ending soon!'],
+            'fırsat' => ['cd.deal', 'DEAL'],
+            'ücretsiz kargo' => ['perk.free_shipping', 'Free Shipping'],
+        ];
+    }
+    $key = shop_ui_norm($original);
+    if (isset($map[$key])) {
+        [$tk, $fb] = $map[$key];
+
+        return t($tk, $fb);
+    }
+
+    return $original;
+}
+
+function shop_panel_text(string $original, string $entityType = '', int $entityId = 0, string $field = ''): string
+{
+    $original = trim($original);
+    if ($original === '') {
+        return '';
+    }
+    if ($entityType !== '' && $entityId > 0 && function_exists('content_t')) {
+        $via = content_t($entityType, $entityId, $field, $original);
+        if ($via !== '' && $via !== $original) {
+            return $via;
+        }
+        if (function_exists('current_lang') && current_lang() === 'tr') {
+            return $original;
+        }
+    }
+
+    return shop_ui_text($original);
+}
+
+function payment_method_label(int $id, string $name): string
+{
+    $name = trim($name);
+    if ($id > 0 && function_exists('content_t')) {
+        $via = content_t('payment_method', $id, 'name', $name);
+        if ($via !== '' && $via !== $name) {
+            return $via;
+        }
+    }
+    if (function_exists('current_lang') && current_lang() === 'tr') {
+        return $name;
+    }
+    $lower = shop_ui_norm($name);
+    if (str_contains($lower, 'nakit')) {
+        return function_exists('t') ? t('trust.cod_cash', 'Cash on Delivery') : 'Cash on Delivery';
+    }
+    if (str_contains($lower, 'paytr') || str_contains($lower, 'iyzico') || str_contains($lower, 'online')) {
+        return function_exists('t') ? t('trust.online_card', 'Online Credit Card') : 'Online Credit Card';
+    }
+    if (str_contains($lower, 'havale') || str_contains($lower, 'eft')) {
+        return function_exists('t') ? t('trust.bank', 'Bank Transfer') : 'Bank Transfer';
+    }
+    if (str_contains($lower, 'kart')) {
+        return function_exists('t') ? t('trust.cod_card', 'Card on Delivery') : 'Card on Delivery';
+    }
+
+    return shop_ui_text($name);
+}
+
 /**
- * @param list<array{customer_name?:string,city_name?:string,time_label?:string}> $alerts
- * @return list<array{customer_name:string,city_name:string,time_label:string}>
+ * @return list<array{icon:string,title:string,text:string,tone:string}>
  */
+function shop_footer_info_tiles(): array
+{
+    return [
+        ['icon' => 'fa-money-bill-wave', 'title' => function_exists('t') ? t('trust.cod_cash', 'Kapıda Nakit Ödeme') : 'Kapıda Nakit Ödeme', 'text' => function_exists('t') ? t('footer.tile_cod_cash', 'Pay in cash when your order arrives.') : 'Pay in cash when your order arrives.', 'tone' => 'green'],
+        ['icon' => 'fa-credit-card', 'title' => function_exists('t') ? t('trust.cod_card', 'Kapıda Kart ile Ödeme') : 'Kapıda Kart ile Ödeme', 'text' => function_exists('t') ? t('footer.tile_cod_card', 'Pay by card at the door.') : 'Pay by card at the door.', 'tone' => 'teal'],
+        ['icon' => 'fa-truck-fast', 'title' => function_exists('t') ? t('shop.fast_shipping', 'Hızlı kargo') : 'Hızlı kargo', 'text' => function_exists('t') ? t('footer.tile_ship', 'Orders are dispatched the same day.') : 'Orders are dispatched the same day.', 'tone' => 'orange'],
+        ['icon' => 'fa-shield-halved', 'title' => function_exists('t') ? t('shop.safe_shopping', 'Güvenli alışveriş') : 'Güvenli alışveriş', 'text' => function_exists('t') ? t('footer.tile_ssl', '256-bit SSL encrypted checkout.') : '256-bit SSL encrypted checkout.', 'tone' => 'blue'],
+    ];
+}
+
 function shop_fake_alerts_localized(array $alerts): array
 {
     $out = [];

@@ -2,6 +2,7 @@
 require '../db.php';
 require 'auth.php';
 require_once dirname(__DIR__) . '/includes/footer_constants.php';
+require_once dirname(__DIR__) . '/includes/i18n.php';
 
 // Not metni için tekil kayıt: id=5 (tutarlılık için her iki sorguda da kullanılıyor)
 $NOTE_ROW_ID = FOOTER_NOTE_ROW_ID;
@@ -18,6 +19,8 @@ $footerReservedIds = footer_reserved_row_ids();
 $stmt = $pdo->prepare("SELECT show_order_note, order_note_text FROM footer_images WHERE id = ?");
 $stmt->execute([$NOTE_ROW_ID]);
 $footer_note = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['show_order_note' => 0, 'order_note_text' => ''];
+$noteEn = content_t_load_lang($pdo, 'footer_note', $NOTE_ROW_ID, 'en');
+$noteAr = content_t_load_lang($pdo, 'footer_note', $NOTE_ROW_ID, 'ar');
 
 // Sipariş sonrası mesajını oku
 $stmt = $pdo->prepare("SELECT show_post_order_msg, post_order_msg_text FROM footer_images WHERE id = ?");
@@ -88,6 +91,9 @@ if (isset($_POST['order_note_text']) || isset($_POST['show_order_note'])) {
         $stmt = $pdo->prepare("INSERT INTO footer_images (id, show_order_note, order_note_text) VALUES (?, ?, ?)");
         $stmt->execute([$NOTE_ROW_ID, $show_order_note, $order_note_text]);
     }
+
+    content_t_save($pdo, 'footer_note', $NOTE_ROW_ID, 'text', 'en', (string) ($_POST['order_note_text_en'] ?? ''));
+    content_t_save($pdo, 'footer_note', $NOTE_ROW_ID, 'text', 'ar', (string) ($_POST['order_note_text_ar'] ?? ''));
 
     $_SESSION['message'] = 'Not metni başarıyla güncellendi!';
     header('Location: admin_footer.php');
@@ -271,6 +277,14 @@ include 'admin_header.php';
                             <label for="order_note_text" class="form-label">Sipariş Notu Metni</label>
                             <textarea class="form-control" id="order_note_text" name="order_note_text" rows="3" placeholder="Örn: Farklı renklerde istiyorsanız lütfen belirtin."><?= htmlspecialchars($footer_note['order_note_text']) ?></textarea>
                             <div class="form-text">Bu not sipariş formunda görünecektir.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="order_note_text_en" class="form-label">Sipariş Notu (EN)</label>
+                            <textarea class="form-control" id="order_note_text_en" name="order_note_text_en" rows="2" placeholder="Add a note about your order if needed."><?= htmlspecialchars((string) ($noteEn['text'] ?? '')) ?></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="order_note_text_ar" class="form-label">Sipariş Notu (AR)</label>
+                            <textarea class="form-control" id="order_note_text_ar" name="order_note_text_ar" rows="2" dir="rtl"><?= htmlspecialchars((string) ($noteAr['text'] ?? '')) ?></textarea>
                         </div>
                         <div class="form-check form-switch mb-3">
                             <input type="checkbox" class="form-check-input" id="show_order_note" name="show_order_note" <?= $footer_note['show_order_note'] ? 'checked' : '' ?>>
