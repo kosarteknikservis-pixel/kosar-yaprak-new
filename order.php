@@ -184,9 +184,9 @@ $otpModalError = '';
 if ($showFrontOtpStep) {
     $otpErrKey = (string) ($_GET['otp_err'] ?? '');
     if ($otpErrKey === 'expired') {
-        $otpModalError = 'Kodun süresi doldu. Yeni kod gönderin.';
+        $otpModalError = t('order.otp_expired', 'Kodun süresi doldu. Yeni kod gönderin.');
     } elseif ($otpErrKey === 'invalid') {
-        $otpModalError = 'Kod hatalı. Lütfen tekrar deneyin.';
+        $otpModalError = t('order.otp_invalid', 'Kod hatalı. Lütfen tekrar deneyin.');
     }
 }
 $otpMaskedPhone = '';
@@ -496,7 +496,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="full-width-section order-form<?= $showFrontOtpStep ? ' order-form--otp-pending' : '' ?>">
     <form method="POST" id="order-checkout-form" autocomplete="on">
         <input type="hidden" name="carkifelek_odul" id="carkifelek_odul" value="<?= htmlspecialchars((string) ($_SESSION['carkifelek_odul'] ?? ''), ENT_QUOTES, 'UTF-8') ?>" autocomplete="off">
-        <h2 class="order-form__title">Sipariş Bilgileriniz</h2>
+        <h2 class="order-form__title"><?= te('order.form_title', 'Sipariş Bilgileriniz') ?></h2>
 
         <?php if ($showFrontOtpStep && $otpPrefill !== []): ?>
         <div class="order-otp-hidden-fields" aria-hidden="true">
@@ -510,7 +510,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <?php if ($showFrontOtpStep): ?>
-        <p class="order-otp-wait-msg"><i class="fas fa-mobile-alt"></i> Telefonunuza SMS gönderildi. Doğrulama penceresinden kodu girerek siparişinizi onaylayın.</p>
+        <p class="order-otp-wait-msg"><i class="fas fa-mobile-alt"></i> <?= te('order.otp_wait', 'Telefonunuza SMS gönderildi. Doğrulama penceresinden kodu girerek siparişinizi onaylayın.') ?></p>
         <?php else: ?>
 
         <!-- Yeni Sınırsız Varyant Sistemi (başlığın ALTINDA) -->
@@ -522,7 +522,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label>
                     <?= htmlspecialchars($variantLabel) ?>:
                     <?php if ($variant['is_required']): ?>
-                        <span class="order-form__required">(Zorunlu)</span>
+                        <span class="order-form__required"><?= te('order.required', '(Zorunlu)') ?></span>
                     <?php endif; ?>
                 </label>
                 <div class="opui-variant-row">
@@ -530,7 +530,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <select class="form-control opui-variant-select"
                         name="variant_<?= $variant['type_id'] ?>"
                         <?= $variant['is_required'] ? 'required' : '' ?>>
-                    <option value="">Seçiniz</option>
+                    <option value=""><?= te('order.select', 'Seçiniz') ?></option>
                     <?php if (isset($variant_options[$variant['type_id']])): ?>
                         <?php foreach ($variant_options[$variant['type_id']] as $option): ?>
                             <option
@@ -598,7 +598,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <details class="cv-notes-details">
             <summary>
                 <span><?= htmlspecialchars((string) $order_note['order_note_text']); ?></span>
-                <span class="cv-notes-details__hint">İsteğe bağlı</span>
+                <span class="cv-notes-details__hint"><?= te('order.note_optional', 'İsteğe bağlı') ?></span>
             </summary>
             <div class="cv-notes-details__body">
                 <div class="form-group">
@@ -606,7 +606,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                               id="order_notes"
                               name="order_notes"
                               maxlength="200"
-                              placeholder="Varsa notunuzu yazın"><?= htmlspecialchars($formPrefill('order_notes'), ENT_QUOTES, 'UTF-8') ?></textarea>
+                              placeholder="<?= te('order.note_placeholder', 'Varsa notunuzu yazın') ?>"><?= htmlspecialchars($formPrefill('order_notes'), ENT_QUOTES, 'UTF-8') ?></textarea>
                 </div>
             </div>
         </details>
@@ -678,7 +678,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pmId = (string) $pm['payment_method_id'];
                 ?>
                     <option value="<?= htmlspecialchars($pmId) ?>"<?= $cvPayPrefill === $pmId ? ' selected' : '' ?>>
-                        <?= htmlspecialchars($pm['method_name']) ?>
+                        <?= htmlspecialchars(function_exists('content_t') ? content_t('payment_method', (int) $pmId, 'name', (string) $pm['method_name']) : (string) $pm['method_name']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -696,25 +696,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content order-otp-modal__content">
                     <div class="modal-header order-otp-modal__header">
-                        <h5 class="modal-title" id="orderOtpModalTitle"><i class="fas fa-shield-alt"></i> SMS Doğrulama</h5>
+                        <h5 class="modal-title" id="orderOtpModalTitle"><i class="fas fa-shield-alt"></i> <?= te('order.otp_title', 'SMS Doğrulama') ?></h5>
                     </div>
                     <div class="modal-body order-otp-modal__body">
-                        <p class="order-otp-modal__lead">Telefonunuza gönderilen 6 haneli kodu girin.</p>
+                        <p class="order-otp-modal__lead"><?= te('order.otp_lead', 'Telefonunuza gönderilen 6 haneli kodu girin.') ?></p>
                         <?php if ($otpMaskedPhone !== '' && $otpMaskedPhone !== '***'): ?>
                         <p class="order-otp-modal__tel"><i class="fas fa-phone"></i> <?= htmlspecialchars($otpMaskedPhone) ?></p>
                         <?php endif; ?>
-                        <p class="order-otp-modal__hint">Kod 5 dakika geçerlidir. Doğrulama sonrası siparişiniz onaylanır.</p>
+                        <p class="order-otp-modal__hint"><?= te('order.otp_hint', 'Kod 5 dakika geçerlidir. Doğrulama sonrası siparişiniz onaylanır.') ?></p>
                         <?php if ($otpModalError !== ''): ?>
                         <div class="alert alert-danger order-otp-modal__error" role="alert"><?= htmlspecialchars($otpModalError) ?></div>
                         <?php endif; ?>
                         <div class="form-group mb-0">
-                            <label for="otp_code_front">Doğrulama kodu</label>
-                            <input type="text" class="form-control order-otp-modal__input" id="otp_code_front" name="otp_code_front" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="6 haneli kod" required>
+                            <label for="otp_code_front"><?= te('order.otp_code', 'Doğrulama kodu') ?></label>
+                            <input type="text" class="form-control order-otp-modal__input" id="otp_code_front" name="otp_code_front" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" placeholder="<?= te('order.otp_placeholder', '6 haneli kod') ?>" required>
                         </div>
                     </div>
                     <div class="modal-footer order-otp-modal__footer flex-column">
-                        <button type="submit" name="otp_stage_verify_submit" value="1" class="btn-custom order-form__submit order-otp-modal__btn-verify w-100" data-otp-action="verify">Kodu doğrula ve siparişi onayla</button>
-                        <button type="submit" name="otp_stage_resend_submit" value="1" class="btn btn-link order-otp-modal__btn-resend" data-otp-action="resend">Kodu yeniden gönder</button>
+                        <button type="submit" name="otp_stage_verify_submit" value="1" class="btn-custom order-form__submit order-otp-modal__btn-verify w-100" data-otp-action="verify"><?= te('order.otp_verify', 'Kodu doğrula ve siparişi onayla') ?></button>
+                        <button type="submit" name="otp_stage_resend_submit" value="1" class="btn btn-link order-otp-modal__btn-resend" data-otp-action="resend"><?= te('order.otp_resend', 'Kodu yeniden gönder') ?></button>
                     </div>
                 </div>
             </div>

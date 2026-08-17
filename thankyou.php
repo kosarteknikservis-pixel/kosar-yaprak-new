@@ -337,39 +337,39 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
         <div class="ty-hero-icon-wrap" aria-hidden="true">
             <span class="ty-error-icon"><i class="fas fa-circle-exclamation"></i></span>
         </div>
-        <h1>Sipariş bulunamadı</h1>
+        <h1><?= te('thankyou.not_found', 'Sipariş bulunamadı') ?></h1>
         <p class="ty-error-sub"><?= htmlspecialchars($thankyouInvalidMessage) ?></p>
     </div>
     <div class="ty-actions">
-        <a href="index.php" class="btn-custom btn-custom--primary"><i class="fas fa-home"></i> Ana sayfaya dön</a>
-        <a href="sorgula.php" class="btn-custom btn-custom--secondary"><i class="fas fa-search"></i> Sipariş sorgula</a>
+        <a href="index.php" class="btn-custom btn-custom--primary"><i class="fas fa-home"></i> <?= te('common.back_home', 'Ana sayfaya dön') ?></a>
+        <a href="sorgula.php" class="btn-custom btn-custom--secondary"><i class="fas fa-search"></i> <?= te('thankyou.query', 'Sipariş sorgula') ?></a>
     </div>
 <?php else: ?>
     <div class="ty-card ty-card--hero">
         <div class="ty-hero-icon-wrap" aria-hidden="true">
             <span class="ty-success-icon"><i class="fas fa-check"></i></span>
         </div>
-        <h1>Teşekkürler!</h1>
-        <p class="ty-success-sub"><?= $orderSmsPending ? 'Siparişiniz alındı. Lütfen telefonunuza gelen kod ile doğrulayın.' : 'Siparişiniz başarıyla alındı.' ?></p>
-        <p class="ty-order-id"><i class="fas fa-receipt"></i> Sipariş #<?= htmlspecialchars((string) $order_id) ?></p>
+        <h1><?= te('thankyou.thanks', 'Teşekkürler!') ?></h1>
+        <p class="ty-success-sub"><?= $orderSmsPending ? te('thankyou.sms_pending', 'Siparişiniz alındı. Lütfen telefonunuza gelen kod ile doğrulayın.') : te('thankyou.received', 'Siparişiniz başarıyla alındı.') ?></p>
+        <p class="ty-order-id"><i class="fas fa-receipt"></i> <?= te('thankyou.order_no', 'Sipariş') ?> #<?= htmlspecialchars((string) $order_id) ?></p>
     </div>
 
     <?php if ($orderSmsPending || $otpUiMessage !== ''): ?>
     <div class="ty-card">
-        <h2 class="ty-card__title ty-card__title--green">SMS Doğrulama</h2>
+        <h2 class="ty-card__title ty-card__title--green"><?= te('thankyou.sms_title', 'SMS Doğrulama') ?></h2>
         <?php if ($otpUiMessage !== ''): ?>
             <div class="alert alert-<?= htmlspecialchars($otpUiType !== '' ? $otpUiType : 'info', ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($otpUiMessage) ?></div>
         <?php endif; ?>
         <?php if ($orderSmsPending): ?>
-        <p>Telefonunuza gönderilen 6 haneli kodu girin veya SMS’teki linke tıklayın. Kod 20 dakika geçerlidir.</p>
+        <p><?= te('thankyou.sms_help', 'Telefonunuza gönderilen 6 haneli kodu girin veya SMS’teki linke tıklayın. Kod 20 dakika geçerlidir.') ?></p>
         <form method="POST" class="mb-3">
             <div class="form-group">
-                <label for="otp_code">Doğrulama kodu</label>
+                <label for="otp_code"><?= te('order.otp_code', 'Doğrulama kodu') ?></label>
                 <input type="text" class="form-control" id="otp_code" name="otp_code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                <button type="submit" name="otp_verify_submit" value="1" class="btn-custom btn-custom--primary">Doğrula</button>
-                <button type="submit" name="otp_resend_submit" value="1" class="btn-custom btn-custom--secondary">Kodu yeniden gönder</button>
+                <button type="submit" name="otp_verify_submit" value="1" class="btn-custom btn-custom--primary"><?= te('thankyou.verify', 'Doğrula') ?></button>
+                <button type="submit" name="otp_resend_submit" value="1" class="btn-custom btn-custom--secondary"><?= te('thankyou.resend', 'Kodu yeniden gönder') ?></button>
             </div>
         </form>
         <?php endif; ?>
@@ -377,19 +377,19 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
     <?php endif; ?>
 
     <div class="ty-card">
-        <h2 class="ty-card__title ty-card__title--green">Sipariş Bilgileri</h2>
+        <h2 class="ty-card__title ty-card__title--green"><?= te('thankyou.info', 'Sipariş Bilgileri') ?></h2>
         <div class="ty-info-list">
             <div class="ty-info-row">
                 <span class="ty-info-row__icon"><i class="fas fa-user"></i></span>
                 <div class="ty-info-row__body">
-                    <span class="ty-info-row__label">Ad Soyad</span>
+                    <span class="ty-info-row__label"><?= te('common.name', 'Ad Soyad') ?></span>
                     <span class="ty-info-row__value"><?= htmlspecialchars($order['customer_name']) ?></span>
                 </div>
             </div>
             <div class="ty-info-row">
                 <span class="ty-info-row__icon"><i class="fas fa-phone"></i></span>
                 <div class="ty-info-row__body">
-                    <span class="ty-info-row__label">Telefon</span>
+                    <span class="ty-info-row__label"><?= te('common.phone', 'Telefon') ?></span>
                     <span class="ty-info-row__value"><?= htmlspecialchars($order['customer_phone']) ?></span>
                 </div>
             </div>
@@ -400,7 +400,7 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
             <div class="ty-info-row">
                 <span class="ty-info-row__icon"><i class="fas fa-map-marker-alt"></i></span>
                 <div class="ty-info-row__body">
-                    <span class="ty-info-row__label">Adres</span>
+                    <span class="ty-info-row__label"><?= te('common.address', 'Adres') ?></span>
                     <span class="ty-info-row__value"><?= htmlspecialchars($order['customer_address']) ?>, <?= htmlspecialchars($addrDistrict) ?>, <?= htmlspecialchars($addrCity) ?></span>
                 </div>
             </div>
@@ -408,7 +408,7 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
             <div class="ty-info-row">
                 <span class="ty-info-row__icon"><i class="fas fa-sticky-note"></i></span>
                 <div class="ty-info-row__body">
-                    <span class="ty-info-row__label">Not</span>
+                    <span class="ty-info-row__label"><?= te('common.note', 'Not') ?></span>
                     <span class="ty-info-row__value"><?= htmlspecialchars($cleanNotes) ?></span>
                 </div>
             </div>
@@ -417,7 +417,7 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
             <div class="ty-info-row">
                 <span class="ty-info-row__icon"><i class="fas fa-palette"></i></span>
                 <div class="ty-info-row__body">
-                    <span class="ty-info-row__label">Varyantlar</span>
+                    <span class="ty-info-row__label"><?= te('thankyou.variants', 'Varyantlar') ?></span>
                     <span class="ty-info-row__value"><?= htmlspecialchars(implode(', ', $variantItems)) ?></span>
                 </div>
             </div>
@@ -425,11 +425,11 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
         </div>
         <div class="ty-meta-grid">
             <div class="ty-meta-item">
-                <span class="ty-meta-item__label">Ödeme</span>
-                <span class="ty-meta-item__value"><?= htmlspecialchars($order['payment_method_name']) ?></span>
+                <span class="ty-meta-item__label"><?= te('thankyou.payment', 'Ödeme') ?></span>
+                <span class="ty-meta-item__value"><?= htmlspecialchars(function_exists('content_t') ? content_t('payment_method', (int) ($order['payment_method_id'] ?? 0), 'name', (string) ($order['payment_method_name'] ?? '')) : (string) ($order['payment_method_name'] ?? '')) ?></span>
             </div>
             <div class="ty-meta-item">
-                <span class="ty-meta-item__label">Tarih</span>
+                <span class="ty-meta-item__label"><?= te('thankyou.date', 'Tarih') ?></span>
                 <span class="ty-meta-item__value"><?= htmlspecialchars($order['order_date']) ?></span>
             </div>
         </div>
@@ -442,18 +442,18 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
                 <div class="bank-transfer-card">
                     <h4><i class="fas fa-university"></i> <?= htmlspecialchars((string)($bk['bank_name'] ?? '')) ?></h4>
                     <?php if (trim((string)($bk['branch'] ?? '')) !== ''): ?>
-                        <p class="small text-muted mb-1"><strong>Şube:</strong> <?= htmlspecialchars((string)$bk['branch']) ?></p>
+                        <p class="small text-muted mb-1"><strong><?= te('thankyou.branch', 'Şube') ?>:</strong> <?= htmlspecialchars((string)$bk['branch']) ?></p>
                     <?php endif; ?>
-                    <p class="mb-1"><strong>Alıcı adı soyadı</strong></p>
+                    <p class="mb-1"><strong><?= te('thankyou.holder', 'Alıcı adı soyadı') ?></strong></p>
                     <p class="mb-2"><?= htmlspecialchars((string)($bk['account_holder'] ?? '')) ?></p>
-                    <p class="mb-1"><strong>IBAN</strong></p>
+                    <p class="mb-1"><strong><?= te('thankyou.iban', 'IBAN') ?></strong></p>
                     <div class="iban-line"><?= htmlspecialchars((string)($bk['iban'] ?? '')) ?></div>
                     <div class="copy-actions">
                         <button type="button" class="btn btn-outline-primary btn-sm" data-copy-holder="<?= htmlspecialchars((string)($bk['account_holder'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-                            Ad soyadı kopyala
+                            <?= te('thankyou.copy_name', 'Ad soyadı kopyala') ?>
                         </button>
                         <button type="button" class="btn btn-outline-success btn-sm" data-copy-iban="<?= htmlspecialchars((string)($bk['iban'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
-                            IBAN kopyala
+                            <?= te('thankyou.copy_iban', 'IBAN kopyala') ?>
                         </button>
                     </div>
                     <?php if (trim((string)($bk['notes'] ?? '')) !== ''): ?>
@@ -466,7 +466,7 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
     </div>
 
     <div class="ty-card">
-        <h2 class="ty-card__title ty-card__title--orange">Sipariş Detayları</h2>
+        <h2 class="ty-card__title ty-card__title--orange"><?= te('thankyou.details', 'Sipariş Detayları') ?></h2>
         <?php if (!empty($post_order_msg['show_post_order_msg']) && (int)$post_order_msg['show_post_order_msg'] === 1 && trim($post_order_msg['post_order_msg_text']) !== ''): ?>
         <p class="ty-post-msg"><i class="fas fa-truck"></i> <?= htmlspecialchars($post_order_msg['post_order_msg_text']) ?></p>
         <?php endif; ?>
@@ -487,7 +487,7 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
             <div class="ty-product-box__body">
                 <p class="ty-products"><?= htmlspecialchars($order['products']) ?></p>
                 <div class="ty-total" data-meta-price="false">
-                    <span class="ty-total__label">Toplam Tutar</span>
+                    <span class="ty-total__label"><?= te('thankyou.total', 'Toplam Tutar') ?></span>
                     <span class="ty-total__amount"><?= number_format((float)($order['total_price'] ?? 0), 2, ',', '.') ?> TL</span>
                 </div>
             </div>
@@ -495,11 +495,11 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
         <p style="display:none;" data-meta-price="true"><?= number_format((float)($order['total_price'] ?? 0), 2, '.', '') ?></p>
     </div>
 
-    <p class="ty-trust"><i class="fas fa-lock"></i> Siparişiniz güvenle kaydedildi. En kısa sürede sizinle iletişime geçilecektir.</p>
+    <p class="ty-trust"><i class="fas fa-lock"></i> <?= te('thankyou.trust', 'Siparişiniz güvenle kaydedildi. En kısa sürede sizinle iletişime geçilecektir.') ?></p>
 
     <div class="ty-actions">
-        <a href="index.php" class="btn-custom btn-custom--primary"><i class="fas fa-shopping-bag"></i> Alışverişe Devam Et</a>
-        <a href="sorgula.php" class="btn-custom btn-custom--secondary"><i class="fas fa-search"></i> Siparişim Nerede?</a>
+        <a href="index.php" class="btn-custom btn-custom--primary"><i class="fas fa-shopping-bag"></i> <?= te('thankyou.continue', 'Alışverişe Devam Et') ?></a>
+        <a href="sorgula.php" class="btn-custom btn-custom--secondary"><i class="fas fa-search"></i> <?= te('thankyou.where', 'Siparişim Nerede?') ?></a>
     </div>
 <?php endif; ?>
 </div>

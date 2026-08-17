@@ -371,16 +371,16 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
 <?php endif; ?>
                     <span class="cv-offer__sale"><?= htmlspecialchars((string) $cvOffer['sale_fmt'], ENT_QUOTES, 'UTF-8') ?></span>
 <?php if ((int) $cvOffer['discount_pct'] > 0): ?>
-                    <span class="cv-offer__off">%<?= (int) $cvOffer['discount_pct'] ?> indirim</span>
+                    <span class="cv-offer__off">%<?= (int) $cvOffer['discount_pct'] ?> <?= te('shop.discount', 'indirim') ?></span>
 <?php endif; ?>
                 </div>
             </div>
             <a class="cv-offer__cta" href="<?= htmlspecialchars((string) $cvOffer['order_url'], ENT_QUOTES, 'UTF-8') ?>" style="background-color: <?= htmlspecialchars((string) $cvOffer['cta_color'], ENT_QUOTES, 'UTF-8') ?>;">
                 <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-                Sipariş Ver
+                <?= te('shop.order_short', 'Sipariş Ver') ?>
             </a>
         </div>
-        <p class="cv-offer__hint">Kapıda ödeme · Ücretsiz kargo · Kampanyalı fiyat</p>
+        <p class="cv-offer__hint"><?= te('shop.offer_hint', 'Kapıda ödeme · Ücretsiz kargo · Kampanyalı fiyat') ?></p>
     </aside>
 <?php endif; ?>
 
@@ -781,9 +781,9 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
                     <span style="display:none;" data-meta-price="true" data-product-id="<?= (int) $product['product_id'] ?>" data-product-name="<?= htmlspecialchars((string) $product['product_name'], ENT_QUOTES, 'UTF-8') ?>"><?= number_format($hpSalePrice, 2, '.', '') ?></span>
                 </div>
 <?php if ($hpDiscountPct > 0 && (int) ($settings['show_discount_badge_index'] ?? 1) === 1): ?>
-                <span class="hp-product-card__discount" aria-label="<?= $hpDiscountPct ?> yüzde indirim">
+                <span class="hp-product-card__discount" aria-label="<?= $hpDiscountPct ?> <?= te('shop.discount', 'indirim') ?>">
                     <span class="hp-product-card__discount-pct">%<?= $hpDiscountPct ?></span>
-                    <span class="hp-product-card__discount-label">indirim</span>
+                    <span class="hp-product-card__discount-label"><?= te('shop.discount', 'indirim') ?></span>
                 </span>
 <?php endif; ?>
 <?php endif; ?>
@@ -792,7 +792,7 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
                    class="hp-product-card__cta btn btn-primary"
                    style="background-color: <?= $cta ?>;">
                     <i class="fas fa-shopping-cart" aria-hidden="true"></i>
-                    <span>Hemen Sipariş Ver</span>
+                    <span><?= te('shop.order_now', 'Hemen Sipariş Ver') ?></span>
                 </a>
             </div>
 
@@ -1194,14 +1194,14 @@ window.__abandonedConfig = <?= json_encode(
 <?php if (conv_trial_on() && $cvOffer && ! empty($cvOffer['show_price'])): ?>
 <div class="cv-sticky" id="cv-sticky-bar" role="region" aria-label="Sabit sipariş çubuğu">
     <div class="cv-sticky__price">
-        <span class="cv-sticky__label">Kampanyalı fiyat</span>
+        <span class="cv-sticky__label"><?= te('shop.sale_price', 'Kampanyalı fiyat') ?></span>
         <span class="cv-sticky__sale"><?= htmlspecialchars((string) $cvOffer['sale_fmt'], ENT_QUOTES, 'UTF-8') ?></span>
 <?php if (! empty($cvOffer['show_original'])): ?>
         <span class="cv-sticky__old"><?= htmlspecialchars((string) $cvOffer['original_fmt'], ENT_QUOTES, 'UTF-8') ?></span>
 <?php endif; ?>
     </div>
     <a class="cv-sticky__cta" href="<?= htmlspecialchars((string) $cvOffer['order_url'], ENT_QUOTES, 'UTF-8') ?>" style="background-color: <?= htmlspecialchars((string) $cvOffer['cta_color'], ENT_QUOTES, 'UTF-8') ?>;">
-        Hemen Sipariş Ver
+        <?= te('shop.order_now', 'Hemen Sipariş Ver') ?>
     </a>
 </div>
 <script>

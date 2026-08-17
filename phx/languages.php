@@ -367,7 +367,13 @@ include 'admin_header.php';
 
     <div class="admin-page-intro mb-3">
         <h1><i class="fas fa-globe"></i> Diller &amp; Para Birimleri</h1>
-        <p class="lead mb-0">Ön yüz dillerini, çevirilerini ve para birimlerini yönetin. Türkçe kaynak dildir; çeviri yoksa Türkçe gösterilir.</p>
+        <p class="lead mb-2">Müşteri sipariş arayüzü (ana sayfa, sipariş formu, teşekkür) Türkçe / İngilizce / Arapça çalışır. Çeviri yoksa Türkçe gösterilir.</p>
+        <ol class="mb-0 small text-muted">
+            <li><strong>Diller</strong> sekmesinde İngilizce ve Arapça’yı <em>Aktif</em> yapın (üst barda TR / EN / AR görünür).</li>
+            <li><strong>Çeviriler</strong> sekmesinde sipariş metinlerini düzenleyin (grup: <code>order</code>, <code>shop</code>, <code>thankyou</code>).</li>
+            <li>Ürün adı/açıklama: <a href="products.php">Ürünler</a> → düzenle → “Yurtdışı dil”.</li>
+            <li>Ödeme yöntemi adları: <a href="manage_payment_methods.php">Ödeme yöntemleri</a> EN/AR sütunları.</li>
+        </ol>
     </div>
 
     <ul class="nav nav-tabs mb-3" role="tablist">

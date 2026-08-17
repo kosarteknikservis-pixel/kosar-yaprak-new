@@ -53,10 +53,22 @@ $__has_switcher = (count($__langs) > 1 || count($__curs) > 1);
         </a>
     <?php endif; ?>
 
+    <div class="custom-header-actions">
+    <?php if (count($__langs) > 1): ?>
+    <nav class="header-lang" aria-label="<?= te('switcher.language', 'Dil') ?>">
+        <?php foreach ($__langs as $lg):
+            $lc = (string) $lg['code'];
+            $la = ($lc === $__lang);
+        ?>
+        <a href="<?= htmlspecialchars(i18n_switch_url($lc)) ?>" class="header-lang__btn<?= $la ? ' is-active' : '' ?>"<?= $la ? ' aria-current="true"' : '' ?>><?= htmlspecialchars(strtoupper($lc)) ?></a>
+        <?php endforeach; ?>
+    </nav>
+    <?php endif; ?>
 
     <div class="custom-menu-toggle">
         <i class="fas fa-bars"></i>
         <span><?= te('menu.title', 'Menü') ?></span>
+    </div>
     </div>
     </div>
  </div>
@@ -181,7 +193,7 @@ $__has_switcher = (count($__langs) > 1 || count($__curs) > 1);
 </div>
 
 <style>
-@import url('css/site-shell.css');
+@import url('css/site-shell.css?v=20260817i18n');
 
 .site-switcher { margin: 14px 12px 4px; display: flex; flex-direction: column; gap: 12px; }
 .site-switcher-group { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 10px 12px; }

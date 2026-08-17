@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require '../db.php';
 require 'auth.php';
+require_once __DIR__ . '/../includes/i18n.php';
 
 $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($uid > 0 && $nm !== '') {
             $pdo->prepare('UPDATE payment_methods SET method_name = ?, gateway_code = ?, is_active = ?, sort_order = ? WHERE payment_method_id = ?')
                 ->execute([$nm, $gw, $isActive, $sort, $uid]);
+            content_t_save($pdo, 'payment_method', $uid, 'name', 'en', (string) ($_POST['name_en'] ?? ''));
+            content_t_save($pdo, 'payment_method', $uid, 'name', 'ar', (string) ($_POST['name_ar'] ?? ''));
             $_SESSION['message'] = 'Ödeme yöntemi güncellendi.';
             header('Location: manage_payment_methods.php');
             exit;
@@ -54,6 +57,15 @@ if (isset($_GET['del']) && ctype_digit((string) $_GET['del'])) {
 }
 
 $rows = $pdo->query('SELECT * FROM payment_methods ORDER BY sort_order, payment_method_id')->fetchAll(PDO::FETCH_ASSOC);
+$pmTr = [];
+try {
+    $trRows = $pdo->query("SELECT entity_id, lang_code, value FROM content_translations WHERE entity_type = 'payment_method' AND field = 'name'")->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($trRows as $tr) {
+        $pmTr[(int) $tr['entity_id']][(string) $tr['lang_code']] = (string) $tr['value'];
+    }
+} catch (Throwable $e) {
+    $pmTr = [];
+}
 
 $gwLabels = [
     'cod' => 'Kapıda / offline',
@@ -103,14 +115,16 @@ include 'admin_header.php';
 
     <div class="table-responsive card border-0 shadow-sm">
         <table class="table mb-0 cc-table-compact">
-            <thead><tr><th>ID</th><th>Ad</th><th>Geçit</th><th>Aktif</th><th>Sıra</th><th></th></tr></thead>
+            <thead><tr><th>ID</th><th>Ad (TR)</th><th>Ad (EN)</th><th>Ad (AR)</th><th>Geçit</th><th>Aktif</th><th>Sıra</th><th></th></tr></thead>
             <tbody>
-                <?php foreach ($rows as $r): ?>
+                <?php foreach ($rows as $r): $pid = (int) $r['payment_method_id']; ?>
                     <tr>
                         <form method="post">
-                            <input type="hidden" name="update_id" value="<?= (int) $r['payment_method_id'] ?>">
-                            <td><?= (int) $r['payment_method_id'] ?></td>
+                            <input type="hidden" name="update_id" value="<?= $pid ?>">
+                            <td><?= $pid ?></td>
                             <td><input type="text" name="method_name" class="form-control form-control-sm" value="<?= htmlspecialchars((string) $r['method_name']) ?>"></td>
+                            <td><input type="text" name="name_en" class="form-control form-control-sm" value="<?= htmlspecialchars((string) ($pmTr[$pid]['en'] ?? '')) ?>" placeholder="English"></td>
+                            <td><input type="text" name="name_ar" class="form-control form-control-sm" dir="rtl" value="<?= htmlspecialchars((string) ($pmTr[$pid]['ar'] ?? '')) ?>" placeholder="العربية"></td>
                             <td>
                                 <select name="gateway_code" class="form-select form-select-sm">
                                     <?php foreach ($gwLabels as $code => $lbl): ?>
@@ -124,7 +138,7 @@ include 'admin_header.php';
                             <td><input type="number" name="sort_order" class="form-control form-control-sm" style="width:70px" value="<?= (int) ($r['sort_order'] ?? 0) ?>"></td>
                             <td class="text-nowrap">
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Kaydet</button>
-                                <a href="manage_payment_methods.php?del=<?= (int) $r['payment_method_id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Silinsin mi?')">Sil</a>
+                                <a href="manage_payment_methods.php?del=<?= $pid ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Silinsin mi?')">Sil</a>
                             </td>
                         </form>
                     </tr>

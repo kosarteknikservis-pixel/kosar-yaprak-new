@@ -211,6 +211,49 @@ function content_t(string $entityType, int $entityId, string $field, string $ori
     return $val !== '' ? $val : $original;
 }
 
+/**
+ * Dinamik içerik çevirisini kaydet (ürün adı, ödeme yöntemi…).
+ */
+function content_t_save(PDO $pdo, string $entityType, int $entityId, string $field, string $lang, string $value): void
+{
+    $lang = strtolower(preg_replace('/[^a-z]/i', '', $lang));
+    $value = trim($value);
+    if ($lang === '' || $entityId <= 0 || $field === '') {
+        return;
+    }
+    if ($value === '') {
+        $pdo->prepare('DELETE FROM content_translations WHERE entity_type = ? AND entity_id = ? AND field = ? AND lang_code = ?')
+            ->execute([$entityType, $entityId, $field, $lang]);
+
+        return;
+    }
+    $st = $pdo->prepare(
+        'INSERT INTO content_translations (entity_type, entity_id, field, lang_code, value)
+         VALUES (?,?,?,?,?)
+         ON DUPLICATE KEY UPDATE value = VALUES(value)'
+    );
+    $st->execute([$entityType, $entityId, $field, $lang, $value]);
+}
+
+/**
+ * @return array<string, string> field => value
+ */
+function content_t_load_lang(PDO $pdo, string $entityType, int $entityId, string $lang): array
+{
+    try {
+        $st = $pdo->prepare('SELECT field, value FROM content_translations WHERE entity_type = ? AND entity_id = ? AND lang_code = ?');
+        $st->execute([$entityType, $entityId, $lang]);
+        $out = [];
+        foreach ($st->fetchAll(PDO::FETCH_KEY_PAIR) as $f => $v) {
+            $out[(string) $f] = (string) $v;
+        }
+
+        return $out;
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
 /** ?lang= parametreli URL üret (mevcut sorgu korunur). */
 function i18n_switch_url(string $lang): string
 {

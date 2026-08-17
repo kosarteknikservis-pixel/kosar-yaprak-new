@@ -2,6 +2,7 @@
 require '../db.php';
 require 'auth.php';
 require_once __DIR__ . '/../includes/media_guard.php';
+require_once __DIR__ . '/../includes/i18n.php';
 
 $product_id = $_GET['product_id'] ?? null;
 
@@ -41,6 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $stmt = $pdo->prepare('UPDATE products SET product_name = ?, product_description = ?, product_price = ?, original_price = ?, show_description = ?, show_price = ?, show_name_heading = ?, status = ?, display_order = ?, sku = ? WHERE product_id = ?');
         $stmt->execute([$product_name, $product_description, $product_price, $original_price, $show_description, $show_price, $show_name_heading, $status, $display_order, $sku, $product_id]);
+
+        foreach (['en', 'ar'] as $langCode) {
+            content_t_save($pdo, 'product', (int) $product_id, 'name', $langCode, (string) ($_POST['name_' . $langCode] ?? ''));
+            content_t_save($pdo, 'product', (int) $product_id, 'description', $langCode, (string) ($_POST['description_' . $langCode] ?? ''));
+        }
 
         $uploaded_count = 0;
         $error_messages = [];
@@ -125,6 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $page_title = 'Ürün Düzenle';
+$trEn = content_t_load_lang($pdo, 'product', (int) $product_id, 'en');
+$trAr = content_t_load_lang($pdo, 'product', (int) $product_id, 'ar');
 include 'admin_header.php';
 ?>
 
@@ -201,6 +209,31 @@ include 'admin_header.php';
                     <div class="col-md-6">
                         <span class="pe-label">Satış fiyatı (TL) *</span>
                         <input type="number" name="product_price" class="pe-inp" step="0.01" required value="<?= htmlspecialchars((string) $product['product_price']) ?>">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pe-card">
+            <div class="pe-card-h">Yurtdışı dil (müşteri vitrini)</div>
+            <div class="pe-card-b">
+                <p class="text-muted small mb-3">İngilizce / Arapça seçildiğinde bu metinler sipariş sayfasında görünür. Boş bırakılırsa Türkçe ad kullanılır. Dilleri açmak: <a href="languages.php">Diller &amp; Para</a></p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <span class="pe-label">Ürün adı (EN)</span>
+                        <input type="text" name="name_en" class="pe-inp" value="<?= htmlspecialchars((string) ($trEn['name'] ?? '')) ?>" placeholder="English product name">
+                    </div>
+                    <div class="col-md-6">
+                        <span class="pe-label">Ürün adı (AR)</span>
+                        <input type="text" name="name_ar" class="pe-inp" dir="rtl" value="<?= htmlspecialchars((string) ($trAr['name'] ?? '')) ?>" placeholder="اسم المنتج">
+                    </div>
+                    <div class="col-md-6">
+                        <span class="pe-label">Açıklama (EN)</span>
+                        <textarea name="description_en" class="pe-inp" rows="3"><?= htmlspecialchars((string) ($trEn['description'] ?? '')) ?></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="pe-label">Açıklama (AR)</span>
+                        <textarea name="description_ar" class="pe-inp" rows="3" dir="rtl"><?= htmlspecialchars((string) ($trAr['description'] ?? '')) ?></textarea>
                     </div>
                 </div>
             </div>

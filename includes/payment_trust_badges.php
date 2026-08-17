@@ -16,7 +16,7 @@ function payment_trust_badges_collect(PDO $pdo): array
 
     try {
         $stmt = $pdo->query(
-            'SELECT method_name, gateway_code FROM payment_methods WHERE is_active = 1 ORDER BY sort_order, method_name'
+            'SELECT payment_method_id, method_name, gateway_code FROM payment_methods WHERE is_active = 1 ORDER BY sort_order, method_name'
         );
         $rows = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
     } catch (Throwable $e) {
@@ -33,7 +33,7 @@ function payment_trust_badges_collect(PDO $pdo): array
 
         if ($gw === 'paytr') {
             if (! isset($seen['online_card'])) {
-                $badges[] = ['icon' => 'fa-credit-card', 'label' => 'Online Kredi Kartı', 'tone' => 'blue'];
+                $badges[] = ['icon' => 'fa-credit-card', 'label' => function_exists('t') ? t('trust.online_card', 'Online Kredi Kartı') : 'Online Kredi Kartı', 'tone' => 'blue'];
                 $seen['online_card'] = true;
             }
             continue;
@@ -41,7 +41,7 @@ function payment_trust_badges_collect(PDO $pdo): array
 
         if ($gw === 'iyzico') {
             if (! isset($seen['online_card'])) {
-                $badges[] = ['icon' => 'fa-credit-card', 'label' => 'Online Kredi Kartı', 'tone' => 'blue'];
+                $badges[] = ['icon' => 'fa-credit-card', 'label' => function_exists('t') ? t('trust.online_card', 'Online Kredi Kartı') : 'Online Kredi Kartı', 'tone' => 'blue'];
                 $seen['online_card'] = true;
             }
             continue;
@@ -50,7 +50,9 @@ function payment_trust_badges_collect(PDO $pdo): array
         if ($gw === 'bank_transfer') {
             $badges[] = [
                 'icon' => 'fa-building-columns',
-                'label' => $name !== '' ? $name : 'Havale / EFT',
+                'label' => $name !== ''
+                    ? (function_exists('content_t') ? content_t('payment_method', (int) ($row['payment_method_id'] ?? 0), 'name', $name) : $name)
+                    : (function_exists('t') ? t('trust.bank', 'Havale / EFT') : 'Havale / EFT'),
                 'tone' => 'slate',
             ];
             continue;
@@ -58,7 +60,7 @@ function payment_trust_badges_collect(PDO $pdo): array
 
         if (str_contains($nameLower, 'nakit')) {
             if (! isset($seen['cod_cash'])) {
-                $badges[] = ['icon' => 'fa-money-bill-wave', 'label' => 'Kapıda Nakit Ödeme', 'tone' => 'green'];
+                $badges[] = ['icon' => 'fa-money-bill-wave', 'label' => function_exists('t') ? t('trust.cod_cash', 'Kapıda Nakit Ödeme') : 'Kapıda Nakit Ödeme', 'tone' => 'green'];
                 $seen['cod_cash'] = true;
             }
             continue;
@@ -66,7 +68,7 @@ function payment_trust_badges_collect(PDO $pdo): array
 
         if (str_contains($nameLower, 'kart') || str_contains($nameLower, 'kredi') || str_contains($nameLower, 'banka')) {
             if (! isset($seen['cod_card'])) {
-                $badges[] = ['icon' => 'fa-credit-card', 'label' => 'Kapıda Kart ile Ödeme', 'tone' => 'teal'];
+                $badges[] = ['icon' => 'fa-credit-card', 'label' => function_exists('t') ? t('trust.cod_card', 'Kapıda Kart ile Ödeme') : 'Kapıda Kart ile Ödeme', 'tone' => 'teal'];
                 $seen['cod_card'] = true;
             }
             continue;
@@ -74,7 +76,9 @@ function payment_trust_badges_collect(PDO $pdo): array
 
         $badges[] = [
             'icon' => 'fa-hand-holding-dollar',
-            'label' => $name !== '' ? $name : 'Kapıda Ödeme',
+            'label' => $name !== ''
+                ? (function_exists('content_t') ? content_t('payment_method', (int) ($row['payment_method_id'] ?? 0), 'name', $name) : $name)
+                : (function_exists('t') ? t('trust.cod', 'Kapıda Ödeme') : 'Kapıda Ödeme'),
             'tone' => 'green',
         ];
     }
@@ -114,13 +118,15 @@ function payment_trust_paytr_installment_label(PDO $pdo, array $activeMethods): 
 
     $max = (int) ($cfg['max_installment'] ?? 0);
     if ($max === 3) {
-        return '3 taksit imkânı (kartla online)';
+        return function_exists('t') ? t('trust.installment_3', '3 taksit imkânı (kartla online)') : '3 taksit imkânı (kartla online)';
     }
     if ($max >= 2) {
-        return $max . ' taksit imkânı (kartla online)';
+        $tpl = function_exists('t') ? t('trust.installment_n', '{n} taksit imkânı (kartla online)') : '{n} taksit imkânı (kartla online)';
+
+        return str_replace('{n}', (string) $max, $tpl);
     }
 
-    return 'Taksitli ödeme (kartla online)';
+    return function_exists('t') ? t('trust.installment', 'Taksitli ödeme (kartla online)') : 'Taksitli ödeme (kartla online)';
 }
 
 /**

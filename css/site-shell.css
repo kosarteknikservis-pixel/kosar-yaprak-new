@@ -103,6 +103,42 @@ html body.site-shell-app > .countdown-banner {
   box-sizing: border-box;
 }
 
+#app-nav .custom-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+#app-nav .header-lang {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+#app-nav .header-lang__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 28px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.88);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+#app-nav .header-lang__btn.is-active {
+  background: #fff;
+  color: #283458;
+  border-color: #fff;
+}
+
 @media (max-width: 479px) {
   /* Mobilde 480px shell ortalaması bozulma yaratıyor: full-width'e geç */
   html body.site-shell-app {

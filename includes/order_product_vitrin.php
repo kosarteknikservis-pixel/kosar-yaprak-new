@@ -110,9 +110,9 @@ order_page_ui_print_styles_extended($ui);
         <span class="opui-price-current op-order-vitrin__price-sale price" data-meta-price="false"><?= function_exists('money') ? htmlspecialchars(money($salePrice)) : number_format($salePrice, 2, ',', '.') . ' TL' ?></span>
         <span style="display:none;" data-meta-price="true"><?= number_format($salePrice, 2, '.', '') ?></span>
         <?php if ($vitrinDiscountPct > 0 && (int) ($notification['show_discount_badge_order'] ?? 1) === 1): ?>
-        <span class="op-order-vitrin__discount" aria-label="<?= $vitrinDiscountPct ?> yüzde indirim">
+        <span class="op-order-vitrin__discount" aria-label="<?= $vitrinDiscountPct ?> <?= function_exists('t') ? t('shop.discount', 'indirim') : 'indirim' ?>">
             <span class="op-order-vitrin__discount-pct">%<?= $vitrinDiscountPct ?></span>
-            <span class="op-order-vitrin__discount-label">indirim</span>
+            <span class="op-order-vitrin__discount-label"><?= function_exists('te') ? te('shop.discount', 'indirim') : 'indirim' ?></span>
         </span>
         <?php endif; ?>
                 <?php
