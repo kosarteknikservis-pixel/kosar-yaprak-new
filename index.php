@@ -102,8 +102,18 @@ if (trim((string) ($hpSec['heading_main'] ?? '')) === '' && trim((string) ($hpSe
     }
 }
 
-$hpHeadingMain = content_t('homepage_section', 1, 'heading_main', (string) ($hpSec['heading_main'] ?? ''));
-$hpHeadingSub = content_t('homepage_section', 1, 'heading_sub', (string) ($hpSec['heading_sub'] ?? ''));
+$hpHeadingMain = shop_heading_localized(
+    'heading_main',
+    (string) ($hpSec['heading_main'] ?? ''),
+    'shop.campaign_heading',
+    'AUSTRALIA, SUMMER IS COMING'
+);
+$hpHeadingSub = shop_heading_localized(
+    'heading_sub',
+    (string) ($hpSec['heading_sub'] ?? ''),
+    'shop.campaign_sub',
+    'Early summer discount'
+);
 
 $cvOffer = conv_trial_on() ? conv_trial_offer(is_array($products) ? $products : [], $hpSec, $pdo) : null;
 
@@ -194,7 +204,7 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
 ?>
 
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="<?= htmlspecialchars(function_exists('current_lang') ? current_lang($pdo) : 'tr', ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <title><?= $page_title ?></title>
@@ -208,7 +218,7 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/index-1.css">
+    <link rel="stylesheet" href="css/index-1.css?v=20260817au">
     <link rel="stylesheet" href="css/payment-trust.css">
     <link rel="stylesheet" href="css/site-footer.css">
 <?php if (conv_trial_on() && $cvOffer): ?>
@@ -359,14 +369,14 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
                  <?= $sliderIsVideo ? 'data-hp-popup="video" data-hp-src="' . htmlspecialchars($sliderImgPath, ENT_QUOTES, 'UTF-8') . '"' : '' ?>
                  role="button"
                  tabindex="0"
-                 aria-label="<?= $sliderIsVideo ? 'Ürün videosunu oynat' : 'Ürünlere git' ?>">
+                 aria-label="<?= $sliderIsVideo ? te('shop.play_video', 'Ürün videosunu oynat') : te('shop.go_products', 'Ürünlere git') ?>">
                 <img src="<?= htmlspecialchars($sliderImgPath) ?>" alt="">
             </div>
         <?php endforeach; ?>
     </div>
 
 <?php if (conv_trial_on() && $cvOffer && ! empty($cvOffer['show_price'])): ?>
-    <aside class="cv-offer" aria-label="Kampanya fiyatı">
+    <aside class="cv-offer" aria-label="<?= te('shop.offer_aria', 'Kampanya fiyatı') ?>">
         <div class="cv-offer__inner">
             <div class="cv-offer__copy">
                 <p class="cv-offer__name"><?= htmlspecialchars((string) $cvOffer['name'], ENT_QUOTES, 'UTF-8') ?></p>
@@ -376,7 +386,7 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
 <?php endif; ?>
                     <span class="cv-offer__sale"><?= htmlspecialchars((string) $cvOffer['sale_fmt'], ENT_QUOTES, 'UTF-8') ?></span>
 <?php if ((int) $cvOffer['discount_pct'] > 0): ?>
-                    <span class="cv-offer__off">%<?= (int) $cvOffer['discount_pct'] ?> <?= te('shop.discount', 'indirim') ?></span>
+                    <span class="cv-offer__off"><?php if (!empty($cvOffer['save_style'])): ?><?= te('shop.save', 'TASARRUF') ?> <?= htmlspecialchars((string) ($cvOffer['save_fmt'] ?? ''), ENT_QUOTES, 'UTF-8') ?><?php else: ?>%<?= (int) $cvOffer['discount_pct'] ?> <?= te('shop.discount', 'indirim') ?><?php endif; ?></span>
 <?php endif; ?>
                 </div>
             </div>
@@ -708,6 +718,13 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
 <?php if ($hpPaymentTrustBadges !== []): ?>
     <?php payment_trust_render($hpPaymentTrustBadges, 'payment-trust payment-trust--section'); ?>
 <?php endif; ?>
+    <?php
+    payment_trust_render([
+        ['icon' => 'fa-lock', 'label' => t('trust.secure_payment', 'Güvenli ödeme'), 'tone' => 'green'],
+        ['icon' => 'fa-credit-card', 'label' => t('trust.flexible_payment', 'Esnek ödeme seçenekleri'), 'tone' => 'blue'],
+        ['icon' => 'fa-rotate-left', 'label' => t('trust.easy_returns', 'Kolay iade'), 'tone' => 'teal'],
+    ], 'payment-trust payment-trust--section');
+    ?>
 <?php endif; ?>
 
 <div class="container-fluid" style="margin-top:20px;padding-left:0;padding-right:0;">
@@ -743,7 +760,7 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
                  data-hp-src="<?= htmlspecialchars($hpImgPath, ENT_QUOTES, 'UTF-8') ?>"
                  role="button"
                  tabindex="0"
-                 aria-label="<?= $hpPopupMode === 'video' ? 'Ürün videosunu oynat' : 'Görseli büyüt' ?>">
+                 aria-label="<?= $hpPopupMode === 'video' ? te('shop.play_video', 'Ürün videosunu oynat') : te('shop.zoom_image', 'Görseli büyüt') ?>">
                 <img src="<?= htmlspecialchars($hpImgPath) ?>"
                      class="hp-product-card__img product-image"
                      alt="<?= htmlspecialchars($product['product_name']) ?>"
@@ -773,6 +790,9 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
                     $hpDiscountPct = (int) round((1 - $hpSalePrice / $hpOriginalPrice) * 100);
                 }
                 $hpShowOriginal = (int) ($hpSec['show_card_original_price'] ?? 1) === 1;
+                $hpSaveStyle = function_exists('shop_use_save_badge') && shop_use_save_badge($pdo);
+                $hpSavedTry = ($hpOriginalPrice > $hpSalePrice) ? ($hpOriginalPrice - $hpSalePrice) : 0;
+                $hpInstallLabel = function_exists('shop_interest_free_label') ? shop_interest_free_label($hpSalePrice, $pdo) : '';
                 ?>
                 <div class="hp-product-card__prices">
 <?php if ($hpShowOriginal && $hpOriginalPrice > $hpSalePrice): ?>
@@ -786,10 +806,19 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
                     <span style="display:none;" data-meta-price="true" data-product-id="<?= (int) $product['product_id'] ?>" data-product-name="<?= htmlspecialchars((string) $product['product_name'], ENT_QUOTES, 'UTF-8') ?>"><?= number_format($hpSalePrice, 2, '.', '') ?></span>
                 </div>
 <?php if ($hpDiscountPct > 0 && (int) ($settings['show_discount_badge_index'] ?? 1) === 1): ?>
-                <span class="hp-product-card__discount" aria-label="<?= $hpDiscountPct ?> <?= te('shop.discount', 'indirim') ?>">
+                <span class="hp-product-card__discount" aria-label="<?= $hpSaveStyle ? te('shop.save', 'TASARRUF') . ' ' . htmlspecialchars(function_exists('money_save') ? money_save($hpSavedTry) : (string) $hpDiscountPct) : ($hpDiscountPct . ' ' . te('shop.discount', 'indirim')) ?>">
+<?php if ($hpSaveStyle): ?>
+                    <span class="hp-product-card__discount-label"><?= te('shop.save', 'TASARRUF') ?></span>
+                    <span class="hp-product-card__discount-pct"><?= htmlspecialchars(function_exists('money_save') ? money_save($hpSavedTry) : '') ?></span>
+<?php else: ?>
                     <span class="hp-product-card__discount-pct">%<?= $hpDiscountPct ?></span>
                     <span class="hp-product-card__discount-label"><?= te('shop.discount', 'indirim') ?></span>
+<?php endif; ?>
                 </span>
+<?php endif; ?>
+                <p class="hp-product-card__ship"><i class="fas fa-truck-fast" aria-hidden="true"></i> <?= te('shop.fast_shipping', 'Hızlı kargo') ?></p>
+<?php if ($hpInstallLabel !== ''): ?>
+                <p class="hp-product-card__pay"><?= htmlspecialchars($hpInstallLabel) ?></p>
 <?php endif; ?>
 <?php endif; ?>
 
@@ -818,7 +847,8 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
 
     <script>
     (function(){
-      var FA = <?= json_encode(array_values($fakeAlerts), JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>;
+      var FA = <?= json_encode(array_values(function_exists('shop_fake_alerts_localized') ? shop_fake_alerts_localized($fakeAlerts) : $fakeAlerts), JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>;
+      var placed = <?= json_encode(function_exists('t') ? t('shop.placed_order', 'sipariş verdi') : 'sipariş verdi', JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) ?>;
       if (!FA.length) return;
       var bx = document.getElementById('fkLiveBanner');
       if (!bx) return;
@@ -835,7 +865,7 @@ $hpPaymentTrustBadges = payment_trust_badges_collect($pdo);
         return '<div class="fk-live-toast__inner">' +
           '<span class="fk-live-toast__dot" aria-hidden="true"></span>' +
           '<p class="fk-live-toast__line"><strong>'+esc(d.customer_name||'')+'</strong> · '+esc(d.city_name||'')+
-          ' <span class="fk-live-toast__muted">· sipariş verdi · '+esc(d.time_label||'')+'</span></p>' +
+          ' <span class="fk-live-toast__muted">· '+placed+' · '+esc(d.time_label||'')+'</span></p>' +
           '</div>';
       }
 
@@ -1197,7 +1227,7 @@ window.__abandonedConfig = <?= json_encode(
 <?php include 'social_buttons.php'; ?>
 
 <?php if (conv_trial_on() && $cvOffer && ! empty($cvOffer['show_price'])): ?>
-<div class="cv-sticky" id="cv-sticky-bar" role="region" aria-label="Sabit sipariş çubuğu">
+<div class="cv-sticky" id="cv-sticky-bar" role="region" aria-label="<?= te('shop.sticky_aria', 'Sabit sipariş çubuğu') ?>">
     <div class="cv-sticky__price">
         <span class="cv-sticky__label"><?= te('shop.sale_price', 'Kampanyalı fiyat') ?></span>
         <span class="cv-sticky__sale"><?= htmlspecialchars((string) $cvOffer['sale_fmt'], ENT_QUOTES, 'UTF-8') ?></span>

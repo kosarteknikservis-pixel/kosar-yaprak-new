@@ -23,7 +23,7 @@ if ($countdown && $countdown['is_active'] && $countdownAllowed) {
     $countdownDeadlineMs = $deadlineUnixCd * 1000;
 
     $end_time = $countdown['end_time'] ?? date('Y-m-d H:i:s', time() + $countdown['total_seconds']);
-    $countdownLabelDefault = 'İndirim süresi dolmak üzere!';
+    $countdownLabelDefault = function_exists('t') ? t('cd.soon', 'İndirim süresi dolmak üzere!') : 'İndirim süresi dolmak üzere!';
     $normalizeCountdownLabel = static function (string $raw, string $default): string {
         $t = trim($raw);
         if ($t === '') {
@@ -37,16 +37,16 @@ if ($countdown && $countdown['is_active'] && $countdownAllowed) {
         return $t;
     };
     $message = $normalizeCountdownLabel((string) ($countdown['message'] ?? ''), $countdownLabelDefault);
-    $lblGun = 'Gün';
+    $lblGun = function_exists('t') ? t('cd.day', 'Gün') : 'Gün';
 
     /** @suppress */
-    $lblSaat = 'Saat';
+    $lblSaat = function_exists('t') ? t('cd.hour', 'Saat') : 'Saat';
 
     /** @suppress */
-    $lblDakika = 'Dakika';
+    $lblDakika = function_exists('t') ? t('cd.min', 'Dakika') : 'Dakika';
 
     /** @suppress */
-    $lblSaniye = 'Saniye';
+    $lblSaniye = function_exists('t') ? t('cd.sec', 'Saniye') : 'Saniye';
 
 
     /** @suppress */
@@ -85,16 +85,29 @@ if ($countdown && $countdown['is_active'] && $countdownAllowed) {
         }
 
 
-        $lblGun = (string) ($sk['lbl_gun'] ?? 'Gün');
-
-
-        $lblSaat = (string) ($sk['lbl_saat'] ?? 'Saat');
-
-
-        $lblDakika = (string) ($sk['lbl_dakika'] ?? 'Dakika');
-
-
-        $lblSaniye = (string) ($sk['lbl_saniye'] ?? 'Saniye');
+        $lblGun = (string) ($sk['lbl_gun'] ?? '');
+        $lblSaat = (string) ($sk['lbl_saat'] ?? '');
+        $lblDakika = (string) ($sk['lbl_dakika'] ?? '');
+        $lblSaniye = (string) ($sk['lbl_saniye'] ?? '');
+        if (function_exists('current_lang') && current_lang() !== 'tr') {
+            $lblGun = function_exists('t') ? t('cd.day', 'Gün') : 'Days';
+            $lblSaat = function_exists('t') ? t('cd.hour', 'Saat') : 'Hours';
+            $lblDakika = function_exists('t') ? t('cd.min', 'Dakika') : 'Mins';
+            $lblSaniye = function_exists('t') ? t('cd.sec', 'Saniye') : 'Secs';
+        } else {
+            if ($lblGun === '') {
+                $lblGun = 'Gün';
+            }
+            if ($lblSaat === '') {
+                $lblSaat = 'Saat';
+            }
+            if ($lblDakika === '') {
+                $lblDakika = 'Dakika';
+            }
+            if ($lblSaniye === '') {
+                $lblSaniye = 'Saniye';
+            }
+        }
 
 
     } else {

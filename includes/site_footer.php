@@ -72,10 +72,10 @@ function site_footer_render(PDO $pdo): void
     }
 
     if ($showLegal) {
-        echo '<nav class="site-footer__legal" aria-label="Yasal bilgiler">';
-        echo '<a href="kvkk.php">KVKK</a>';
-        echo '<a href="mesafeli_satis.php">Mesafeli Satış</a>';
-        echo '<a href="iade_degisim.php">İade &amp; Değişim</a>';
+        echo '<nav class="site-footer__legal" aria-label="' . htmlspecialchars(function_exists('t') ? t('footer.legal', 'Yasal bilgiler') : 'Yasal bilgiler', ENT_QUOTES, 'UTF-8') . '">';
+        echo '<a href="kvkk.php">' . htmlspecialchars(function_exists('t') ? t('footer.kvkk', 'KVKK') : 'KVKK', ENT_QUOTES, 'UTF-8') . '</a>';
+        echo '<a href="mesafeli_satis.php">' . htmlspecialchars(function_exists('t') ? t('footer.distance', 'Mesafeli Satış') : 'Mesafeli Satış', ENT_QUOTES, 'UTF-8') . '</a>';
+        echo '<a href="iade_degisim.php">' . htmlspecialchars(function_exists('t') ? t('footer.returns', 'İade & Değişim') : 'İade & Değişim', ENT_QUOTES, 'UTF-8') . '</a>';
         echo '<a href="sss.php">' . htmlspecialchars(function_exists('t') ? t('menu.faq', 'Sıkça Sorulan Sorular') : 'Sıkça Sorulan Sorular', ENT_QUOTES, 'UTF-8') . '</a>';
         echo '</nav>';
     }

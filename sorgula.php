@@ -1,5 +1,7 @@
 <?php
 require 'db.php';
+require_once __DIR__ . '/includes/i18n.php';
+i18n_boot($pdo);
 require_once __DIR__ . '/includes/order_lookup.php';
 require_once __DIR__ . '/includes/info_pages.php';
 
@@ -17,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $form_submitted = true;
 
     if ($customer_phone === '') {
-        $message = 'Lütfen telefon numaranızı giriniz.';
+        $message = t('query.enter_phone_err', 'Lütfen telefon numaranızı giriniz.');
         $showModal = true;
         $modalType = 'error';
     } else {
@@ -27,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $showModal = $order !== null;
             $modalType = 'success';
         } else {
-            $message = (string) ($result['message'] ?? 'Sipariş bulunamadı.');
+            $message = (string) ($result['message'] ?? t('query.not_found_msg', 'Sipariş bulunamadı.'));
             $showModal = true;
             $modalType = 'error';
         }
@@ -52,8 +54,8 @@ ob_start();
 <div class="sss-form-panel sss-form-panel--lookup">
     <form method="POST" class="info-form" id="sorgulaForm">
         <div class="form-group">
-            <label for="customer_phone">Telefon numaranız</label>
-            <p class="sss-form-hint">Sipariş sırasında girdiğiniz numarayı yazın.</p>
+            <label for="customer_phone"><?= te('query.phone', 'Telefon numaranız') ?></label>
+            <p class="sss-form-hint"><?= te('query.phone_hint', 'Sipariş sırasında girdiğiniz numarayı yazın.') ?></p>
             <div class="sss-input-icon-wrap">
                 <span class="sss-input-icon" aria-hidden="true"><i class="fas fa-phone"></i></span>
                 <input type="tel" class="form-control" id="customer_phone" name="customer_phone"
@@ -62,7 +64,7 @@ ob_start();
                        value="<?= htmlspecialchars((string) ($_POST['customer_phone'] ?? '')) ?>">
             </div>
         </div>
-        <button type="submit" class="info-form__submit"><i class="fas fa-search"></i> Sorgula</button>
+        <button type="submit" class="info-form__submit"><i class="fas fa-search"></i> <?= te('query.submit', 'Sorgula') ?></button>
     </form>
 </div>
 <?php
@@ -74,7 +76,7 @@ if ($showModal) {
     ?>
 <div class="sorgula-modal-overlay is-open" id="sorgulaModal" role="presentation">
     <div class="sorgula-modal" role="dialog" aria-modal="true" aria-labelledby="sorgulaModalTitle">
-        <button type="button" class="sorgula-modal__close" id="sorgulaModalClose" aria-label="Kapat">
+        <button type="button" class="sorgula-modal__close" id="sorgulaModalClose" aria-label="<?= te('query.close', 'Kapat') ?>">
             <i class="fas fa-times"></i>
         </button>
 
@@ -82,33 +84,33 @@ if ($showModal) {
             <div class="sorgula-modal__icon sorgula-modal__icon--error">
                 <i class="fas fa-circle-exclamation"></i>
             </div>
-            <h2 class="sorgula-modal__title" id="sorgulaModalTitle">Sonuç Bulunamadı</h2>
+            <h2 class="sorgula-modal__title" id="sorgulaModalTitle"><?= te('query.not_found', 'Sonuç Bulunamadı') ?></h2>
             <p class="sorgula-modal__message"><?= htmlspecialchars($message) ?></p>
-            <button type="button" class="sorgula-modal__btn sorgula-modal__btn--primary" data-close-modal>Tekrar Dene</button>
+            <button type="button" class="sorgula-modal__btn sorgula-modal__btn--primary" data-close-modal><?= te('query.retry', 'Tekrar Dene') ?></button>
         <?php else: ?>
             <div class="sorgula-modal__status <?= htmlspecialchars($statusClass) ?>">
                 <i class="fas fa-box-open"></i>
                 <?= htmlspecialchars($statusName) ?>
             </div>
-            <h2 class="sorgula-modal__title" id="sorgulaModalTitle">Sipariş Detayları</h2>
+            <h2 class="sorgula-modal__title" id="sorgulaModalTitle"><?= te('query.details', 'Sipariş Detayları') ?></h2>
 
             <dl class="sorgula-detail-list">
                 <?php if (! empty($order['reference'])): ?>
                     <div class="sorgula-detail-row">
-                        <dt>Sipariş No</dt>
+                        <dt><?= te('query.order_no', 'Sipariş No') ?></dt>
                         <dd><?= htmlspecialchars((string) $order['reference']) ?></dd>
                     </div>
                 <?php endif; ?>
                 <div class="sorgula-detail-row">
-                    <dt>Ad Soyad</dt>
+                    <dt><?= te('common.name', 'Ad Soyad') ?></dt>
                     <dd><?= htmlspecialchars((string) ($order['customer_name'] ?? '')) ?></dd>
                 </div>
                 <div class="sorgula-detail-row">
-                    <dt>Telefon</dt>
+                    <dt><?= te('common.phone', 'Telefon') ?></dt>
                     <dd><?= htmlspecialchars((string) ($order['customer_phone'] ?? '')) ?></dd>
                 </div>
                 <div class="sorgula-detail-row">
-                    <dt>Adres</dt>
+                    <dt><?= te('common.address', 'Adres') ?></dt>
                     <dd>
                         <?= htmlspecialchars((string) ($order['customer_address'] ?? '')) ?>
                         <?php if (! empty($order['customer_district']) || ! empty($order['customer_city'])): ?>
@@ -117,39 +119,39 @@ if ($showModal) {
                     </dd>
                 </div>
                 <div class="sorgula-detail-row">
-                    <dt>Ürün</dt>
+                    <dt><?= te('query.product', 'Ürün') ?></dt>
                     <dd><?= htmlspecialchars((string) ($order['product_name'] ?? '')) ?></dd>
                 </div>
                 <div class="sorgula-detail-row sorgula-detail-row--highlight">
-                    <dt>Tutar</dt>
-                    <dd><?= number_format((float) ($order['price'] ?? 0), 2, ',', '.') ?> TL</dd>
+                    <dt><?= te('query.amount', 'Tutar') ?></dt>
+                    <dd><?= function_exists('money') ? htmlspecialchars(money((float) ($order['price'] ?? 0))) : number_format((float) ($order['price'] ?? 0), 2, ',', '.') . ' TL' ?></dd>
                 </div>
                 <?php if ($orderVariants !== ''): ?>
                     <div class="sorgula-detail-row">
-                        <dt>Varyantlar</dt>
+                        <dt><?= te('thankyou.variants', 'Varyantlar') ?></dt>
                         <dd><?= htmlspecialchars($orderVariants) ?></dd>
                     </div>
                 <?php endif; ?>
                 <?php if ($orderNotes !== ''): ?>
                     <div class="sorgula-detail-row">
-                        <dt>Sipariş Notu</dt>
+                        <dt><?= te('query.order_note', 'Sipariş Notu') ?></dt>
                         <dd><?= htmlspecialchars($orderNotes) ?></dd>
                     </div>
                 <?php endif; ?>
                 <?php if ($customerNotes !== ''): ?>
                     <div class="sorgula-detail-row">
-                        <dt>Müşteri Notu</dt>
+                        <dt><?= te('query.customer_note', 'Müşteri Notu') ?></dt>
                         <dd><?= htmlspecialchars($customerNotes) ?></dd>
                     </div>
                 <?php endif; ?>
                 <?php if (! empty($order['cargo_company'])): ?>
                     <div class="sorgula-detail-row">
-                        <dt>Kargo</dt>
+                        <dt><?= te('query.shipping', 'Kargo') ?></dt>
                         <dd><?= htmlspecialchars((string) $order['cargo_company']) ?></dd>
                     </div>
                 <?php endif; ?>
             </dl>
-            <button type="button" class="sorgula-modal__btn sorgula-modal__btn--primary" data-close-modal>Tamam</button>
+            <button type="button" class="sorgula-modal__btn sorgula-modal__btn--primary" data-close-modal><?= te('query.ok', 'Tamam') ?></button>
         <?php endif; ?>
     </div>
 </div>
@@ -215,7 +217,7 @@ $extraScripts .= '}</script>';
 
 info_page_render($pdo, [
     'page_file' => 'sorgula.php',
-    'title' => 'Sipariş Sorgula',
+    'title' => t('query.title', 'Sipariş Sorgula'),
     'body_html' => '',
     'show_faq' => false,
     'slot_html' => $slotHtml,
@@ -223,14 +225,14 @@ info_page_render($pdo, [
     'extra_head' => '<link rel="stylesheet" href="css/sorgula.css">',
     'extra_scripts' => $extraScripts,
     'page_class' => 'sss-page-view--lookup',
-    'hero_badge' => 'Sipariş takibi',
+    'hero_badge' => t('query.hero_badge', 'Sipariş takibi'),
     'hero_badge_icon' => 'fa-search',
-    'hero_lead' => 'Telefon numaranızla sipariş durumunuzu anında görüntüleyin.',
+    'hero_lead' => t('query.hero_lead', 'Telefon numaranızla sipariş durumunuzu anında görüntüleyin.'),
     'trust_pills' => [
-        ['icon' => 'fa-bolt', 'label' => 'Anlık sonuç'],
-        ['icon' => 'fa-truck', 'label' => '1–3 iş günü kargo'],
-        ['icon' => 'fa-headset', 'label' => 'Destek hattı'],
+        ['icon' => 'fa-bolt', 'label' => t('query.trust_instant', 'Anlık sonuç')],
+        ['icon' => 'fa-truck', 'label' => t('shop.fast_shipping', 'Hızlı kargo')],
+        ['icon' => 'fa-headset', 'label' => t('query.trust_support', 'Destek hattı')],
     ],
-    'cta_title' => 'Yeni sipariş mi vereceksiniz?',
-    'cta_text' => 'Ürünlerimize göz atın veya destek talebi oluşturun.',
+    'cta_title' => t('query.cta_title', 'Yeni sipariş mi vereceksiniz?'),
+    'cta_text' => t('query.cta_text', 'Ürünlerimize göz atın veya destek talebi oluşturun.'),
 ]);

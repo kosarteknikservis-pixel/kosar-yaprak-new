@@ -107,13 +107,26 @@ order_page_ui_print_styles_extended($ui);
             <?= function_exists('money') ? htmlspecialchars(money($originalPrice)) : number_format($originalPrice, 2, ',', '.') . ' TL' ?>
         </span>
         <?php endif; ?>
+        $vitrinSaveStyle = function_exists('shop_use_save_badge') && shop_use_save_badge();
+        $vitrinSavedTry = ($originalPrice > $salePrice) ? ($originalPrice - $salePrice) : 0;
+        $vitrinInstall = function_exists('shop_interest_free_label') ? shop_interest_free_label($salePrice) : '';
+        ?>
         <span class="opui-price-current op-order-vitrin__price-sale price" data-meta-price="false"><?= function_exists('money') ? htmlspecialchars(money($salePrice)) : number_format($salePrice, 2, ',', '.') . ' TL' ?></span>
         <span style="display:none;" data-meta-price="true"><?= number_format($salePrice, 2, '.', '') ?></span>
         <?php if ($vitrinDiscountPct > 0 && (int) ($notification['show_discount_badge_order'] ?? 1) === 1): ?>
-        <span class="op-order-vitrin__discount" aria-label="<?= $vitrinDiscountPct ?> <?= function_exists('t') ? t('shop.discount', 'indirim') : 'indirim' ?>">
+        <span class="op-order-vitrin__discount" aria-label="<?= $vitrinSaveStyle ? (function_exists('t') ? t('shop.save', 'TASARRUF') : 'SAVE') : ($vitrinDiscountPct . ' ' . (function_exists('t') ? t('shop.discount', 'indirim') : 'indirim')) ?>">
+            <?php if ($vitrinSaveStyle): ?>
+            <span class="op-order-vitrin__discount-label"><?= function_exists('te') ? te('shop.save', 'TASARRUF') : 'SAVE' ?></span>
+            <span class="op-order-vitrin__discount-pct"><?= htmlspecialchars(function_exists('money_save') ? money_save($vitrinSavedTry) : '') ?></span>
+            <?php else: ?>
             <span class="op-order-vitrin__discount-pct">%<?= $vitrinDiscountPct ?></span>
             <span class="op-order-vitrin__discount-label"><?= function_exists('te') ? te('shop.discount', 'indirim') : 'indirim' ?></span>
+            <?php endif; ?>
         </span>
+        <?php endif; ?>
+        <p class="op-order-vitrin__ship"><i class="fas fa-truck-fast" aria-hidden="true"></i> <?= function_exists('te') ? te('shop.fast_shipping', 'Hızlı kargo') : 'Hızlı kargo' ?></p>
+        <?php if ($vitrinInstall !== ''): ?>
+        <p class="op-order-vitrin__pay"><?= htmlspecialchars($vitrinInstall) ?></p>
         <?php endif; ?>
                 <?php
                 $pf = $ui['post_footer_msg'] ?? [];

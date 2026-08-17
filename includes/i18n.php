@@ -90,6 +90,15 @@ function i18n_boot(?PDO $pdo = null): string
             i18n_ensure_catalog($pdo);
         }
     }
+    if (is_file(__DIR__ . '/currency.php')) {
+        require_once __DIR__ . '/currency.php';
+        if (function_exists('currency_boot')) {
+            currency_boot($pdo);
+        }
+    }
+    if (is_file(__DIR__ . '/shop_storefront.php')) {
+        require_once __DIR__ . '/shop_storefront.php';
+    }
 
     $langs = i18n_active_languages($pdo);
     $default = i18n_default_lang($pdo);

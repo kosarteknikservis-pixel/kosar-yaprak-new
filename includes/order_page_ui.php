@@ -387,6 +387,23 @@ function order_page_ui_print_styles(array $ui): void
     opacity: 0.96;
 }
 
+.order-page-shell .op-order-vitrin__ship,
+.order-page-shell .op-order-vitrin__pay {
+    margin: 8px 0 0;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.order-page-shell .op-order-vitrin__ship {
+    color: #047857;
+    font-size: 0.95rem;
+}
+
+.order-page-shell .op-order-vitrin__pay {
+    color: #1d4ed8;
+    font-size: 0.88rem;
+}
+
 @keyframes op-vitrin-discount-glow {
     0%, 100% {
         transform: scale(1);

@@ -453,7 +453,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 ?>
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="<?= htmlspecialchars(function_exists('current_lang') ? current_lang($pdo) : 'tr', ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <title><?= $page_title ?></title>

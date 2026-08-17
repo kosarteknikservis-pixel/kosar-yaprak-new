@@ -31,9 +31,9 @@ function i18n_translation_catalog(): array
         'perk.discount' => ['perk', 'Özel İndirim', 'Special Discount', 'خصم خاص'],
         'perk.discount_sub' => ['perk', "%20'ye varan", 'Up to 20%', 'حتى 20%'],
         'perk.free_shipping' => ['perk', 'Ücretsiz Kargo', 'Free Shipping', 'شحن مجاني'],
-        'perk.free_shipping_sub' => ['perk', '500 TL üzeri', 'Over 500 TL', 'أكثر من 500 ليرة'],
-        'perk.fast_delivery' => ['perk', 'Hızlı Teslimat', 'Fast Delivery', 'توصيل سريع'],
-        'perk.fast_delivery_sub' => ['perk', 'Aynı gün kargo', 'Same-day shipping', 'شحن بنفس اليوم'],
+        'perk.free_shipping_sub' => ['perk', '500 TL üzeri', 'On all orders', 'على جميع الطلبات'],
+        'perk.fast_delivery' => ['perk', 'Hızlı Teslimat', 'Fast shipping', 'توصيل سريع'],
+        'perk.fast_delivery_sub' => ['perk', 'Aynı gün kargo', 'Nationwide', 'في جميع أنحاء البلاد'],
 
         // Genel butonlar / etiketler
         'common.order_now' => ['common', 'Hemen Sipariş Ver', 'Order Now', 'اطلب الآن'],
@@ -138,24 +138,77 @@ function i18n_translation_catalog(): array
         // Vitrin / sipariş CTA
         'shop.order_now' => ['shop', 'Hemen Sipariş Ver', 'Order Now', 'اطلب الآن'],
         'shop.order_short' => ['shop', 'Sipariş Ver', 'Order', 'اطلب'],
-        'shop.discount' => ['shop', 'indirim', 'off', 'خصم'],
-        'shop.default_heading_main' => ['shop', 'Ürünlerimiz', 'Our Products', 'منتجاتنا'],
-        'shop.default_heading_sub' => ['shop', 'Güvenli alışveriş', 'Secure shopping', 'تسوق آمن'],
+        'shop.discount' => ['shop', 'indirim', 'OFF', 'خصم'],
+        'shop.save' => ['shop', 'TASARRUF', 'SAVE', 'وفر'],
+        'shop.fast_shipping' => ['shop', 'Hızlı kargo', 'Fast shipping', 'شحن سريع'],
+        'shop.interest_free' => ['shop', '{n} taksitle {amount}', '{n} interest-free payments of {amount}', '{n} دفعات بدون فوائد بقيمة {amount}'],
+        'shop.campaign_heading' => ['shop', 'Öne Çıkan Ürünler', 'AUSTRALIA, SUMMER IS COMING', 'أستراليا، الصيف قادم'],
+        'shop.campaign_sub' => ['shop', 'Kampanyalı Fiyatlar', 'Early summer discount', 'خصم بداية الصيف'],
+        'shop.default_heading_main' => ['shop', 'Ürünlerimiz', 'AUSTRALIA, SUMMER IS COMING', 'منتجاتنا'],
+        'shop.default_heading_sub' => ['shop', 'Güvenli alışveriş', 'Early summer discount', 'تسوق آمن'],
         'shop.empty_products' => ['shop', 'Şu an listelenecek ürün bulunmuyor.', 'No products to display at the moment.', 'لا توجد منتجات للعرض حالياً.'],
         'shop.empty_products_hint' => ['shop', 'Kısa süre içinde tekrar kontrol edebilirsiniz.', 'Please check back soon.', 'يرجى المحاولة لاحقاً.'],
         'shop.payment_options' => ['shop', 'Ödeme seçenekleri', 'Payment options', 'خيارات الدفع'],
         'shop.sale_price' => ['shop', 'Kampanyalı fiyat', 'Sale price', 'سعر العرض'],
-        'shop.offer_hint' => ['shop', 'Kapıda ödeme · Ücretsiz kargo · Kampanyalı fiyat', 'Cash on delivery · Free shipping · Sale price', 'الدفع عند الاستلام · شحن مجاني · سعر العرض'],
+        'shop.offer_hint' => ['shop', 'Kapıda ödeme · Ücretsiz kargo · Kampanyalı fiyat', 'Fast shipping · Secure payment · Easy returns', 'شحن سريع · دفع آمن · إرجاع سهل'],
+        'shop.placed_order' => ['shop', 'sipariş verdi', 'placed an order', 'قدّم طلباً'],
+        'shop.just_now' => ['shop', 'az önce', 'just now', 'الآن'],
+        'shop.mins_ago' => ['shop', '{n} dk önce', '{n} min ago', 'قبل {n} دقائق'],
+        'shop.play_video' => ['shop', 'Ürün videosunu oynat', 'Play product video', 'تشغيل فيديو المنتج'],
+        'shop.zoom_image' => ['shop', 'Görseli büyüt', 'Enlarge image', 'تكبير الصورة'],
+        'shop.go_products' => ['shop', 'Ürünlere git', 'Go to products', 'إلى المنتجات'],
+        'shop.offer_aria' => ['shop', 'Kampanya fiyatı', 'Sale price', 'سعر العرض'],
+        'shop.sticky_aria' => ['shop', 'Sabit sipariş çubuğu', 'Sticky order bar', 'شريط الطلب'],
+        'trust.secure_payment' => ['trust', 'Güvenli ödeme', 'Secure payment', 'دفع آمن'],
+        'trust.flexible_payment' => ['trust', 'Esnek ödeme seçenekleri', 'Flexible payment options', 'خيارات دفع مرنة'],
+        'trust.easy_returns' => ['trust', 'Kolay iade', 'Easy returns', 'إرجاع سهل'],
         'trust.cod_cash' => ['trust', 'Kapıda Nakit Ödeme', 'Cash on Delivery', 'الدفع نقداً عند الاستلام'],
         'trust.cod_card' => ['trust', 'Kapıda Kart ile Ödeme', 'Card on Delivery', 'الدفع بالبطاقة عند الاستلام'],
         'trust.online_card' => ['trust', 'Online Kredi Kartı', 'Online Credit Card', 'بطاقة ائتمان أونلاين'],
         'trust.bank' => ['trust', 'Havale / EFT', 'Bank Transfer', 'تحويل بنكي'],
         'trust.cod' => ['trust', 'Kapıda Ödeme', 'Cash on Delivery', 'الدفع عند الاستلام'],
-        'trust.installment_3' => ['trust', '3 taksit imkânı (kartla online)', '3 installments (online card)', '3 أقساط (بطاقة أونلاين)'],
-        'trust.installment_n' => ['trust', '{n} taksit imkânı (kartla online)', '{n} installments (online card)', '{n} أقساط (بطاقة أونلاين)'],
-        'trust.installment' => ['trust', 'Taksitli ödeme (kartla online)', 'Installments (online card)', 'دفع بالأقساط (بطاقة أونلاين)'],
+        'trust.installment_3' => ['trust', '3 taksit imkânı (kartla online)', '3 interest-free payments (online card)', '3 أقساط بدون فوائد (بطاقة أونلاين)'],
+        'trust.installment_n' => ['trust', '{n} taksit imkânı (kartla online)', '{n} interest-free payments (online card)', '{n} أقساط بدون فوائد (بطاقة أونلاين)'],
+        'trust.installment' => ['trust', 'Taksitli ödeme (kartla online)', 'Interest-free payments (online card)', 'دفع بدون فوائد (بطاقة أونلاين)'],
 
         // Sorgulama
+        'footer.legal' => ['footer', 'Yasal bilgiler', 'Legal', 'قانوني'],
+        'footer.kvkk' => ['footer', 'KVKK', 'Privacy', 'الخصوصية'],
+        'footer.distance' => ['footer', 'Mesafeli Satış', 'Distance Sales', 'البيع عن بُعد'],
+        'footer.returns' => ['footer', 'İade & Değişim', 'Returns & Exchanges', 'الإرجاع والاستبدال'],
+        'menu.aria' => ['menu', 'Site menüsü', 'Site menu', 'قائمة الموقع'],
+        'menu.close' => ['menu', 'Menüyü kapat', 'Close menu', 'إغلاق القائمة'],
+        'menu.perks' => ['menu', 'Avantajlar', 'Benefits', 'المزايا'],
+        'menu.store' => ['menu', 'Mağaza', 'Store', 'المتجر'],
+        'menu.nav' => ['menu', 'Sayfa bağlantıları', 'Page links', 'روابط الصفحات'],
+        'cd.soon' => ['countdown', 'İndirim süresi dolmak üzere!', 'Sale ending soon!', 'ينتهي العرض قريباً!'],
+        'cd.day' => ['countdown', 'Gün', 'Days', 'أيام'],
+        'cd.hour' => ['countdown', 'Saat', 'Hours', 'ساعات'],
+        'cd.min' => ['countdown', 'Dakika', 'Mins', 'دقائق'],
+        'cd.sec' => ['countdown', 'Saniye', 'Secs', 'ثوان'],
+        'query.phone' => ['query', 'Telefon numaranız', 'Your phone number', 'رقم هاتفك'],
+        'query.phone_hint' => ['query', 'Sipariş sırasında girdiğiniz numarayı yazın.', 'Enter the number you used when ordering.', 'أدخل الرقم الذي استخدمته عند الطلب.'],
+        'query.submit' => ['query', 'Sorgula', 'Track', 'تتبع'],
+        'query.close' => ['query', 'Kapat', 'Close', 'إغلاق'],
+        'query.not_found' => ['query', 'Sonuç Bulunamadı', 'No results found', 'لا توجد نتائج'],
+        'query.retry' => ['query', 'Tekrar Dene', 'Try again', 'حاول مرة أخرى'],
+        'query.details' => ['query', 'Sipariş Detayları', 'Order details', 'تفاصيل الطلب'],
+        'query.order_no' => ['query', 'Sipariş No', 'Order no.', 'رقم الطلب'],
+        'query.product' => ['query', 'Ürün', 'Product', 'المنتج'],
+        'query.amount' => ['query', 'Tutar', 'Amount', 'المبلغ'],
+        'query.order_note' => ['query', 'Sipariş Notu', 'Order note', 'ملاحظة الطلب'],
+        'query.customer_note' => ['query', 'Müşteri Notu', 'Customer note', 'ملاحظة العميل'],
+        'query.shipping' => ['query', 'Kargo', 'Shipping', 'الشحن'],
+        'query.ok' => ['query', 'Tamam', 'OK', 'حسناً'],
+        'query.enter_phone_err' => ['query', 'Lütfen telefon numaranızı giriniz.', 'Please enter your phone number.', 'يرجى إدخال رقم هاتفك.'],
+        'query.not_found_msg' => ['query', 'Sipariş bulunamadı.', 'Order not found.', 'الطلب غير موجود.'],
+        'query.hero_badge' => ['query', 'Sipariş takibi', 'Order tracking', 'تتبع الطلب'],
+        'query.hero_lead' => ['query', 'Telefon numaranızla sipariş durumunuzu anında görüntüleyin.', 'Check your order status instantly with your phone number.', 'تحقق من حالة طلبك فوراً برقم هاتفك.'],
+        'query.trust_instant' => ['query', 'Anlık sonuç', 'Instant result', 'نتيجة فورية'],
+        'query.trust_ship' => ['query', '1–3 iş günü kargo', 'Fast shipping', 'شحن سريع'],
+        'query.trust_support' => ['query', 'Destek hattı', 'Support', 'الدعم'],
+        'query.cta_title' => ['query', 'Yeni sipariş mi vereceksiniz?', 'Ready to order?', 'هل تريد الطلب؟'],
+        'query.cta_text' => ['query', 'Ürünlerimize göz atın veya destek talebi oluşturun.', 'Browse our products or contact support.', 'تصفّح منتجاتنا أو تواصل مع الدعم.'],
         'query.title' => ['query', 'Sipariş Sorgulama', 'Order Tracking', 'تتبع الطلب'],
         'query.enter_phone' => ['query', 'Telefon numaranızı girin', 'Enter your phone number', 'أدخل رقم هاتفك'],
 
@@ -183,6 +236,29 @@ function i18n_seed_default_translations(PDO $pdo): void
             $ins->execute(['en', $key, $en, $group]);
             $ins->execute(['ar', $key, $ar, $group]);
         }
+
+        $staleEn = [
+            'perk.free_shipping_sub' => ['Over 500 TL'],
+            'perk.fast_delivery' => ['Fast Delivery'],
+            'perk.fast_delivery_sub' => ['Same-day shipping'],
+            'shop.discount' => ['off'],
+            'shop.default_heading_main' => ['Our Products'],
+            'shop.default_heading_sub' => ['Secure shopping'],
+            'shop.offer_hint' => ['Cash on delivery · Free shipping · Sale price'],
+            'trust.installment_3' => ['3 installments (online card)'],
+            'trust.installment_n' => ['{n} installments (online card)'],
+            'trust.installment' => ['Installments (online card)'],
+        ];
+        $upd = $pdo->prepare('UPDATE site_translations SET t_value = ? WHERE lang_code = ? AND t_key = ? AND t_value = ?');
+        foreach ($staleEn as $key => $olds) {
+            if (!isset($catalog[$key])) {
+                continue;
+            }
+            $en = $catalog[$key][2];
+            foreach ($olds as $old) {
+                $upd->execute([$en, 'en', $key, $old]);
+            }
+        }
     } catch (Throwable $e) {
         if (isset($_SERVER['HTTP_HOST'])) {
             error_log('i18n_seed: ' . $e->getMessage());
@@ -202,4 +278,13 @@ function i18n_ensure_catalog(?PDO $pdo = null): void
         return;
     }
     i18n_seed_default_translations($pdo);
+    if (function_exists('content_t_load_lang') && function_exists('content_t_save')) {
+        $hpEn = content_t_load_lang($pdo, 'homepage_section', 1, 'en');
+        if (trim((string) ($hpEn['heading_main'] ?? '')) === '') {
+            content_t_save($pdo, 'homepage_section', 1, 'heading_main', 'en', 'AUSTRALIA, SUMMER IS COMING');
+        }
+        if (trim((string) ($hpEn['heading_sub'] ?? '')) === '') {
+            content_t_save($pdo, 'homepage_section', 1, 'heading_sub', 'en', 'Early summer discount');
+        }
+    }
 }

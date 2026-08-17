@@ -64,13 +64,13 @@ $__has_switcher = count($__curs) > 1;
     </div>
  </div>
 
-<div class="custom-menu" id="custom-menu" role="dialog" aria-modal="true" aria-label="Site menüsü">
+<div class="custom-menu" id="custom-menu" role="dialog" aria-modal="true" aria-label="<?= te('menu.aria', 'Site menüsü') ?>">
     <div class="custom-menu-head">
         <div class="custom-menu-head-brand">
-            <span class="custom-menu-head-kicker"><?= htmlspecialchars((string) ($logo_settings['logo_main_text'] ?? 'Mağaza')) ?></span>
+            <span class="custom-menu-head-kicker"><?= htmlspecialchars((string) ($logo_settings['logo_main_text'] ?? t('menu.store', 'Mağaza'))) ?></span>
             <span class="custom-menu-head-title"><?= te('menu.title', 'Menü') ?></span>
         </div>
-        <button type="button" class="custom-close-btn" id="custom-close-btn" aria-label="Menüyü kapat">
+        <button type="button" class="custom-close-btn" id="custom-close-btn" aria-label="<?= te('menu.close', 'Menüyü kapat') ?>">
             <i class="fas fa-times" aria-hidden="true"></i>
         </button>
     </div>
@@ -97,7 +97,7 @@ $__has_switcher = count($__curs) > 1;
 
     <div class="custom-menu-scroll" id="custom-menu-scroll">
 
-    <nav class="custom-menu-nav" aria-label="Sayfa bağlantıları">
+    <nav class="custom-menu-nav" aria-label="<?= te('menu.nav', 'Sayfa bağlantıları') ?>">
         <?php if ($menu_on_homepage): ?>
         <button type="button" class="custom-menu-link" data-go-products><span class="custom-menu-link-icon"><i class="fas fa-home"></i></span><span class="custom-menu-link-text"><?= te('menu.go_products', 'Ürünlere Git') ?></span></button>
         <?php else: ?>
@@ -126,7 +126,7 @@ $__has_switcher = count($__curs) > 1;
         <?php endforeach; ?>
     </nav>
 
-    <div class="campaign-section" aria-label="Avantajlar">
+    <div class="campaign-section" aria-label="<?= te('menu.perks', 'Avantajlar') ?>">
         <p class="campaign-section-label"><?= te('perk.section', 'Avantajlarınız') ?></p>
         <div class="campaign-grid">
             <div class="campaign-card campaign-card--discount">
@@ -170,7 +170,7 @@ $__has_switcher = count($__curs) > 1;
 </div>
 
 <style>
-@import url('css/site-shell.css?v=20260817i18n2');
+@import url('css/site-shell.css?v=20260817au');
 
 .site-switcher { margin: 14px 12px 4px; display: flex; flex-direction: column; gap: 12px; }
 .site-switcher-group { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 10px 12px; }

@@ -162,6 +162,10 @@ function sss_faq_normalize_body(string $html): string
  */
 function sss_page_render(PDO $pdo, array $config): void
 {
+    if (is_file(__DIR__ . '/i18n.php')) {
+        require_once __DIR__ . '/i18n.php';
+        i18n_boot($pdo);
+    }
     require_once __DIR__ . '/page_meta_load.php';
     require_once __DIR__ . '/page_seo.php';
 
@@ -180,18 +184,18 @@ function sss_page_render(PDO $pdo, array $config): void
     } else {
         $faqHtml = sss_faq_normalize_body($bodyHtml);
     }
-    $heroBadge = trim((string) ($config['hero_badge'] ?? 'Yardım merkezi'));
+    $heroBadge = trim((string) ($config['hero_badge'] ?? (function_exists('t') ? t('menu.faq', 'Sıkça Sorulan Sorular') : 'Yardım merkezi')));
     $heroBadgeIcon = trim((string) ($config['hero_badge_icon'] ?? 'fa-circle-question'));
-    $heroLead = trim((string) ($config['hero_lead'] ?? 'Sipariş, ödeme ve teslimat hakkında merak ettikleriniz — tek dokunuşla cevap.'));
-    $trustPills = is_array($config['trust_pills'] ?? null) ? $config['trust_pills'] : [
+    $heroLead = trim((string) ($config['hero_lead'] ?? (function_exists('t') ? t('query.hero_lead', 'Telefon numaranızla sipariş durumunuzu anında görüntüleyin.') : 'Sipariş, ödeme ve teslimat hakkında merak ettikleriniz — tek dokunuşla cevap.')));
+    $trustPills = is_array($config['trust_pills'] ?? null) ? $config['trust_pills'] : (function_exists('info_page_default_trust_pills') ? info_page_default_trust_pills() : [
         ['icon' => 'fa-truck', 'label' => '1–3 iş günü kargo'],
         ['icon' => 'fa-shield-halved', 'label' => 'Güvenli alışveriş'],
         ['icon' => 'fa-headset', 'label' => 'Destek'],
-    ];
+    ]);
     $pageExtraClass = trim((string) ($config['page_class'] ?? ''));
     $showCta = ($config['show_cta'] ?? true) !== false;
-    $ctaTitle = trim((string) ($config['cta_title'] ?? 'Hâlâ sorunuz mu var?'));
-    $ctaText = trim((string) ($config['cta_text'] ?? 'Ekibimiz size yardımcı olmaya hazır — hemen iletişime geçin veya siparişinizi sorgulayın.'));
+    $ctaTitle = trim((string) ($config['cta_title'] ?? (function_exists('t') ? t('query.cta_title', 'Yeni sipariş mi vereceksiniz?') : 'Hâlâ sorunuz mu var?')));
+    $ctaText = trim((string) ($config['cta_text'] ?? (function_exists('t') ? t('query.cta_text', 'Ürünlerimize göz atın veya destek talebi oluşturun.') : 'Ekibimiz size yardımcı olmaya hazır — hemen iletişime geçin veya siparişinizi sorgulayın.')));
     $slotHtml = (string) ($config['slot_html'] ?? '');
     $showFaq = ($config['show_faq'] ?? true) !== false && trim($faqHtml) !== '';
     $extraScripts = (string) ($config['extra_scripts'] ?? '');
@@ -199,7 +203,7 @@ function sss_page_render(PDO $pdo, array $config): void
     $afterShellHtml = (string) ($config['after_shell_html'] ?? '');
     ?>
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="<?= htmlspecialchars(function_exists('current_lang') ? current_lang($pdo) : 'tr', ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <title><?= $esc($seo['title']) ?></title>

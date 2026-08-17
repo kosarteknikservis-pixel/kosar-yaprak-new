@@ -162,11 +162,11 @@ include 'admin_header.php';
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="form-label small">Üst satır (EN)</label>
-                    <input type="text" name="heading_main_en" class="form-control" value="<?= htmlspecialchars((string) ($hpTrEn['heading_main'] ?? '')) ?>" placeholder="Featured Products">
+                    <input type="text" name="heading_main_en" class="form-control" value="<?= htmlspecialchars((string) ($hpTrEn['heading_main'] ?? '')) ?>" placeholder="AUSTRALIA, SUMMER IS COMING">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label small">Alt satır (EN)</label>
-                    <input type="text" name="heading_sub_en" class="form-control" value="<?= htmlspecialchars((string) ($hpTrEn['heading_sub'] ?? '')) ?>" placeholder="Discounted Prices">
+                    <input type="text" name="heading_sub_en" class="form-control" value="<?= htmlspecialchars((string) ($hpTrEn['heading_sub'] ?? '')) ?>" placeholder="Early summer discount">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label small">Üst satır (AR)</label>

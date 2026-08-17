@@ -31,7 +31,7 @@ $post_order_msg = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['show_post_order_msg' => 0,
 // Sipariş bilgilerini al
 $order_id = $_GET['order_id'] ?? null;
 $thankyouInvalid = false;
-$thankyouInvalidMessage = 'Sipariş bilgisine ulaşılamadı. Sipariş numaranızı kontrol edin veya müşteri hizmetlerimizle iletişime geçin.';
+$thankyouInvalidMessage = function_exists('t') ? t('thankyou.not_found', 'Sipariş bulunamadı') : 'Sipariş bilgisine ulaşılamadı. Sipariş numaranızı kontrol edin veya müşteri hizmetlerimizle iletişime geçin.';
 $order = false;
 $variantItems = [];
 $cleanNotes = '';
@@ -311,7 +311,7 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
 ?>
 
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="<?= htmlspecialchars(function_exists('current_lang') ? current_lang() : 'tr', ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($thankyouInvalid ? 'Sipariş bulunamadı' : (page_seo_resolve($pdo, $page_name, $meta)['title']), ENT_QUOTES, 'UTF-8') ?></title>
@@ -490,7 +490,7 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
                 <p class="ty-products"><?= htmlspecialchars($order['products']) ?></p>
                 <div class="ty-total" data-meta-price="false">
                     <span class="ty-total__label"><?= te('thankyou.total', 'Toplam Tutar') ?></span>
-                    <span class="ty-total__amount"><?= number_format((float)($order['total_price'] ?? 0), 2, ',', '.') ?> TL</span>
+                    <span class="ty-total__amount"><?= function_exists('money') ? htmlspecialchars(money((float) ($order['total_price'] ?? 0))) : number_format((float)($order['total_price'] ?? 0), 2, ',', '.') . ' TL' ?></span>
                 </div>
             </div>
         </div>

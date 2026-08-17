@@ -9,9 +9,9 @@ require_once __DIR__ . '/cms_helper.php';
 function info_page_default_trust_pills(): array
 {
     return [
-        ['icon' => 'fa-truck', 'label' => '1–3 iş günü kargo'],
-        ['icon' => 'fa-shield-halved', 'label' => 'Güvenli alışveriş'],
-        ['icon' => 'fa-headset', 'label' => 'Destek'],
+        ['icon' => 'fa-truck', 'label' => function_exists('t') ? t('shop.fast_shipping', 'Hızlı kargo') : 'Hızlı kargo'],
+        ['icon' => 'fa-shield-halved', 'label' => function_exists('t') ? t('trust.secure_payment', 'Güvenli ödeme') : 'Güvenli ödeme'],
+        ['icon' => 'fa-rotate-left', 'label' => function_exists('t') ? t('trust.easy_returns', 'Kolay iade') : 'Kolay iade'],
     ];
 }
 

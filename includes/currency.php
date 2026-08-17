@@ -66,6 +66,15 @@ function currency_boot(?PDO $pdo = null): string
     }
     $st['booted'] = true;
 
+    $pdo = currency_pdo($pdo);
+    if ($pdo instanceof PDO) {
+        try {
+            $pdo->exec("INSERT IGNORE INTO site_currencies (code, symbol, name, rate, is_active, is_default, decimals, symbol_position, sort_order) VALUES ('AUD','$','Avustralya Doları',0.046,1,0,2,'before',10)");
+        } catch (Throwable $e) {
+            /* tablo yoksa sessiz */
+        }
+    }
+
     $list = currency_active_list($pdo);
     $codes = array_map(static fn ($c) => (string) $c['code'], $list);
     $default = currency_default_code($pdo);
@@ -86,6 +95,12 @@ function currency_boot(?PDO $pdo = null): string
     }
     if ($chosen === null) {
         $chosen = $default;
+    }
+    if (function_exists('current_lang') && current_lang($pdo) === 'en'
+        && in_array('AUD', $codes, true)
+        && $req === ''
+        && !isset($_COOKIE['site_cur'])) {
+        $chosen = 'AUD';
     }
 
     $st['code'] = $chosen;
@@ -148,6 +163,39 @@ function money(float $amountTry, bool $withSymbol = true, ?PDO $pdo = null): str
     }
     $symbol = (string) ($cur['symbol'] ?? $code);
     $pos = (string) ($cur['symbol_position'] ?? 'after');
+    $formatted = $pos === 'before' ? $symbol . $num : $num . ' ' . $symbol;
+    $lang = function_exists('current_lang') ? current_lang($pdo) : 'tr';
+    $suffixCodes = ['AUD', 'NZD', 'CAD'];
+    if ($code !== 'TRY' && ($lang !== 'tr' || in_array($code, $suffixCodes, true))) {
+        if (!str_ends_with($formatted, ' ' . $code)) {
+            $formatted .= ' ' . $code;
+        }
+    }
+
+    return $formatted;
+}
+
+/** Tasarruf tutarı: $60 (ISO kodu yok). */
+function money_save(float $savedTry, ?PDO $pdo = null): string
+{
+    $cur = current_currency($pdo);
+    $rate = $cur ? (float) ($cur['rate'] ?? 1.0) : 1.0;
+    if ($rate <= 0) {
+        $rate = 1.0;
+    }
+    $value = $savedTry * $rate;
+    $decimals = (abs($value - round($value)) < 0.05) ? 0 : 2;
+    $code = $cur ? (string) ($cur['code'] ?? 'TRY') : 'TRY';
+    if ($code === 'TRY') {
+        $num = number_format($value, $decimals, ',', '.');
+        $symbol = $cur ? (string) ($cur['symbol'] ?? 'TL') : 'TL';
+
+        return $num . ' ' . $symbol;
+    }
+    $symbol = $cur ? (string) ($cur['symbol'] ?? '$') : '$';
+    $num = number_format($value, $decimals, '.', ',');
+    $pos = $cur ? (string) ($cur['symbol_position'] ?? 'before') : 'before';
+
     return $pos === 'before' ? $symbol . $num : $num . ' ' . $symbol;
 }
 

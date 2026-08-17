@@ -14,7 +14,7 @@ function ensure_feature_schema(PDO $pdo): void
 
     // Kalıcı sürüm damgası: şema güncelse ağır SHOW/ALTER kontrollerini tümden atla.
     // Yeni migrasyon eklerken bu sürümü artır (ör. tarih-harf), tek seferde uygulansın.
-    $schemaVersion = '2026-07-28-ab-recovery1';
+    $schemaVersion = '2026-08-17-aud1';
     try {
         $cur = $pdo->query("SELECT meta_value FROM schema_meta WHERE meta_key = 'feature_version'")->fetchColumn();
         if ($cur === $schemaVersion) {
@@ -1291,6 +1291,7 @@ function ensure_feature_schema(PDO $pdo): void
             ['SAR', 'ر.س', 'Suudi Riyali', 0.116, 1, 0, 2, 'after', 7],
             ['QAR', 'ر.ق', 'Katar Riyali', 0.113, 1, 0, 2, 'after', 8],
             ['KWD', 'د.ك', 'Kuveyt Dinarı', 0.0095, 1, 0, 3, 'after', 9],
+            ['AUD', '$', 'Avustralya Doları', 0.046, 1, 0, 2, 'before', 10],
         ];
         $curIns = $pdo->prepare('INSERT IGNORE INTO site_currencies (code, symbol, name, rate, is_active, is_default, decimals, symbol_position, sort_order) VALUES (?,?,?,?,?,?,?,?,?)');
         foreach ($curSeed as $c) {

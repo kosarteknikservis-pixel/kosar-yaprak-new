@@ -159,6 +159,31 @@ html {
             opacity: 0.96;
         }
 
+        .homepage-products-scope .hp-product-card__ship,
+        .homepage-products-scope .hp-product-card__pay {
+            margin: 6px 0 0;
+            padding: 0;
+            max-width: 20rem;
+            width: 100%;
+            text-align: center;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .homepage-products-scope .hp-product-card__ship {
+            color: #047857;
+            font-size: 0.92rem;
+        }
+
+        .homepage-products-scope .hp-product-card__ship i {
+            margin-right: 6px;
+        }
+
+        .homepage-products-scope .hp-product-card__pay {
+            color: #1d4ed8;
+            font-size: 0.86rem;
+        }
+
         @keyframes hp-discount-glow {
             0%, 100% {
                 transform: scale(1);
