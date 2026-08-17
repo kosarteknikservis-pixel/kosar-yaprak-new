@@ -106,13 +106,13 @@ $hpHeadingMain = shop_heading_localized(
     'heading_main',
     (string) ($hpSec['heading_main'] ?? ''),
     'shop.campaign_heading',
-    'AUSTRALIA, SUMMER IS COMING'
+    t('shop.campaign_heading', 'Öne Çıkan Ürünler')
 );
 $hpHeadingSub = shop_heading_localized(
     'heading_sub',
     (string) ($hpSec['heading_sub'] ?? ''),
     'shop.campaign_sub',
-    'Early summer discount'
+    t('shop.campaign_sub', 'Kampanyalı Fiyatlar')
 );
 
 $cvOffer = conv_trial_on() ? conv_trial_offer(is_array($products) ? $products : [], $hpSec, $pdo) : null;
@@ -204,7 +204,7 @@ $hpProductImageSrc = static function (int $productId, ?string $productImageCol, 
 ?>
 
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars(function_exists('current_lang') ? current_lang($pdo) : 'tr', ENT_QUOTES, 'UTF-8') ?>">
+<html <?= function_exists('i18n_html_attrs') ? i18n_html_attrs($pdo) : 'lang="tr" dir="ltr"' ?>>
 <head>
     <meta charset="UTF-8">
     <title><?= $page_title ?></title>

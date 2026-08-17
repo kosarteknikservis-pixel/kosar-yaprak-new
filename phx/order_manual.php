@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 require '../db.php';
 require 'auth.php';
+require_once __DIR__ . '/../includes/location_service.php';
+location_ensure_schema($pdo);
 
 $error = '';
 
@@ -92,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$cities = $pdo->query('SELECT * FROM cities ORDER BY city_name ASC')->fetchAll(PDO::FETCH_ASSOC);
+$cities = $pdo->query('SELECT city_id, city_name, country_code FROM cities ORDER BY country_code, city_name ASC')->fetchAll(PDO::FETCH_ASSOC);
 $districts = $pdo->query('SELECT * FROM districts ORDER BY city_id ASC, district_name ASC')->fetchAll(PDO::FETCH_ASSOC);
 $payment_methods = $pdo->query('SELECT * FROM payment_methods ORDER BY payment_method_id')->fetchAll(PDO::FETCH_ASSOC);
 $statuses = $pdo->query('SELECT * FROM order_status ORDER BY order_status_id')->fetchAll(PDO::FETCH_ASSOC);
@@ -168,7 +170,7 @@ include 'admin_header.php';
                     <select name="customer_city" class="form-select" id="om_city" required>
                         <option value="">İl seçin</option>
                         <?php foreach ($cities as $c): ?>
-                            <option value="<?= (int)$c['city_id'] ?>"<?= $post_city === (int)$c['city_id'] ? ' selected' : '' ?>><?= htmlspecialchars($c['city_name']) ?></option>
+                            <option value="<?= (int)$c['city_id'] ?>"<?= $post_city === (int)$c['city_id'] ? ' selected' : '' ?>><?= htmlspecialchars(($c['country_code'] ?? '') . ' — ' . $c['city_name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>

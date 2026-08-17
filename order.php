@@ -21,6 +21,7 @@ require_once __DIR__ . '/includes/abandoned_capture.php';
 require_once __DIR__ . '/includes/order_sms_verify.php';
 require_once __DIR__ . '/includes/order_verification.php';
 require_once __DIR__ . '/includes/conv_trial.php';
+require_once __DIR__ . '/includes/location_service.php';
 
 date_default_timezone_set('Europe/Istanbul');
 
@@ -45,8 +46,8 @@ $settings = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt = $pdo->query("SELECT * FROM notification_settings WHERE id = 1");
 $notification = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$stmt = $pdo->query("SELECT * FROM cities ORDER BY city_name ASC");
-$cities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$cities = location_cities($pdo);
+$locUi = location_field_labels($pdo);
 
 $stmt = $pdo->query("SELECT show_order_note, order_note_text FROM footer_images WHERE id = 5");
 $order_note = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['show_order_note' => 0, 'order_note_text' => ''];
@@ -259,6 +260,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    $locCountry = location_checkout_country($pdo);
+    $cityOk = $pdo->prepare('SELECT city_id FROM cities WHERE city_id = ? AND country_code = ? LIMIT 1');
+    $cityOk->execute([(int) $customer_city, $locCountry]);
+    $distOk = $pdo->prepare(
+        'SELECT d.district_id FROM districts d
+         INNER JOIN cities c ON c.city_id = d.city_id
+         WHERE d.district_id = ? AND d.city_id = ? AND c.country_code = ? LIMIT 1'
+    );
+    $distOk->execute([(int) $customer_district, (int) $customer_city, $locCountry]);
+    if (!$cityOk->fetchColumn() || !$distOk->fetchColumn()) {
+        header("Location: error.php?error=missing_fields&product_id=$product_id");
+        exit;
+    }
+
     $pmCheck = $pdo->prepare('SELECT payment_method_id FROM payment_methods WHERE payment_method_id = ? AND is_active = 1');
     $pmCheck->execute([$payment_method_id]);
     if (!$pmCheck->fetch()) {
@@ -453,7 +468,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 ?>
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars(function_exists('current_lang') ? current_lang($pdo) : 'tr', ENT_QUOTES, 'UTF-8') ?>">
+<html <?= function_exists('i18n_html_attrs') ? i18n_html_attrs($pdo) : 'lang="tr" dir="ltr"' ?>>
 <head>
     <meta charset="UTF-8">
     <title><?= $page_title ?></title>
@@ -572,9 +587,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="order-form__row order-form__row--2">
         <div class="form-group">
-            <label for="customer_city"><?= te('order.city_label', 'İl:') ?></label>
+            <label for="customer_city"><?= htmlspecialchars($locUi['city_label'], ENT_QUOTES, 'UTF-8') ?></label>
             <select class="form-control" id="customer_city" name="customer_city" required>
-                <option value=""><?= te('order.city_select', 'İl Seçiniz') ?></option>
+                <option value=""><?= htmlspecialchars($locUi['city_select'], ENT_QUOTES, 'UTF-8') ?></option>
                 <?php foreach ($cities as $city): ?>
                     <option value="<?= $city['city_id'] ?>"<?= $formPrefill('customer_city') === (string) $city['city_id'] ? ' selected' : '' ?>><?= htmlspecialchars($city['city_name']) ?></option>
                 <?php endforeach; ?>
@@ -582,9 +597,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="form-group">
-            <label for="customer_district"><?= te('order.district_label', 'İlçe:') ?></label>
+            <label for="customer_district"><?= htmlspecialchars($locUi['district_label'], ENT_QUOTES, 'UTF-8') ?></label>
             <select class="form-control" id="customer_district" name="customer_district" required disabled>
-                <option value=""><?= te('order.district_first', 'Önce İl Seçiniz') ?></option>
+                <option value=""><?= htmlspecialchars($locUi['district_first'], ENT_QUOTES, 'UTF-8') ?></option>
             </select>
         </div>
         </div>

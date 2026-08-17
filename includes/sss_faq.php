@@ -203,7 +203,7 @@ function sss_page_render(PDO $pdo, array $config): void
     $afterShellHtml = (string) ($config['after_shell_html'] ?? '');
     ?>
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars(function_exists('current_lang') ? current_lang($pdo) : 'tr', ENT_QUOTES, 'UTF-8') ?>">
+<html <?= function_exists('i18n_html_attrs') ? i18n_html_attrs($pdo) : 'lang="tr" dir="ltr"' ?>>
 <head>
     <meta charset="UTF-8">
     <title><?= $esc($seo['title']) ?></title>

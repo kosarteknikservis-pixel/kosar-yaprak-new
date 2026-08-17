@@ -37,7 +37,7 @@ $__has_switcher = count($__curs) > 1;
 ?>
 
 <script>document.documentElement.setAttribute('lang','<?= htmlspecialchars($__lang, ENT_QUOTES) ?>');document.documentElement.setAttribute('dir','<?= htmlspecialchars($__dir, ENT_QUOTES) ?>');</script>
-<?php if ($__dir === 'rtl'): ?><link rel="stylesheet" href="css/rtl.css"><?php endif; ?>
+<?php if ($__dir === 'rtl'): ?><link rel="stylesheet" href="css/rtl.css?v=20260817ar1"><?php endif; ?>
 
 <div id="app-nav">
 <div class="custom-header">

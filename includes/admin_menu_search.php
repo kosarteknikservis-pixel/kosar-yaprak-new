@@ -22,7 +22,7 @@ function admin_menu_search_catalog(): array
         ['label' => 'Aras Excel', 'href' => 'cargo_csv_export.php', 'section' => 'Siparişler', 'keywords' => 'kargo aras csv', 'perm' => 'menu_siparis'],
         ['label' => 'Hızlı notlar', 'href' => 'quick_notes.php', 'section' => 'Siparişler', 'keywords' => 'not şablon', 'perm' => 'menu_siparis'],
         ['label' => 'Ödeme yöntemleri', 'href' => 'manage_payment_methods.php', 'section' => 'Ödeme', 'keywords' => 'kapıda paytr iyzico', 'perm' => 'menu_siparis'],
-        ['label' => 'İl / ilçe', 'href' => 'manage_locations.php', 'section' => 'Ödeme', 'keywords' => 'şehir ilçe lokasyon', 'perm' => 'menu_siparis'],
+        ['label' => 'Teslimat bölgeleri', 'href' => 'manage_locations.php', 'section' => 'Ödeme', 'keywords' => 'şehir ilçe lokasyon eyalet avustralya', 'perm' => 'menu_siparis'],
         ['label' => 'Banka hesapları', 'href' => 'bank_accounts.php', 'section' => 'Ödeme', 'keywords' => 'havale eft iban', 'perm' => 'menu_siparis'],
 
         ['label' => 'Ürün Yönetimi', 'href' => 'products.php', 'section' => 'Ürün', 'keywords' => 'ürün ekle düzenle fiyat', 'perm' => 'menu_urun'],

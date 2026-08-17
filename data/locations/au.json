@@ -1,0 +1,16 @@
+{
+  "country": "AU",
+  "label": "Australia",
+  "city_label": "State",
+  "district_label": "Suburb / City",
+  "cities": {
+    "Australian Capital Territory": ["Canberra", "Belconnen", "Gungahlin", "Tuggeranong", "Woden", "Civic"],
+    "New South Wales": ["Sydney", "Parramatta", "Newcastle", "Wollongong", "Penrith", "Liverpool", "Blacktown", "Bankstown", "Chatswood", "Bondi", "Manly", "Campbelltown", "Gosford", "Central Coast", "Tamworth", "Wagga Wagga", "Coffs Harbour", "Port Macquarie", "Dubbo", "Orange", "Bathurst", "Albury", "Lismore", "Broken Hill", "Nowra", "Maitland", "Cessnock", "Tweed Heads", "Armidale", "Griffith"],
+    "Northern Territory": ["Darwin", "Palmerston", "Alice Springs", "Katherine", "Nhulunbuy", "Tennant Creek"],
+    "Queensland": ["Brisbane", "Gold Coast", "Sunshine Coast", "Cairns", "Townsville", "Toowoomba", "Mackay", "Rockhampton", "Bundaberg", "Hervey Bay", "Gladstone", "Ipswich", "Logan", "Redcliffe", "Noosa", "Airlie Beach", "Mount Isa", "Gympie"],
+    "South Australia": ["Adelaide", "Port Adelaide", "Salisbury", "Tea Tree Gully", "Marion", "Onkaparinga", "Playford", "Charles Sturt", "Mount Gambier", "Whyalla", "Murray Bridge", "Port Lincoln", "Port Augusta", "Victor Harbor"],
+    "Tasmania": ["Hobart", "Launceston", "Devonport", "Burnie", "Glenorchy", "Clarence", "Kingborough", "Ulverstone"],
+    "Victoria": ["Melbourne", "Geelong", "Ballarat", "Bendigo", "Frankston", "Dandenong", "Box Hill", "Ringwood", "Sunshine", "Footscray", "St Kilda", "Brunswick", "Preston", "Werribee", "Pakenham", "Shepparton", "Warrnambool", "Mildura", "Traralgon", "Wodonga", "Wangaratta", "Mornington"],
+    "Western Australia": ["Perth", "Fremantle", "Joondalup", "Wanneroo", "Armadale", "Rockingham", "Mandurah", "Bunbury", "Geraldton", "Kalgoorlie", "Albany", "Broome", "Karratha", "Port Hedland", "Busselton"]
+  }
+}

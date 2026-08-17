@@ -4,6 +4,7 @@ declare(strict_types=1);
 require '../db.php';
 require 'auth.php';
 require_once __DIR__ . '/../includes/currency_rates.php';
+require_once __DIR__ . '/../includes/location_service.php';
 
 if (empty($_SESSION['csrf_i18n'])) {
     $_SESSION['csrf_i18n'] = bin2hex(random_bytes(16));
@@ -306,6 +307,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $flash = $count . ' çeviri içe aktarıldı.';
                     break;
                 }
+
+                case 'loc_use_country': {
+                    $cc = strtoupper((string) ($_POST['pack'] ?? ''));
+                    if (!in_array($cc, location_pack_codes(), true)) {
+                        throw new RuntimeException('Geçersiz ülke.');
+                    }
+                    location_set_checkout_country($pdo, $cc);
+                    $r = location_pack_import($pdo, $cc);
+                    $names = location_pack_titles();
+                    $flash = ($names[$cc] ?? $cc) . ' sipariş formuna alındı. '
+                        . (int) $r['cities'] . ' yeni üst birim, '
+                        . (int) $r['districts'] . ' yeni şehir eklendi.';
+                    break;
+                }
             }
         } catch (Throwable $e) {
             $flash = 'İşlem başarısız: ' . $e->getMessage();
@@ -368,9 +383,11 @@ include 'admin_header.php';
     <div class="admin-page-intro mb-3">
         <h1><i class="fas fa-globe"></i> Diller &amp; Para Birimleri</h1>
         <p class="lead mb-2">Vitrin dili sitede seçilmez. Panelde <strong>varsayılan dil</strong> hangisiyse müşteri onu görür (yıldız). Çeviriler yine Çeviriler / ürün / ödeme ekranlarından yazılır.</p>
+        <p class="small text-muted mb-2">İngilizce varsayılan ise sipariş formuna Avustralya şehirleri, Arapça ise Suudi/BAE listesi gerekir. Bunu <a href="?tab=locations">Teslimat bölgeleri</a> sekmesinden tek tıkla seçin.</p>
         <ol class="mb-0 small text-muted">
             <li><strong>Diller</strong> — İngilizce veya Arapça’yı varsayılan yapın; tüm sipariş arayüzü o dile geçer.</li>
             <li><strong>Çeviriler</strong> — sipariş metinleri (grup: <code>order</code>, <code>shop</code>, <code>thankyou</code>).</li>
+            <li><strong>Teslimat bölgeleri</strong> — sipariş formundaki il/eyalet listesi (Türkiye, Avustralya, Suudi, BAE).</li>
             <li>Ürün adı/açıklama: <a href="products.php">Ürünler</a> → düzenle → “Yurtdışı dil”.</li>
             <li>Ödeme yöntemi adları: <a href="manage_payment_methods.php">Ödeme yöntemleri</a> EN/AR sütunları.</li>
         </ol>
@@ -381,6 +398,7 @@ include 'admin_header.php';
         $tabs = [
             'languages' => ['fa-language', 'Diller'],
             'currencies' => ['fa-coins', 'Para Birimleri'],
+            'locations' => ['fa-map-marked-alt', 'Teslimat bölgeleri'],
             'translations' => ['fa-list', 'Çeviriler'],
             'io' => ['fa-file-import', 'İçe / Dışa Aktar'],
         ];
@@ -514,6 +532,54 @@ include 'admin_header.php';
                 <div class="col-auto"><label class="form-label">Sembol yeri</label><select class="form-select" name="symbol_position"><option value="before">Önce</option><option value="after" selected>Sonra</option></select></div>
                 <div class="col-auto"><button class="btn btn-primary"><i class="fas fa-plus"></i> Ekle</button></div>
             </form>
+        </div>
+    </section>
+    <?php endif; ?>
+
+    <?php /* ===================== TESLİMAT BÖLGELERİ ===================== */ ?>
+    <?php if ($activeTab === 'locations'): ?>
+    <?php
+        location_ensure_schema($pdo);
+        $locActive = location_checkout_country($pdo);
+        $locTitles = location_pack_titles();
+        $locHelp = [
+            'TR' => ['Türkiye şehirleri', 'Türkçe vitrin için. İl → ilçe.'],
+            'AU' => ['Avustralya şehirleri', 'İngilizce vitrin için. Eyalet → şehir/semt.'],
+            'SA' => ['Suudi Arabistan şehirleri', 'Arapça (Suudi) vitrin için. Bölge → şehir.'],
+            'AE' => ['BAE şehirleri', 'Arapça (Emirlikler) vitrin için. Emirlik → şehir.'],
+        ];
+    ?>
+    <section class="admin-section-card mb-3">
+        <div class="admin-section-card__head"><h2><i class="fas fa-map-marked-alt"></i> Sipariş formundaki şehir listesi</h2></div>
+        <div class="admin-section-card__body">
+            <p class="mb-3">Müşteri “Hemen Sipariş Ver” deyince hangi ülkenin şehirleri çıksın? <strong>Tek tuş:</strong> hem ülkeyi seçer hem listeyi yükler.</p>
+            <p class="small text-muted mb-4">Şu an formda: <strong><?= htmlspecialchars($locTitles[$locActive] ?? $locActive) ?></strong></p>
+            <div class="row g-3">
+                <?php foreach ($locTitles as $code => $title): ?>
+                    <?php $cnt = location_country_counts($pdo, $code); $on = $locActive === $code; ?>
+                    <div class="col-md-6">
+                        <div class="border rounded-3 p-3 h-100<?= $on ? ' border-primary' : '' ?>">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <strong><?= htmlspecialchars($locHelp[$code][0] ?? $title) ?></strong>
+                                    <?php if ($on): ?><span class="badge bg-primary ms-1">şu an bu</span><?php endif; ?>
+                                    <div class="small text-muted"><?= htmlspecialchars($locHelp[$code][1] ?? '') ?></div>
+                                </div>
+                                <span class="badge bg-light text-dark"><?= (int) $cnt['cities'] ?> / <?= (int) $cnt['districts'] ?></span>
+                            </div>
+                            <form method="post" action="?tab=locations">
+                                <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>">
+                                <input type="hidden" name="action" value="loc_use_country">
+                                <input type="hidden" name="pack" value="<?= htmlspecialchars($code) ?>">
+                                <button class="btn <?= $on ? 'btn-primary' : 'btn-outline-primary' ?> btn-sm" type="submit">
+                                    <?= $on ? 'Listeyi yenile' : 'Bunu kullan' ?>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <p class="small text-muted mt-3 mb-0">Eksik semt/şehir eklemek için <a href="manage_locations.php">detaylı liste</a> sayfasını kullanın. Mevcut siparişlerdeki il numaraları silinmez.</p>
         </div>
     </section>
     <?php endif; ?>

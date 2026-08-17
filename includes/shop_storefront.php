@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 function shop_use_save_badge(?PDO $pdo = null): bool
 {
-    $lang = function_exists('current_lang') ? current_lang($pdo) : 'tr';
+    $foreign = function_exists('i18n_is_foreign') ? i18n_is_foreign($pdo) : ((function_exists('current_lang') ? current_lang($pdo) : 'tr') !== 'tr');
     $code = function_exists('current_currency_code') ? current_currency_code($pdo) : 'TRY';
 
-    return $lang !== 'tr' || in_array($code, ['AUD', 'USD', 'GBP', 'NZD', 'CAD'], true);
+    return $foreign || in_array($code, ['AUD', 'USD', 'GBP', 'NZD', 'CAD'], true);
 }
 
 function shop_heading_localized(string $field, string $original, string $fallbackKey, string $fallbackText): string

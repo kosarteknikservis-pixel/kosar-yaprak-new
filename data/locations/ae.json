@@ -1,0 +1,15 @@
+{
+  "country": "AE",
+  "label": "United Arab Emirates",
+  "city_label": "Emirate",
+  "district_label": "City / Area",
+  "cities": {
+    "Abu Dhabi / أبوظبي": ["Abu Dhabi City", "Al Ain", "Madinat Zayed", "Ruwais", "Liwa", "Al Dhafra", "Khalifa City", "Mussafah", "Yas Island", "Saadiyat"],
+    "Dubai / دبي": ["Dubai Marina", "Downtown Dubai", "Deira", "Bur Dubai", "Jumeirah", "Al Barsha", "Business Bay", "Jebel Ali", "International City", "Silicon Oasis", "Mirdif", "Al Quoz", "Discovery Gardens", "Palm Jumeirah", "Dubai Hills"],
+    "Sharjah / الشارقة": ["Sharjah City", "Al Dhaid", "Khor Fakkan", "Kalba", "Dibba Al Hisn", "Al Hamriyah", "Wasit"],
+    "Ajman / عجمان": ["Ajman City", "Al Nuaimiya", "Al Rashidiya", "Masfout", "Manama"],
+    "Umm Al Quwain / أم القيوين": ["Umm Al Quwain City", "Falaj Al Mualla"],
+    "Ras Al Khaimah / رأس الخيمة": ["Ras Al Khaimah City", "Al Nakheel", "Digdaga", "Al Jazirah Al Hamra", "Shaam", "Rams"],
+    "Fujairah / الفجيرة": ["Fujairah City", "Dibba Al Fujairah", "Masafi", "Al Bidya", "Mirbah"]
+  }
+}

@@ -138,6 +138,19 @@ function i18n_dir(?PDO $pdo = null): string
     return is_rtl($pdo) ? 'rtl' : 'ltr';
 }
 
+/** Vitrin dili Türkçe değilse (EN / AR ve diğerleri). */
+function i18n_is_foreign(?PDO $pdo = null): bool
+{
+    return current_lang($pdo) !== i18n_source_lang();
+}
+
+/** <html> için lang + dir. */
+function i18n_html_attrs(?PDO $pdo = null): string
+{
+    return 'lang="' . htmlspecialchars(current_lang($pdo), ENT_QUOTES, 'UTF-8')
+        . '" dir="' . htmlspecialchars(i18n_dir($pdo), ENT_QUOTES, 'UTF-8') . '"';
+}
+
 /** Aktif dilin tüm arayüz metinlerini yükle (istek başına 1 sorgu, statik önbellek). */
 function i18n_load_strings(?PDO $pdo = null): void
 {

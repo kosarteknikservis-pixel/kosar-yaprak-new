@@ -62,3 +62,40 @@ html[dir="rtl"] ul, html[dir="rtl"] ol { padding-right: 1.5rem; padding-left: 0;
 
 /* Dil/para seçici hizası */
 html[dir="rtl"] .site-lang-switch, html[dir="rtl"] .site-cur-switch { direction: rtl; }
+
+/* Vitrin: sabit butonlar ve fiyat solda kalmasın */
+html[dir="rtl"] .social-buttons {
+  left: auto;
+  right: 20px;
+}
+html[dir="rtl"] body.homepage-view.cv-trial-on .social-buttons {
+  right: 20px;
+  left: auto;
+}
+html[dir="rtl"] body.homepage-view .scroll-to-top {
+  right: auto;
+  left: 14px;
+}
+@media (min-width: 480px) {
+  html[dir="rtl"] body.homepage-view .scroll-to-top {
+    left: calc(50% - min(var(--site-shell-max), 100vw) / 2 + 14px);
+    right: auto;
+  }
+}
+
+html[dir="rtl"] .hp-product-card__price,
+html[dir="rtl"] .hp-product-card__price-sale,
+html[dir="rtl"] .hp-product-card__price-old,
+html[dir="rtl"] .cv-sticky__sale,
+html[dir="rtl"] .cv-sticky__old,
+html[dir="rtl"] .cv-offer__sale,
+html[dir="rtl"] .cv-offer__old {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+html[dir="rtl"] .hp-product-card__cta i,
+html[dir="rtl"] .cv-sticky__cta i {
+  margin-left: 8px;
+  margin-right: 0;
+}

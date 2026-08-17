@@ -14,7 +14,7 @@ function ensure_feature_schema(PDO $pdo): void
 
     // Kalıcı sürüm damgası: şema güncelse ağır SHOW/ALTER kontrollerini tümden atla.
     // Yeni migrasyon eklerken bu sürümü artır (ör. tarih-harf), tek seferde uygulansın.
-    $schemaVersion = '2026-08-17-aud1';
+    $schemaVersion = '2026-08-17-loc1';
     try {
         $cur = $pdo->query("SELECT meta_value FROM schema_meta WHERE meta_key = 'feature_version'")->fetchColumn();
         if ($cur === $schemaVersion) {
@@ -1263,6 +1263,11 @@ function ensure_feature_schema(PDO $pdo): void
         $langIns = $pdo->prepare('INSERT IGNORE INTO site_languages (code, name, native_name, is_active, is_default, is_rtl, flag, sort_order) VALUES (?,?,?,?,?,?,?,?)');
         foreach ($langSeed as $l) {
             $langIns->execute($l);
+        }
+
+        if (is_file(__DIR__ . '/location_service.php')) {
+            require_once __DIR__ . '/location_service.php';
+            location_ensure_schema($pdo);
         }
 
         $pdo->exec("CREATE TABLE IF NOT EXISTS site_currencies (

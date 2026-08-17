@@ -74,6 +74,17 @@ function i18n_translation_catalog(): array
         'order.phone_label' => ['order', 'Telefon Numaranız:', 'Your Phone Number:', 'رقم هاتفك:'],
         'order.city_label' => ['order', 'İl:', 'City:', 'المحافظة:'],
         'order.city_select' => ['order', 'İl Seçiniz', 'Select City', 'اختر المحافظة'],
+        'order.state_label' => ['order', 'Eyalet:', 'State:', 'الولاية:'],
+        'order.suburb_label' => ['order', 'Şehir / semt:', 'Suburb / City:', 'الضاحية / المدينة:'],
+        'order.state_select' => ['order', 'Eyalet seçiniz', 'Select state', 'اختر الولاية'],
+        'order.suburb_first' => ['order', 'Önce eyalet seçiniz', 'Select state first', 'اختر الولاية أولاً'],
+        'order.region_label' => ['order', 'Bölge:', 'Region:', 'المنطقة:'],
+        'order.area_label' => ['order', 'Şehir:', 'City:', 'المدينة:'],
+        'order.region_select' => ['order', 'Bölge seçiniz', 'Select region', 'اختر المنطقة'],
+        'order.area_first' => ['order', 'Önce bölge seçiniz', 'Select region first', 'اختر المنطقة أولاً'],
+        'order.emirate_label' => ['order', 'Emirlik:', 'Emirate:', 'الإمارة:'],
+        'order.emirate_select' => ['order', 'Emirlik seçiniz', 'Select emirate', 'اختر الإمارة'],
+        'order.emirate_first' => ['order', 'Önce emirlik seçiniz', 'Select emirate first', 'اختر الإمارة أولاً'],
         'order.district_label' => ['order', 'İlçe:', 'District:', 'المنطقة:'],
         'order.district_first' => ['order', 'Önce İl Seçiniz', 'Select City First', 'اختر المحافظة أولاً'],
         'order.district_select' => ['order', 'İlçe Seçiniz', 'Select District', 'اختر المنطقة'],
@@ -144,8 +155,8 @@ function i18n_translation_catalog(): array
         'shop.interest_free' => ['shop', '{n} taksitle {amount}', '{n} interest-free payments of {amount}', '{n} دفعات بدون فوائد بقيمة {amount}'],
         'shop.campaign_heading' => ['shop', 'Öne Çıkan Ürünler', 'AUSTRALIA, SUMMER IS COMING', 'أستراليا، الصيف قادم'],
         'shop.campaign_sub' => ['shop', 'Kampanyalı Fiyatlar', 'Early summer discount', 'خصم بداية الصيف'],
-        'shop.default_heading_main' => ['shop', 'Ürünlerimiz', 'AUSTRALIA, SUMMER IS COMING', 'منتجاتنا'],
-        'shop.default_heading_sub' => ['shop', 'Güvenli alışveriş', 'Early summer discount', 'تسوق آمن'],
+        'shop.default_heading_main' => ['shop', 'Ürünlerimiz', 'AUSTRALIA, SUMMER IS COMING', 'أستراليا، الصيف قادم'],
+        'shop.default_heading_sub' => ['shop', 'Güvenli alışveriş', 'Early summer discount', 'خصم بداية الصيف'],
         'shop.empty_products' => ['shop', 'Şu an listelenecek ürün bulunmuyor.', 'No products to display at the moment.', 'لا توجد منتجات للعرض حالياً.'],
         'shop.empty_products_hint' => ['shop', 'Kısa süre içinde tekrar kontrol edebilirsiniz.', 'Please check back soon.', 'يرجى المحاولة لاحقاً.'],
         'shop.payment_options' => ['shop', 'Ödeme seçenekleri', 'Payment options', 'خيارات الدفع'],
@@ -275,6 +286,19 @@ function i18n_seed_default_translations(PDO $pdo): void
                 $upd->execute([$en, 'en', $key, $old]);
             }
         }
+        $staleAr = [
+            'shop.default_heading_main' => ['منتجاتنا'],
+            'shop.default_heading_sub' => ['تسوق آمن'],
+        ];
+        foreach ($staleAr as $key => $olds) {
+            if (!isset($catalog[$key])) {
+                continue;
+            }
+            $ar = $catalog[$key][3];
+            foreach ($olds as $old) {
+                $upd->execute([$ar, 'ar', $key, $old]);
+            }
+        }
     } catch (Throwable $e) {
         if (isset($_SERVER['HTTP_HOST'])) {
             error_log('i18n_seed: ' . $e->getMessage());
@@ -293,7 +317,7 @@ function i18n_ensure_catalog(?PDO $pdo = null): void
     if (!($pdo instanceof PDO)) {
         return;
     }
-    $seedVer = '2026-08-17-ui3';
+    $seedVer = '2026-08-17-loc1';
     try {
         $cur = $pdo->query("SELECT meta_value FROM schema_meta WHERE meta_key = 'i18n_seed_ver'")->fetchColumn();
         if ($cur === $seedVer) {
@@ -304,12 +328,17 @@ function i18n_ensure_catalog(?PDO $pdo = null): void
     }
     i18n_seed_default_translations($pdo);
     if (function_exists('content_t_load_lang') && function_exists('content_t_save')) {
-        $hpEn = content_t_load_lang($pdo, 'homepage_section', 1, 'en');
-        if (trim((string) ($hpEn['heading_main'] ?? '')) === '') {
-            content_t_save($pdo, 'homepage_section', 1, 'heading_main', 'en', 'AUSTRALIA, SUMMER IS COMING');
-        }
-        if (trim((string) ($hpEn['heading_sub'] ?? '')) === '') {
-            content_t_save($pdo, 'homepage_section', 1, 'heading_sub', 'en', 'Early summer discount');
+        $hpDefaults = [
+            'en' => ['heading_main' => 'AUSTRALIA, SUMMER IS COMING', 'heading_sub' => 'Early summer discount'],
+            'ar' => ['heading_main' => 'أستراليا، الصيف قادم', 'heading_sub' => 'خصم بداية الصيف'],
+        ];
+        foreach ($hpDefaults as $langCode => $fields) {
+            $row = content_t_load_lang($pdo, 'homepage_section', 1, $langCode);
+            foreach ($fields as $field => $value) {
+                if (trim((string) ($row[$field] ?? '')) === '') {
+                    content_t_save($pdo, 'homepage_section', 1, $field, $langCode, $value);
+                }
+            }
         }
     }
     try {

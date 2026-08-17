@@ -1,0 +1,21 @@
+{
+  "country": "SA",
+  "label": "Saudi Arabia",
+  "city_label": "Region",
+  "district_label": "City",
+  "cities": {
+    "Riyadh / الرياض": ["Riyadh", "Diriyah", "Al Kharj", "Al Majmaah", "Afif", "Al Zulfi", "Shaqra", "Al Dawadmi", "Al Quwayiyah", "Wadi ad-Dawasir", "As Sulayyil"],
+    "Makkah / مكة المكرمة": ["Makkah", "Jeddah", "Taif", "Rabigh", "Al Lith", "Al Qunfudhah", "Khulais", "Turubah"],
+    "Madinah / المدينة المنورة": ["Madinah", "Yanbu", "Al Ula", "Badr", "Khaybar", "Al Hinakiyah"],
+    "Eastern Province / الشرقية": ["Dammam", "Khobar", "Dhahran", "Al Ahsa", "Jubail", "Qatif", "Hafr Al Batin", "Khafji", "Ras Tanura", "Abqaiq", "Nairyah"],
+    "Asir / عسير": ["Abha", "Khamis Mushait", "Bisha", "Muhayil", "Sarat Abidah", "Ahad Rafidah", "An Namas"],
+    "Tabuk / تبوك": ["Tabuk", "Duba", "Umluj", "Al Wajh", "Haql", "Tayma"],
+    "Qassim / القصيم": ["Buraidah", "Unaizah", "Ar Rass", "Al Mithnab", "Al Bukayriyah", "Al Badayea"],
+    "Hail / حائل": ["Hail", "Baqaa", "Al Ghazalah", "Ash Shinan"],
+    "Northern Borders / الحدود الشمالية": ["Arar", "Rafha", "Turaif", "Al Uwayqilah"],
+    "Jazan / جازان": ["Jazan", "Sabya", "Abu Arish", "Samtah", "Farasan", "Ahad Al Masarihah"],
+    "Najran / نجران": ["Najran", "Sharurah", "Hubuna", "Badr Al Janub"],
+    "Al Bahah / الباحة": ["Al Bahah", "Baljurashi", "Al Mandaq", "Al Mikhwah", "Qilwah"],
+    "Al Jawf / الجوف": ["Sakaka", "Qurayyat", "Dumat Al-Jandal", "Tabarjal"]
+  }
+}

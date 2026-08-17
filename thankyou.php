@@ -311,7 +311,7 @@ $meta = page_meta_load($pdo, $page_name) ?? [];
 ?>
 
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars(function_exists('current_lang') ? current_lang() : 'tr', ENT_QUOTES, 'UTF-8') ?>">
+<html <?= function_exists('i18n_html_attrs') ? i18n_html_attrs() : 'lang="tr" dir="ltr"' ?>>
 <head>
     <meta charset="UTF-8">
     <title><?= htmlspecialchars($thankyouInvalid ? 'Sipariş bulunamadı' : (page_seo_resolve($pdo, $page_name, $meta)['title']), ENT_QUOTES, 'UTF-8') ?></title>

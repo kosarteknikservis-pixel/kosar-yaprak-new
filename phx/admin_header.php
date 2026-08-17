@@ -119,7 +119,7 @@ $admin_quick_nav_active = static function (array $files) use ($admin_cur): bool 
         <div class="sidebar-section-label">Ödeme &amp; lokasyon</div>
         <nav class="sidebar-nav">
             <a href="<?= admin_href('manage_payment_methods.php') ?>"<?= $admin_nav_active('manage_payment_methods.php') ?>><i class="fas fa-credit-card"></i> Ödeme yöntemleri</a>
-            <a href="<?= admin_href('manage_locations.php') ?>"<?= $admin_nav_active('manage_locations.php') ?>><i class="fas fa-map-marked-alt"></i> İl / ilçe</a>
+            <a href="<?= admin_href('manage_locations.php') ?>"<?= $admin_nav_active('manage_locations.php') ?>><i class="fas fa-map-marked-alt"></i> Teslimat bölgeleri</a>
             <a href="<?= admin_href('bank_accounts.php') ?>"<?= $admin_nav_active('bank_accounts.php') ?>><i class="fas fa-university"></i> Banka hesapları</a>
         </nav>
     </div>

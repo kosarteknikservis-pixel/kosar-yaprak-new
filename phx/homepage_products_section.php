@@ -170,11 +170,11 @@ include 'admin_header.php';
                 </div>
                 <div class="col-md-6">
                     <label class="form-label small">Üst satır (AR)</label>
-                    <input type="text" name="heading_main_ar" class="form-control" value="<?= htmlspecialchars((string) ($hpTrAr['heading_main'] ?? '')) ?>" dir="rtl">
+                    <input type="text" name="heading_main_ar" class="form-control" value="<?= htmlspecialchars((string) ($hpTrAr['heading_main'] ?? '')) ?>" dir="rtl" placeholder="أستراليا، الصيف قادم">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label small">Alt satır (AR)</label>
-                    <input type="text" name="heading_sub_ar" class="form-control" value="<?= htmlspecialchars((string) ($hpTrAr['heading_sub'] ?? '')) ?>" dir="rtl">
+                    <input type="text" name="heading_sub_ar" class="form-control" value="<?= htmlspecialchars((string) ($hpTrAr['heading_sub'] ?? '')) ?>" dir="rtl" placeholder="خصم بداية الصيف">
                 </div>
             </div>
 

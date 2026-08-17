@@ -96,7 +96,7 @@ function currency_boot(?PDO $pdo = null): string
     if ($chosen === null) {
         $chosen = $default;
     }
-    if (function_exists('current_lang') && current_lang($pdo) === 'en'
+    if (function_exists('i18n_is_foreign') && i18n_is_foreign($pdo)
         && in_array('AUD', $codes, true)
         && $req === ''
         && !isset($_COOKIE['site_cur'])) {
