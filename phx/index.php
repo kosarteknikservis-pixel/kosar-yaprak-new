@@ -494,7 +494,7 @@ try {
     ?>
     <div class="dash-card admin-dash-panel mb-4" id="visitorStatsPanel">
         <div class="dash-panel-head d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <span><i class="fas fa-users"></i> Ziyaretçi İstatistikleri</span>
+            <span><i class="fas fa-users"></i> Ziyaretçi İstatistikleri <small class="fw-normal text-muted ms-1">(tekil hit = benzersiz IP)</small></span>
             <div class="hit-mode-toggle btn-group btn-group-sm" role="group" aria-label="Sayım modu">
                 <button type="button" class="btn active" data-hit-mode="unique" title="Benzersiz IP (erişim)"><i class="fas fa-user-check me-1"></i>Tekil</button>
                 <button type="button" class="btn" data-hit-mode="total" title="Tüm gösterim (hit)"><i class="fas fa-eye me-1"></i>Toplam</button>
@@ -502,6 +502,30 @@ try {
         </div>
         <div class="card-body">
             <div class="row">
+                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card stat-card--live">
+                        <div class="stat-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="hit-metric" id="liveUniqueHit" data-unique="<?= (int) $live_distinct_visitors ?>" data-total="<?= (int) $live_visitors ?>"><?= number_format((int) $live_distinct_visitors, 0, ',', '.') ?></h3>
+                            <p>Anlık Ziyaretçi</p>
+                            <div class="stat-revenue"><small>son 5 dk · tekil IP</small></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="hit-metric" id="hourlyUniqueHit" data-unique="<?= (int) $hourly_distinct_visitors ?>" data-total="<?= (int) $hourly_visitors_hits ?>"><?= number_format((int) $hourly_distinct_visitors, 0, ',', '.') ?></h3>
+                            <p>Saatlik Ziyaretçi</p>
+                            <div class="stat-revenue"><small>bu saat · tekil IP</small></div>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 mb-3">
                     <div class="stat-card">
                         <div class="stat-icon">
@@ -567,6 +591,28 @@ try {
                             <p>Dönüşüm Oranı</p>
                         </div>
                     </div>
+                </div>
+            </div>
+            <?php
+            $hourNow = (int) date('G');
+            $hourMax = 1;
+            foreach ($hourly_visitor_series as $cell) {
+                $hourMax = max($hourMax, (int) ($cell['unique'] ?? 0), (int) ($cell['total'] ?? 0));
+            }
+            ?>
+            <div class="visit-hour-chart" id="visitHourChart">
+                <div class="visit-hour-chart__title">Bugün saatlik tekil hit</div>
+                <div class="visit-hour-chart__bars">
+                    <?php for ($h = 0; $h < 24; $h++):
+                        $u = (int) ($hourly_visitor_series[$h]['unique'] ?? 0);
+                        $t = (int) ($hourly_visitor_series[$h]['total'] ?? 0);
+                        $pct = (int) round(($u / $hourMax) * 100);
+                    ?>
+                    <div class="visit-hour-chart__col<?= $h === $hourNow ? ' is-now' : '' ?>" title="<?= sprintf('%02d:00 — %d tekil / %d hit', $h, $u, $t) ?>">
+                        <span class="visit-hour-chart__bar" data-unique="<?= $u ?>" data-total="<?= $t ?>" style="height: <?= max(4, $pct) ?>%"></span>
+                        <span class="visit-hour-chart__lbl"><?= $h ?></span>
+                    </div>
+                    <?php endfor; ?>
                 </div>
             </div>
         </div>
@@ -666,7 +712,8 @@ try {
             <i class="fas fa-info-circle text-muted mt-1 flex-shrink-0"></i>
             <div class="small text-muted lh-base">
                 <strong class="text-body">Önemli:</strong>
-                Tekil IP ziyaretleri sayılır; ek analiz için Analytics / Metrica / Clarity kullanın.
+                Anlık sayı son 5 dakikadaki benzersiz IP’dir. Saatlik / günlük kartlar da varsayılan olarak tekil hittir.
+                Sağ üstteki <em>Toplam</em> tüm sayfa gösterimlerini açar. Ek analiz için Analytics / Metrica / Clarity kullanın.
             </div>
         </div>
     </div>
@@ -688,6 +735,19 @@ try {
             var v = mode === 'total' ? el.getAttribute('data-total') : el.getAttribute('data-unique');
             el.textContent = fmt(parseInt(v || '0', 10));
         });
+        var max = 1;
+        document.querySelectorAll('.visit-hour-chart__bar').forEach(function (bar) {
+            var n = parseInt(mode === 'total' ? (bar.getAttribute('data-total') || '0') : (bar.getAttribute('data-unique') || '0'), 10);
+            if (n > max) max = n;
+        });
+        document.querySelectorAll('.visit-hour-chart__bar').forEach(function (bar) {
+            var n = parseInt(mode === 'total' ? (bar.getAttribute('data-total') || '0') : (bar.getAttribute('data-unique') || '0'), 10);
+            bar.style.height = Math.max(4, Math.round((n / max) * 100)) + '%';
+        });
+        var chartTitle = document.querySelector('.visit-hour-chart__title');
+        if (chartTitle) {
+            chartTitle.textContent = mode === 'total' ? 'Bugün saatlik toplam hit' : 'Bugün saatlik tekil hit';
+        }
         groups.forEach(function (g) {
             g.querySelectorAll('[data-hit-mode]').forEach(function (b) {
                 b.classList.toggle('active', b.getAttribute('data-hit-mode') === mode);
@@ -707,6 +767,35 @@ try {
             apply(btn.getAttribute('data-hit-mode'));
         });
     });
+})();
+</script>
+
+<script>
+(function () {
+    var liveEl = document.getElementById('liveUniqueHit');
+    var hourEl = document.getElementById('hourlyUniqueHit');
+    if (!liveEl || !hourEl) return;
+    function mode() {
+        try { return localStorage.getItem('admin_hit_mode') || 'unique'; } catch (e) { return 'unique'; }
+    }
+    function fmt(n) {
+        return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+    function tick() {
+        fetch('visitor_live.php', { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d || !d.ok) return;
+                liveEl.setAttribute('data-unique', d.live_unique);
+                liveEl.setAttribute('data-total', d.live_total);
+                hourEl.setAttribute('data-unique', d.hourly_unique);
+                hourEl.setAttribute('data-total', d.hourly_total);
+                liveEl.textContent = fmt(mode() === 'total' ? d.live_total : d.live_unique);
+                hourEl.textContent = fmt(mode() === 'total' ? d.hourly_total : d.hourly_unique);
+            })
+            .catch(function () {});
+    }
+    setInterval(tick, 30000);
 })();
 </script>
 

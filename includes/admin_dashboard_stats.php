@@ -45,6 +45,10 @@ function admin_dashboard_load_stats(PDO $pdo): array
         "SELECT
             COUNT(*) AS total_visits,
             COUNT(DISTINCT ip_address) AS total_distinct_visits,
+            COUNT(DISTINCT CASE WHEN visit_time >= NOW() - INTERVAL 5 MINUTE THEN ip_address END) AS live_distinct_visits,
+            COUNT(CASE WHEN visit_time >= NOW() - INTERVAL 5 MINUTE THEN 1 END) AS live_visits,
+            COUNT(DISTINCT CASE WHEN HOUR(visit_time) = HOUR(NOW()) AND DATE(visit_time) = CURDATE() THEN ip_address END) AS hourly_distinct_visits,
+            COUNT(CASE WHEN HOUR(visit_time) = HOUR(NOW()) AND DATE(visit_time) = CURDATE() THEN 1 END) AS hourly_visits,
             COUNT(CASE WHEN DATE(visit_time) = CURDATE() THEN 1 END) AS daily_visits,
             COUNT(DISTINCT CASE WHEN DATE(visit_time) = CURDATE() THEN ip_address END) AS daily_distinct_visits,
             COUNT(CASE WHEN DATE(visit_time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) THEN 1 END) AS yesterday_visits,
@@ -111,6 +115,31 @@ function admin_dashboard_load_stats(PDO $pdo): array
     $approval_rate = $total_orders > 0 ? ($approved_orders / $total_orders) * 100 : 0.0;
     $delivery_rate = $total_orders > 0 ? ($delivered_orders / $total_orders) * 100 : 0.0;
     $shipping_rate = $total_orders > 0 ? ($shipped_orders / $total_orders) * 100 : 0.0;
+
+    $hourlySeries = array_fill(0, 24, ['unique' => 0, 'total' => 0]);
+    try {
+        $hs = $pdo->query(
+            "SELECT HOUR(visit_time) AS h,
+                    COUNT(DISTINCT ip_address) AS u,
+                    COUNT(*) AS t
+             FROM page_views
+             WHERE DATE(visit_time) = CURDATE()
+             GROUP BY HOUR(visit_time)"
+        );
+        if ($hs) {
+            foreach ($hs as $row) {
+                $h = (int) ($row['h'] ?? -1);
+                if ($h >= 0 && $h <= 23) {
+                    $hourlySeries[$h] = [
+                        'unique' => (int) ($row['u'] ?? 0),
+                        'total' => (int) ($row['t'] ?? 0),
+                    ];
+                }
+            }
+        }
+    } catch (Throwable $e) {
+        /* boş seri */
+    }
 
     $daily_visitors_result = ['daily_visits' => (int) ($pvRow['daily_visits'] ?? 0)];
     $yesterday_visitors_result = ['yesterday_visits' => (int) ($pvRow['yesterday_visits'] ?? 0)];
@@ -191,6 +220,11 @@ function admin_dashboard_load_stats(PDO $pdo): array
         'total_distinct_visitors_result' => $total_distinct_visitors_result,
         'total_distinct_orders_result' => $total_distinct_orders_result,
         'total_distinct_orders_rate' => $rate((int) $total_distinct_visitors_result['total_distinct_visits'], (int) $total_distinct_orders_result['total_distinct_orders']),
+        'live_distinct_visitors' => (int) ($pvRow['live_distinct_visits'] ?? 0),
+        'live_visitors' => (int) ($pvRow['live_visits'] ?? 0),
+        'hourly_distinct_visitors' => (int) ($pvRow['hourly_distinct_visits'] ?? 0),
+        'hourly_visitors_hits' => (int) ($pvRow['hourly_visits'] ?? 0),
+        'hourly_visitor_series' => $hourlySeries,
         'page_analytics' => $page_analytics,
     ];
 }

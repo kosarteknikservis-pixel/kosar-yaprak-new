@@ -1338,7 +1338,56 @@ main.admin-dash details.admin-dash-corporate[open] .admin-dash-corporate-summary
     margin-bottom: 0;
 }
 
-.admin-dash-footnote {
+.admin-dash .stat-card--live .stat-icon {
+    color: #16a34a;
+}
+.admin-dash .stat-card--live::before {
+    background: #22c55e;
+}
+.visit-hour-chart {
+    margin-top: 0.25rem;
+    padding: 0.85rem 0.4rem 0.35rem;
+    border-top: 1px solid var(--border);
+}
+.visit-hour-chart__title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin: 0 0.6rem 0.65rem;
+}
+.visit-hour-chart__bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 88px;
+    padding: 0 0.4rem;
+}
+.visit-hour-chart__col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    min-width: 0;
+}
+.visit-hour-chart__bar {
+    display: block;
+    width: 100%;
+    max-width: 14px;
+    border-radius: 3px 3px 0 0;
+    background: #93c5fd;
+    min-height: 3px;
+}
+.visit-hour-chart__col.is-now .visit-hour-chart__bar {
+    background: #2563eb;
+}
+.visit-hour-chart__lbl {
+    font-size: 0.62rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1;
+}
     padding: 0.85rem 1rem;
     background: var(--surface);
     border: 1px dashed var(--border);
