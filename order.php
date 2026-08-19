@@ -26,19 +26,13 @@ require_once __DIR__ . '/includes/location_service.php';
 date_default_timezone_set('Europe/Istanbul');
 
 $page_name = basename(__FILE__);
+require_once __DIR__ . '/includes/page_view_log.php';
+page_view_log($pdo, $page_name);
 $ip_address = app_client_ip();
-$visit_time = date('Y-m-d H:i:s');
 $sourceHost = parse_url(app_site_url($pdo), PHP_URL_HOST);
 $source = is_string($sourceHost) && $sourceHost !== ''
     ? $sourceHost
     : (string) ($_SERVER['HTTP_HOST'] ?? 'localhost');
-
-$stmt = $pdo->prepare("INSERT INTO page_views (page_name, ip_address, visit_time) VALUES (?, ?, ?)");
-$stmt->execute([$page_name, $ip_address, $visit_time]);
-
-// Ayrıca page_visits tablosuna da kaydet
-// $stmt = $pdo->prepare("INSERT INTO page_visits (page_name, ip_address, visit_time) VALUES (?, ?, ?)");
-// $stmt->execute([$page_name, $ip_address, $visit_time]);
 
 $stmt = $pdo->query("SELECT discount_rate, show_whatsapp, whatsapp_number, show_instagram, instagram_username FROM notification_settings WHERE id = 1");
 $settings = $stmt->fetch(PDO::FETCH_ASSOC);

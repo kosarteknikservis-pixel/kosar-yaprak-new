@@ -16,11 +16,9 @@ require_once __DIR__ . '/includes/order_sms_verify.php';
 require_once __DIR__ . '/includes/order_verification.php';
 
 $page_name = 'thankyou.php';
-$ip_address = $_SERVER['REMOTE_ADDR'];
-$visit_time = date('Y-m-d H:i:s');
-
-$stmt = $pdo->prepare("INSERT INTO page_views (page_name, ip_address, visit_time) VALUES (?, ?, ?)");
-$stmt->execute([$page_name, $ip_address, $visit_time]);
+require_once __DIR__ . '/includes/page_view_log.php';
+page_view_log($pdo, $page_name);
+$ip_address = app_client_ip();
 $stmt = $pdo->query("SELECT show_post_order_msg, post_order_msg_text FROM footer_images WHERE id = 7");
 $post_order_msg = $stmt->fetch(PDO::FETCH_ASSOC) ?: ['show_post_order_msg' => 0, 'post_order_msg_text' => ''];
 

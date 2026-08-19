@@ -42,6 +42,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_corporate_checko
     exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_page_views'])) {
+    if (trim((string) ($_POST['reset_confirm'] ?? '')) === 'SIFIRLA') {
+        try {
+            $pdo->exec('DELETE FROM page_views');
+            $_SESSION['message'] = 'Ziyaretçi istatistikleri sıfırlandı.';
+            $_SESSION['message_type'] = 'success';
+        } catch (Throwable $e) {
+            $_SESSION['message'] = 'Sıfırlama hatası: ' . $e->getMessage();
+            $_SESSION['message_type'] = 'error';
+        }
+    } else {
+        $_SESSION['message'] = 'Onay metni hatalı. Kutuya SIFIRLA yazın.';
+        $_SESSION['message_type'] = 'error';
+    }
+    header('Location: index.php');
+    exit;
+}
+
 $page_title = 'Dashboard';
 $admin_vitrin_href = site_public_vitrin_href($pdo);
 
@@ -132,6 +150,14 @@ try {
 
 <main class="admin-dash">
 <div class="container-fluid px-0">
+    <?php if (! empty($_SESSION['message'])): ?>
+        <?php $mtp = (string) ($_SESSION['message_type'] ?? 'success'); ?>
+        <div class="alert alert-<?= $mtp === 'error' ? 'danger' : 'success' ?> alert-dismissible fade show" role="alert">
+            <?= htmlspecialchars((string) $_SESSION['message']) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
+        </div>
+        <?php unset($_SESSION['message'], $_SESSION['message_type']); ?>
+    <?php endif; ?>
     <div class="admin-dash-intro">
         <div class="intro-text">
             <p class="intro-kicker mb-1">Genel Özet</p>
@@ -495,9 +521,14 @@ try {
     <div class="dash-card admin-dash-panel mb-4" id="visitorStatsPanel">
         <div class="dash-panel-head d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span><i class="fas fa-users"></i> Ziyaretçi İstatistikleri <small class="fw-normal text-muted ms-1">(tekil hit = benzersiz IP)</small></span>
-            <div class="hit-mode-toggle btn-group btn-group-sm" role="group" aria-label="Sayım modu">
-                <button type="button" class="btn active" data-hit-mode="unique" title="Benzersiz IP (erişim)"><i class="fas fa-user-check me-1"></i>Tekil</button>
-                <button type="button" class="btn" data-hit-mode="total" title="Tüm gösterim (hit)"><i class="fas fa-eye me-1"></i>Toplam</button>
+            <div class="d-flex align-items-center flex-wrap gap-2">
+                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#resetPageViewsModal" title="Tüm ziyaretçi kayıtlarını sil">
+                    <i class="fas fa-trash-alt me-1"></i> Verileri sıfırla
+                </button>
+                <div class="hit-mode-toggle btn-group btn-group-sm" role="group" aria-label="Sayım modu">
+                    <button type="button" class="btn active" data-hit-mode="unique" title="Benzersiz IP (erişim)"><i class="fas fa-user-check me-1"></i>Tekil</button>
+                    <button type="button" class="btn" data-hit-mode="total" title="Tüm gösterim (hit)"><i class="fas fa-eye me-1"></i>Toplam</button>
+                </div>
             </div>
         </div>
         <div class="card-body">
@@ -510,7 +541,7 @@ try {
                         <div class="stat-content">
                             <h3 class="hit-metric" id="liveUniqueHit" data-unique="<?= (int) $live_distinct_visitors ?>" data-total="<?= (int) $live_visitors ?>"><?= number_format((int) $live_distinct_visitors, 0, ',', '.') ?></h3>
                             <p>Anlık Ziyaretçi</p>
-                            <div class="stat-revenue"><small>son 5 dk · tekil IP</small></div>
+                            <div class="stat-revenue"><small>son 5 dk · vitrin · bot hariç</small></div>
                         </div>
                     </div>
                 </div>
@@ -712,8 +743,30 @@ try {
             <i class="fas fa-info-circle text-muted mt-1 flex-shrink-0"></i>
             <div class="small text-muted lh-base">
                 <strong class="text-body">Önemli:</strong>
-                Anlık sayı son 5 dakikadaki benzersiz IP’dir. Saatlik / günlük kartlar da varsayılan olarak tekil hittir.
+                Anlık sayı: son 5 dakikada vitrin sayfalarına (anasayfa, sipariş, teşekkür) gelen benzersiz IP; bot trafiği hariç. Saatlik / günlük kartlar da aynı kapsamdadır.
                 Sağ üstteki <em>Toplam</em> tüm sayfa gösterimlerini açar. Ek analiz için Analytics / Metrica / Clarity kullanın.
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="resetPageViewsModal" tabindex="-1" aria-labelledby="resetPageViewsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="index.php">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="resetPageViewsModalLabel">Ziyaretçi verilerini sıfırla</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-3">Tüm sayfa ziyaret kayıtları (<code>page_views</code>) kalıcı olarak silinir. Anlık, saatlik ve grafik verileri sıfırlanır; siparişler etkilenmez.</p>
+                        <label for="reset_confirm" class="form-label">Onaylamak için kutuya <strong>SIFIRLA</strong> yazın</label>
+                        <input type="text" class="form-control" id="reset_confirm" name="reset_confirm" autocomplete="off" required placeholder="SIFIRLA">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                        <button type="submit" name="reset_page_views" value="1" class="btn btn-danger">Verileri sıfırla</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

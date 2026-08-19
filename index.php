@@ -22,16 +22,9 @@ date_default_timezone_set('Europe/Istanbul');
 // Referans (?ref=) tracking.php içinde işlenir (oturum + çerez)
 
 $page_name = basename(__FILE__);
-$ip_address = $_SERVER['REMOTE_ADDR'];
-$visit_time = date('Y-m-d H:i:s');
 $stmt = $pdo->query('SELECT * FROM notification_settings WHERE id = 1');
 $notification = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
 $settings = $notification;
-$stmt = $pdo->prepare("INSERT INTO page_views (page_name, ip_address, visit_time) VALUES (?, ?, ?)");
-$stmt->execute([$page_name, $ip_address, $visit_time]);
-
-// $stmt = $pdo->prepare("INSERT INTO page_visits (page_name, ip_address, visit_time) VALUES (?, ?, ?)");
-// $stmt->execute([$page_name, $ip_address, $visit_time]);
 
 $stmt = $pdo->prepare('SELECT * FROM products WHERE status = "visible" ORDER BY display_order ASC, product_id ASC');
 $stmt->execute();

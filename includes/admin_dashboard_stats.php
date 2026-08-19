@@ -8,6 +8,9 @@ declare(strict_types=1);
  */
 function admin_dashboard_load_stats(PDO $pdo): array
 {
+    require_once __DIR__ . '/page_view_log.php';
+    $pvPagesIn = page_view_stats_sql_in();
+
     $orderRow = $pdo->query(
         "SELECT
             COUNT(CASE WHEN order_status_id != 19 THEN 1 END) AS total_orders,
@@ -57,10 +60,11 @@ function admin_dashboard_load_stats(PDO $pdo): array
             COUNT(DISTINCT CASE WHEN YEARWEEK(visit_time, 1) = YEARWEEK(CURDATE(), 1) THEN ip_address END) AS weekly_distinct_visits,
             COUNT(CASE WHEN YEAR(visit_time) = YEAR(CURDATE()) AND MONTH(visit_time) = MONTH(CURDATE()) THEN 1 END) AS monthly_visits,
             COUNT(DISTINCT CASE WHEN YEAR(visit_time) = YEAR(CURDATE()) AND MONTH(visit_time) = MONTH(CURDATE()) THEN ip_address END) AS monthly_distinct_visits
-         FROM page_views"
+         FROM page_views
+         WHERE page_name IN ($pvPagesIn)"
     )->fetch(PDO::FETCH_ASSOC) ?: [];
 
-    $pages = ['index.php', 'order.php', 'thankyou.php'];
+    $pages = page_view_storefront_pages();
     $ph = implode(',', array_fill(0, count($pages), '?'));
     $paStmt = $pdo->prepare(
         "SELECT page_name,
@@ -123,7 +127,8 @@ function admin_dashboard_load_stats(PDO $pdo): array
                     COUNT(DISTINCT ip_address) AS u,
                     COUNT(*) AS t
              FROM page_views
-             WHERE DATE(visit_time) = CURDATE()
+             WHERE page_name IN ($pvPagesIn)
+               AND DATE(visit_time) = CURDATE()
              GROUP BY HOUR(visit_time)"
         );
         if ($hs) {
