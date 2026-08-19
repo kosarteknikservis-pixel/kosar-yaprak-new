@@ -88,7 +88,7 @@ final class OrderPaymentFinalize
         }
 
         $gatewayCode = self::gatewayCodeForMethod($pdo, $payment_method_id);
-        if (in_array($gatewayCode, ['paytr', 'iyzico'], true)) {
+        if (in_array($gatewayCode, ['paytr', 'iyzico', 'nkolay'], true)) {
             require_once dirname(__DIR__) . '/order_sms_verify.php';
             if (! ov_order_is_pending($pdo, $orderId)) {
                 require_once dirname(__DIR__) . '/netgsm_customer_sms.php';

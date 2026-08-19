@@ -364,7 +364,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]);
     $gwCode = OrderPaymentFinalize::gatewayCodeForMethod($pdo, $payment_method_id);
     $merchant_oid = OrderPaymentFinalize::merchantOidForOrder($order_id);
-    if (in_array($gwCode, ['paytr', 'iyzico'], true)) {
+    if (in_array($gwCode, ['paytr', 'iyzico', 'nkolay'], true)) {
         $pdo->prepare('UPDATE orders SET payment_status = ?, payment_merchant_oid = ?, gateway_code = ? WHERE order_id = ?')
             ->execute(['pending', $merchant_oid, $gwCode, $order_id]);
     } else {
@@ -443,6 +443,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if ($gwCode === 'iyzico') {
             header('Location: ' . app_url('payment/iyzico', ['order_id' => $order_id], $pdo));
+            exit;
+        }
+        if ($gwCode === 'nkolay') {
+            header('Location: ' . app_url('payment/nkolay', ['order_id' => $order_id], $pdo));
             exit;
         }
 

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Online ödeme geçitlerini (PayTR / iyzico) ayarlarla senkronize eder.
+ * Online ödeme geçitlerini (PayTR / iyzico / N Kolay) ayarlarla senkronize eder.
  */
 function payment_methods_sync_online_gateways(PDO $pdo): void
 {
@@ -32,6 +32,21 @@ function payment_methods_sync_online_gateways(PDO $pdo): void
                 'Kredi / Banka Kartı (iyzico)',
                 6,
                 $iyzOk
+            );
+        }
+    }
+
+    if (is_file(__DIR__ . '/gateways/NkolayGateway.php')) {
+        require_once __DIR__ . '/gateways/NkolayGateway.php';
+        if (class_exists('NkolayGateway', false)) {
+            $nkolay = new NkolayGateway($pdo);
+            $nkolayOk = method_exists($nkolay, 'configured') && $nkolay->configured();
+            payment_methods_set_gateway_row(
+                $pdo,
+                'nkolay',
+                'Kredi / Banka Kartı (N Kolay)',
+                7,
+                $nkolayOk
             );
         }
     }

@@ -39,7 +39,7 @@ function payment_trust_badges_collect(PDO $pdo): array
             continue;
         }
 
-        if ($gw === 'iyzico') {
+        if ($gw === 'iyzico' || $gw === 'nkolay') {
             if (! isset($seen['online_card'])) {
                 $badges[] = ['icon' => 'fa-credit-card', 'label' => function_exists('t') ? t('trust.online_card', 'Online Kredi Kartı') : 'Online Kredi Kartı', 'tone' => 'blue'];
                 $seen['online_card'] = true;

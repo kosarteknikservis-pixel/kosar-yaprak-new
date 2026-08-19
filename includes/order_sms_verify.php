@@ -44,7 +44,7 @@ function order_payment_is_online_card(PDO $pdo, int $paymentMethodId): bool
     }
     $gw = OrderPaymentFinalize::gatewayCodeForMethod($pdo, $paymentMethodId);
 
-    return in_array($gw, ['paytr', 'iyzico'], true);
+    return in_array($gw, ['paytr', 'iyzico', 'nkolay'], true);
 }
 
 function order_payment_needs_sms_verify(PDO $pdo, int $paymentMethodId): bool

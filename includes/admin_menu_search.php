@@ -21,7 +21,7 @@ function admin_menu_search_catalog(): array
         ['label' => 'Excel İndir', 'href' => 'export.php', 'section' => 'Siparişler', 'keywords' => 'excel export dışa aktar', 'perm' => 'menu_siparis'],
         ['label' => 'Aras Excel', 'href' => 'cargo_csv_export.php', 'section' => 'Siparişler', 'keywords' => 'kargo aras csv', 'perm' => 'menu_siparis'],
         ['label' => 'Hızlı notlar', 'href' => 'quick_notes.php', 'section' => 'Siparişler', 'keywords' => 'not şablon', 'perm' => 'menu_siparis'],
-        ['label' => 'Ödeme yöntemleri', 'href' => 'manage_payment_methods.php', 'section' => 'Ödeme', 'keywords' => 'kapıda paytr iyzico', 'perm' => 'menu_siparis'],
+        ['label' => 'Ödeme yöntemleri', 'href' => 'manage_payment_methods.php', 'section' => 'Ödeme', 'keywords' => 'kapıda paytr nkolay iyzico', 'perm' => 'menu_siparis'],
         ['label' => 'Teslimat bölgeleri', 'href' => 'manage_locations.php', 'section' => 'Ödeme', 'keywords' => 'şehir ilçe lokasyon eyalet avustralya', 'perm' => 'menu_siparis'],
         ['label' => 'Banka hesapları', 'href' => 'bank_accounts.php', 'section' => 'Ödeme', 'keywords' => 'havale eft iban', 'perm' => 'menu_siparis'],
 
@@ -67,6 +67,7 @@ function admin_menu_search_catalog(): array
         ['label' => 'SMS Ayarları', 'href' => 'netgsm_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'sms mutlucell netgsm', 'perm' => 'menu_entegrasyon'],
         ['label' => 'Paraşüt', 'href' => 'parasut_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'fatura parasut', 'perm' => 'menu_entegrasyon'],
         ['label' => 'PayTR', 'href' => 'paytr_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'paytr ödeme', 'perm' => 'menu_entegrasyon'],
+        ['label' => 'N Kolay', 'href' => 'nkolay_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'nkolay paynkolay ödeme', 'perm' => 'menu_entegrasyon'],
         ['label' => 'iyzico', 'href' => 'iyzico_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'iyzico ödeme', 'perm' => 'menu_entegrasyon'],
         ['label' => 'SMTP', 'href' => 'admin_smtp_settings.php', 'section' => 'Entegrasyon', 'keywords' => 'e-posta mail smtp', 'perm' => 'menu_entegrasyon'],
 

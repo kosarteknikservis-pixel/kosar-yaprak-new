@@ -177,6 +177,7 @@ if (!function_exists('admin_rbac_menu_by_exact_basename_rules')) {
             'admin_smtp_settings.php' => 'menu_entegrasyon',
             'parasut_settings.php' => 'menu_entegrasyon',
             'paytr_settings.php' => 'menu_entegrasyon',
+            'nkolay_settings.php' => 'menu_entegrasyon',
             'iyzico_settings.php' => 'menu_entegrasyon',
 
             'admin_meta.php' => 'menu_pazarlama',

@@ -173,7 +173,7 @@ function payment_method_label(int $id, string $name): string
     if (str_contains($lower, 'nakit')) {
         return function_exists('t') ? t('trust.cod_cash', 'Cash on Delivery') : 'Cash on Delivery';
     }
-    if (str_contains($lower, 'paytr') || str_contains($lower, 'iyzico') || str_contains($lower, 'online')) {
+    if (str_contains($lower, 'paytr') || str_contains($lower, 'nkolay') || str_contains($lower, 'iyzico') || str_contains($lower, 'online')) {
         return function_exists('t') ? t('trust.online_card', 'Online Credit Card') : 'Online Credit Card';
     }
     if (str_contains($lower, 'havale') || str_contains($lower, 'eft')) {

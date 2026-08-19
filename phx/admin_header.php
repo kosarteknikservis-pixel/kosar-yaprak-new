@@ -223,6 +223,7 @@ $admin_quick_nav_active = static function (array $files) use ($admin_cur): bool 
             <a href="<?= admin_href('netgsm_settings.php') ?>"<?= $admin_nav_active('netgsm_settings.php') ?>><i class="fas fa-sms"></i> SMS Ayarları</a>
             <a href="<?= admin_href('parasut_settings.php') ?>"<?= $admin_nav_active('parasut_settings.php') ?>><i class="fas fa-file-invoice-dollar"></i> Paraşüt</a>
             <a href="<?= admin_href('paytr_settings.php') ?>"<?= $admin_nav_active('paytr_settings.php') ?>><i class="fas fa-credit-card"></i> PayTR</a>
+            <a href="<?= admin_href('nkolay_settings.php') ?>"<?= $admin_nav_active('nkolay_settings.php') ?>><i class="fas fa-money-check-dollar"></i> N Kolay</a>
             <a href="<?= admin_href('iyzico_settings.php') ?>"<?= $admin_nav_active('iyzico_settings.php') ?>><i class="fas fa-wallet"></i> iyzico</a>
             <a href="<?= admin_href('admin_smtp_settings.php') ?>"<?= $admin_nav_active('admin_smtp_settings.php') ?>><i class="fas fa-envelope-open"></i> SMTP</a>
         </nav>

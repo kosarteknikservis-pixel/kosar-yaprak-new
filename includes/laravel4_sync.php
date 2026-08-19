@@ -292,7 +292,7 @@ function laravel4_gateway_code_for_order(PDO $pdo, array $orderRow): string
 }
 
 /**
- * PayTR / iyzico: ortak panel ödemesiz (pending) sipariş kabul etmez; yalnızca paid sonrası gönder.
+ * PayTR / iyzico / N Kolay: ortak panel ödemesiz (pending) sipariş kabul etmez; yalnızca paid sonrası gönder.
  */
 function laravel4_should_skip_online_unpaid_sync(PDO $pdo, int $orderId): bool
 {
@@ -304,7 +304,7 @@ function laravel4_should_skip_online_unpaid_sync(PDO $pdo, int $orderId): bool
     }
 
     $gateway = laravel4_gateway_code_for_order($pdo, $row);
-    if (! in_array($gateway, ['paytr', 'iyzico'], true)) {
+    if (! in_array($gateway, ['paytr', 'iyzico', 'nkolay'], true)) {
         return false;
     }
 
@@ -345,7 +345,7 @@ function laravel4_order_items_payload(PDO $pdo, int $orderId, string $variantTex
 }
 
 /**
- * Ortak panel: kredi kartı (PayTR/iyzico) ödemesi onaylandıysa sipariş tutarı her zaman 1 TL gönderilir.
+ * Ortak panel: kredi kartı (PayTR/iyzico/N Kolay) ödemesi onaylandıysa sipariş tutarı her zaman 1 TL gönderilir.
  * Panel order_total=0 kabul etmez; online ödeme = paid + 1 TL işareti.
  */
 function laravel4_ortak_panel_order_total(PDO $pdo, int $orderId, float $computedTotal): float
@@ -358,7 +358,7 @@ function laravel4_ortak_panel_order_total(PDO $pdo, int $orderId, float $compute
     }
 
     $gateway = laravel4_gateway_code_for_order($pdo, $row);
-    if (in_array($gateway, ['paytr', 'iyzico'], true) && ($row['payment_status'] ?? '') === 'paid') {
+    if (in_array($gateway, ['paytr', 'iyzico', 'nkolay'], true) && ($row['payment_status'] ?? '') === 'paid') {
         return 1.0;
     }
 
@@ -1097,9 +1097,9 @@ function laravel4_retry_unsynced_orders(PDO $pdo, int $limit = 100, int $lookbac
                AND (
                  payment_status = \'paid\'
                  OR gateway_code IS NULL
-                 OR gateway_code NOT IN (\'paytr\', \'iyzico\')
+                OR gateway_code NOT IN (\'paytr\', \'iyzico\', \'nkolay\')
                  OR payment_method_id NOT IN (
-                   SELECT payment_method_id FROM payment_methods WHERE gateway_code IN (\'paytr\', \'iyzico\')
+                  SELECT payment_method_id FROM payment_methods WHERE gateway_code IN (\'paytr\', \'iyzico\', \'nkolay\')
                  )
                )
              ORDER BY order_id ASC

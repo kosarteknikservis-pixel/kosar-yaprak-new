@@ -9,7 +9,7 @@ $msg = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nm = trim((string) ($_POST['method_name'] ?? ''));
     $gw = trim((string) ($_POST['gateway_code'] ?? 'cod'));
-    $allowedGw = ['cod', 'bank_transfer', 'paytr', 'iyzico'];
+    $allowedGw = ['cod', 'bank_transfer', 'paytr', 'iyzico', 'nkolay'];
     if (!in_array($gw, $allowedGw, true)) {
         $gw = 'cod';
     }
@@ -72,6 +72,7 @@ $gwLabels = [
     'bank_transfer' => 'Havale / EFT',
     'paytr' => 'PayTR (online)',
     'iyzico' => 'iyzico (online)',
+    'nkolay' => 'N Kolay (online)',
 ];
 
 $page_title = 'Ödeme yöntemleri';
@@ -85,7 +86,7 @@ include 'admin_header.php';
     <?php if ($msg): ?><div class="alert alert-danger"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
 
     <h1 class="h4 mb-3">Ödeme yöntemleri</h1>
-    <p class="text-muted small">PayTR ve iyzico için önce <a href="paytr_settings.php">PayTR</a> / <a href="iyzico_settings.php">iyzico</a> ayarlarını kaydedin, sonra ilgili satırı <strong>aktif</strong> yapın.</p>
+    <p class="text-muted small">Online ödeme için önce <a href="paytr_settings.php">PayTR</a>, <a href="nkolay_settings.php">N Kolay</a> veya <a href="iyzico_settings.php">iyzico</a> ayarlarını kaydedin; sonra ilgili satırı <strong>aktif</strong> yapın.</p>
 
     <form method="post" class="row g-2 mb-4 align-items-end border rounded p-3 bg-light">
         <div class="col-md-4">

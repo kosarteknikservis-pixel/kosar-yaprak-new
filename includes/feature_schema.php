@@ -14,7 +14,7 @@ function ensure_feature_schema(PDO $pdo): void
 
     // Kalıcı sürüm damgası: şema güncelse ağır SHOW/ALTER kontrollerini tümden atla.
     // Yeni migrasyon eklerken bu sürümü artır (ör. tarih-harf), tek seferde uygulansın.
-    $schemaVersion = '2026-08-17-loc1';
+    $schemaVersion = '2026-08-19-nkolay1';
     try {
         $cur = $pdo->query("SELECT meta_value FROM schema_meta WHERE meta_key = 'feature_version'")->fetchColumn();
         if ($cur === $schemaVersion) {
@@ -1092,6 +1092,18 @@ function ensure_feature_schema(PDO $pdo): void
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         $pdo->exec('INSERT IGNORE INTO iyzico_settings (id) VALUES (1)');
 
+        $pdo->exec("CREATE TABLE IF NOT EXISTS nkolay_settings (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            is_enabled TINYINT(1) NOT NULL DEFAULT 0,
+            sx_token VARCHAR(255) NOT NULL DEFAULT '',
+            merchant_secret_key VARCHAR(255) NOT NULL DEFAULT '',
+            merchant_customer_no VARCHAR(64) NOT NULL DEFAULT '',
+            sandbox TINYINT(1) NOT NULL DEFAULT 1,
+            use_3d TINYINT(1) NOT NULL DEFAULT 1,
+            PRIMARY KEY (id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $pdo->exec('INSERT IGNORE INTO nkolay_settings (id) VALUES (1)');
+
         try {
             require_once __DIR__ . '/fake_notification_defaults.php';
             fake_notifications_purge_foreign($pdo);
@@ -1109,6 +1121,10 @@ function ensure_feature_schema(PDO $pdo): void
             $hasIyz = $pdo->query("SELECT COUNT(*) FROM payment_methods WHERE gateway_code = 'iyzico'")->fetchColumn();
             if ((int) $hasIyz === 0) {
                 $pdo->exec("INSERT INTO payment_methods (method_name, gateway_code, is_active, sort_order) VALUES ('Kredi Kartı (iyzico)', 'iyzico', 0, 11)");
+            }
+            $hasNkolay = $pdo->query("SELECT COUNT(*) FROM payment_methods WHERE gateway_code = 'nkolay'")->fetchColumn();
+            if ((int) $hasNkolay === 0) {
+                $pdo->exec("INSERT INTO payment_methods (method_name, gateway_code, is_active, sort_order) VALUES ('Kredi Kartı (N Kolay)', 'nkolay', 0, 12)");
             }
         } catch (Throwable $ePmSeed) {
             if (isset($_SERVER['HTTP_HOST'])) {
